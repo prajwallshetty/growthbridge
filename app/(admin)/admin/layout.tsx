@@ -58,9 +58,6 @@ export default function AdminLayout({
         {/* Header/Logo */}
         <div className="p-6 border-b border-[#E9E3DA] flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#111111] text-[15px] font-extrabold text-[#F4C542]">
-              G
-            </span>
             <span className="text-[16px] font-bold tracking-tight">Growth Bridge CMS</span>
           </div>
         </div>

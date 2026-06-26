@@ -57,7 +57,54 @@ function serialize<T>(data: T): T {
    ========================================== */
 export async function getBlogs() {
   await connectToDatabase();
-  const list = await Blog.find().sort({ createdAt: -1 }).lean();
+  let list = await Blog.find({ status: "Published" }).sort({ publishDate: -1 }).lean();
+  
+  if (list.length === 0) {
+    const defaultBlogs = [
+      {
+        title: "The design-to-code gap is costing you momentum.",
+        subtitle: "How fractional engineering teams bridge complex layout execution with premium developer-first systems.",
+        slug: "design-to-code-gap",
+        content: "A detailed post about how modern design workflows can be translated directly into high-fidelity code components.",
+        author: "Prajwal Shetty",
+        image: "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=800&auto=format&fit=crop&q=80",
+        readTime: 5,
+        tags: ["Design", "Engineering"],
+        categories: ["Workflow"],
+        status: "Published",
+        publishDate: new Date(),
+      },
+      {
+        title: "Why we built a static-first CMS pipeline for Next.js 16.",
+        subtitle: "A deep dive into combining incremental static generation with flexible, dynamic administrator panels.",
+        slug: "static-first-cms-pipeline",
+        content: "We explore the architecture behind building performant web applications with sub-second page loads.",
+        author: "Prajwal Shetty",
+        image: "https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=800&auto=format&fit=crop&q=80",
+        readTime: 4,
+        tags: ["Next.js", "CMS"],
+        categories: ["Technology"],
+        status: "Published",
+        publishDate: new Date(Date.now() - 86400000), // 1 day ago
+      },
+      {
+        title: "How to optimize LCP and INP on dynamic landing pages.",
+        subtitle: "Actionable steps to keep your user interfaces interactive and lightweight while loading dynamic media.",
+        slug: "optimize-lcp-inp-dynamic-pages",
+        content: "Practical tips on lazy loading components, image optimizations, and fine-tuning Framer Motion paints.",
+        author: "Prajwal Shetty",
+        image: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=800&auto=format&fit=crop&q=80",
+        readTime: 6,
+        tags: ["Performance", "Core Web Vitals"],
+        categories: ["Optimization"],
+        status: "Published",
+        publishDate: new Date(Date.now() - 172800000), // 2 days ago
+      },
+    ];
+    await Blog.create(defaultBlogs);
+    list = await Blog.find({ status: "Published" }).sort({ publishDate: -1 }).lean();
+  }
+  
   return serialize(list);
 }
 

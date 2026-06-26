@@ -112,7 +112,7 @@ function MagneticButton({
   );
 }
 
-const SECTION_COUNT = 7;
+const SECTION_COUNT = 8;
 
 function Folio({ index, label }: { index: number; label: string }) {
   const ref = useRef(null);
@@ -142,6 +142,7 @@ interface HomeClientProps {
   projects: any[];
   testimonials: any[];
   settings: any;
+  blogs: any[];
 }
 
 export default function HomeClient({
@@ -150,12 +151,13 @@ export default function HomeClient({
   projects,
   testimonials,
   settings,
+  blogs,
 }: HomeClientProps) {
   // Configs with Fallbacks
   const heroTitle = homepage?.heroTitle || "Build your startup with Growth Bridge.";
   const heroDescription = homepage?.heroDescription || "A design and engineering partner for founders who value quality, clarity, and momentum. We bridge complex engineering with premium aesthetics.";
   const heroBtnText = homepage?.heroBtnText || "Start a project";
-  const heroBtnUrl = homepage?.heroBtnUrl || "#contact";
+  const heroBtnUrl = homepage?.heroBtnUrl || "/contact";
   
   const showSelectedWork = homepage?.showSelectedWork !== false;
   const showProcess = homepage?.showProcess !== false;
@@ -253,15 +255,15 @@ export default function HomeClient({
         heroBtnText={heroBtnText}
         heroBtnUrl={heroBtnUrl}
       />
+      <AboutSection />
       {showSelectedWork && <SelectedWork projects={displayProjects} heroBtnUrl={heroBtnUrl} />}
-      <Industries />
-      <Services servicesList={displayServices} />
-      <WhyUs />
-      {showProcess && <Process />}
-      <EngagementModels heroBtnUrl={heroBtnUrl} />
+      <ServicesSection servicesList={displayServices} />
+      <WhyChooseUs />
+      {showProcess && <Process heroBtnUrl={heroBtnUrl} />}
       {showTestimonials && <TestimonialsSection testimonials={displayTestimonials} />}
+      <LatestBlogs blogs={blogs} />
+      <FaqSection />
       <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} />
-      <Footer contactEmail={contactEmail} />
     </main>
   );
 }
@@ -270,10 +272,13 @@ export default function HomeClient({
 
 function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: string }) {
   const links = [
-    { name: "Work", link: "#work" },
-    { name: "Services", link: "#services" },
-    { name: "Process", link: "#process" },
-    { name: "Contact", link: "#contact" }
+    { name: "About", link: "/#about" },
+    { name: "Work", link: "/#work" },
+    { name: "Why Us", link: "/#why-us" },
+    { name: "Process", link: "/#process" },
+    { name: "Blogs", link: "/#blogs" },
+    { name: "Founder", link: "/founder" },
+    { name: "Contact", link: "/contact" },
   ];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [hovered, setHovered] = useState<number | null>(null);
@@ -294,6 +299,7 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
       <div className="fixed inset-x-0 top-0 z-40 w-full">
         {/* ═══════════ Desktop Navigation ═══════════ */}
         <motion.div
+          initial={false}
           animate={{
             boxShadow: visible
               ? "0 4px 20px rgba(0, 0, 0, 0.04), 0 12px 40px rgba(0, 0, 0, 0.03)"
@@ -315,9 +321,6 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
         >
           {/* Logo */}
           <a href="#top" className="flex items-center gap-2 z-20 shrink-0">
-            <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#111111] text-[15px] font-extrabold text-[#F4C542]">
-              G
-            </span>
             <span className="text-[17px] font-bold tracking-tight text-[#111111]">Growth Bridge</span>
           </a>
 
@@ -357,76 +360,82 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
         </motion.div>
 
         {/* ═══════════ Mobile Navigation ═══════════ */}
-        <motion.div
-          animate={{
-            boxShadow: visible
-              ? "0 4px 20px rgba(0, 0, 0, 0.04), 0 12px 40px rgba(0, 0, 0, 0.03)"
-              : "none",
-            width: visible ? "calc(100% - 2rem)" : "100%",
-            borderRadius: visible ? "12px" : "0px",
-            y: visible ? 10 : 0,
-          }}
-          transition={{
-            type: "spring",
-            stiffness: 200,
-            damping: 50,
-          }}
-          className={`relative z-50 mx-auto w-full flex-col items-center justify-between px-4 py-3 flex lg:hidden transition-all duration-300 ${
-            visible
-              ? "bg-[#FCFBF8]/95 border border-[#E9E3DA] backdrop-blur-md shadow-lg"
-              : "bg-transparent border-transparent"
-          }`}
-        >
-          <div className="flex w-full flex-row items-center justify-between z-20">
-            <a href="#top" className="flex items-center gap-2 shrink-0">
-              <span className="flex h-8 w-8 items-center justify-center rounded-[8px] bg-[#111111] text-[15px] font-extrabold text-[#F4C542]">
-                G
-              </span>
-              <span className="text-[17px] font-bold tracking-tight text-[#111111]">Growth Bridge</span>
+        <div className="flex w-full justify-center lg:hidden relative z-50">
+          <div className="w-[calc(100%-2rem)] max-w-[480px] flex items-center justify-between px-5 py-2.5 bg-[#FCFBF8]/95 border border-[#E9E3DA] backdrop-blur-md rounded-full shadow-lg mt-4">
+            <a href="#top" className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[15px] font-extrabold tracking-tight text-[#111111]">Growth Bridge</span>
+              <span className="h-1.5 w-1.5 rounded-full bg-[#F4C542] animate-pulse" />
             </a>
             <button
-              className="p-2 text-[#111111]"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              aria-label="Toggle menu"
+              className="h-9 w-9 flex items-center justify-center text-[#111111] hover:bg-[#111111]/5 rounded-full border border-[#E9E3DA] transition-all"
+              onClick={() => setIsMobileMenuOpen(true)}
+              aria-label="Open menu"
             >
-              {isMobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
+              <Menu size={16} />
             </button>
           </div>
+        </div>
 
-          <AnimatePresence>
-            {isMobileMenuOpen && (
+        {/* ═══════════ Slide-out Drawer Panel ═══════════ */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <>
+              {/* Backdrop blur/dim */}
               <motion.div
-                initial={{ opacity: 0, height: 0, y: -10 }}
-                animate={{ opacity: 1, height: "auto", y: 0 }}
-                exit={{ opacity: 0, height: 0, y: -10 }}
-                transition={{ duration: 0.25 }}
-                className="w-full overflow-hidden"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileMenuOpen(false)}
+                className="fixed inset-0 z-[100] bg-black/20 backdrop-blur-sm lg:hidden"
+              />
+
+              {/* Drawer Container */}
+              <motion.div
+                initial={{ x: "100%" }}
+                animate={{ x: 0 }}
+                exit={{ x: "100%" }}
+                transition={{ type: "spring", stiffness: 380, damping: 35 }}
+                className="fixed inset-y-0 right-0 z-[101] w-[290px] bg-[#FCFBF8] border-l border-[#E9E3DA] shadow-2xl p-6 flex flex-col justify-between lg:hidden"
               >
-                <div className="flex w-full flex-col items-start justify-start gap-1 pt-6 pb-4">
-                  {links.map((item) => (
-                    <a
-                      key={item.name}
-                      href={item.link}
+                <div>
+                  <div className="flex justify-between items-center pb-6 border-b border-[#E9E3DA]">
+                    <span className="text-[15px] font-bold text-[#111111] uppercase tracking-wider">Navigation</span>
+                    <button
+                      className="p-2 text-[#6A6A6A] hover:text-[#111111] rounded-full border border-[#E9E3DA] hover:border-[#111111] transition-colors"
                       onClick={() => setIsMobileMenuOpen(false)}
-                      className="relative text-[#6A6A6A] hover:text-[#111111] hover:bg-[#111111]/5 w-full py-3 px-4 rounded-md transition-all font-semibold uppercase tracking-wider text-[13px]"
+                      aria-label="Close menu"
                     >
-                      {item.name}
-                    </a>
-                  ))}
-                  <div className="w-full pt-4 mt-2 border-t border-[#E9E3DA]">
-                    <a
-                      href={heroBtnUrl}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="block w-full text-center rounded-full bg-[#111111] py-3 text-[14px] font-semibold text-white transition-colors hover:bg-[#2a2a2a]"
-                    >
-                      {heroBtnText}
-                    </a>
+                      <X size={16} />
+                    </button>
                   </div>
+                  
+                  <nav className="flex flex-col gap-1.5 pt-6">
+                    {links.map((item) => (
+                      <a
+                        key={item.name}
+                        href={item.link}
+                        onClick={() => setIsMobileMenuOpen(false)}
+                        className="text-[#6A6A6A] hover:text-[#111111] hover:bg-[#111111]/5 py-3 px-4 rounded-xl transition-all font-semibold uppercase tracking-wider text-[12px] block"
+                      >
+                        {item.name}
+                      </a>
+                    ))}
+                  </nav>
+                </div>
+
+                <div className="pt-6 border-t border-[#E9E3DA]">
+                  <a
+                    href={heroBtnUrl}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block w-full text-center rounded-full bg-[#111111] py-3.5 text-[13px] font-bold text-white hover:bg-[#2a2a2a] transition-colors"
+                  >
+                    {heroBtnText}
+                  </a>
                 </div>
               </motion.div>
-            )}
-          </AnimatePresence>
-        </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Spacer to prevent layout shift */}
@@ -521,10 +530,10 @@ function Hero({
                 {heroBtnText} <ArrowRight size={16} />
               </MagneticButton>
               <a
-                href="#work"
+                href="#about"
                 className="flex items-center gap-2 rounded-full border border-[#E9E3DA] bg-white/50 px-7 py-4 text-[14px] font-semibold text-[#111111] transition-all hover:bg-white hover:border-[#111111]"
               >
-                See the work
+                Learn More
               </a>
             </motion.div>
           </div>
@@ -560,20 +569,18 @@ const STATS = [
 
 function StatsBand() {
   return (
-    <section className="border-y border-[#E9E3DA] bg-white/30 py-12">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
-          {STATS.map((s, i) => (
-            <Reveal key={s.label} delay={i * 0.05}>
-              <div className="text-[clamp(28px,3vw,38px)] font-extrabold tracking-tight text-[#111111]">
-                <CountUp to={parseInt(s.value)} suffix={s.suffix} />
-              </div>
-              <p className="mt-1 text-[13px] font-medium leading-[1.4] text-[#6A6A6A]">{s.label}</p>
-            </Reveal>
-          ))}
-        </div>
+    <div className="border-y border-[#E9E3DA] bg-white/30 py-12 rounded-[24px] px-8">
+      <div className="grid grid-cols-2 gap-8 lg:grid-cols-4">
+        {STATS.map((s, i) => (
+          <Reveal key={s.label} delay={i * 0.05}>
+            <div className="text-[clamp(28px,3vw,38px)] font-extrabold tracking-tight text-[#111111]">
+              <CountUp to={parseInt(s.value)} suffix={s.suffix} />
+            </div>
+            <p className="mt-1 text-[13px] font-medium leading-[1.4] text-[#6A6A6A]">{s.label}</p>
+          </Reveal>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -621,6 +628,56 @@ function CapabilitiesMarquee() {
   );
 }
 
+/* ==================== ABOUT GROWTH BRIDGE ==================== */
+
+function AboutSection() {
+  return (
+    <section id="about" className="py-24 lg:py-32 border-t border-[#E9E3DA]">
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <Reveal>
+          <Folio index={1} label="About Growth Bridge" />
+        </Reveal>
+        
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr] items-start mb-20">
+          <Reveal>
+            <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+              Bridging elite design
+              <br />
+              with engineering.
+            </h2>
+          </Reveal>
+          
+          <Reveal delay={0.15}>
+            <div className="flex flex-col gap-6 text-[15px] leading-[1.75] text-[#6A6A6A]">
+              <p className="text-[18px] text-[#111111] font-medium leading-[1.6]">
+                We are a boutique studio of designers and developers, working directly with founders to build clean, premium interfaces that endure.
+              </p>
+              <p>
+                Most agencies pass your design from senior directors down to junior developers who copy templates. At Growth Bridge, we eliminate administrative overhead. Our creators code, and our coders design. The builder you talk to in our first call is the one writing the components for your platform.
+              </p>
+            </div>
+          </Reveal>
+        </div>
+
+        <StatsBand />
+      </div>
+    </section>
+  );
+}
+
+function ServicesSection({ servicesList }: { servicesList: any[] }) {
+  return (
+    <section id="services" className="py-24 lg:py-32 border-t border-[#E9E3DA]">
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <Reveal>
+          <Folio index={3} label="Our Disciplines" />
+        </Reveal>
+        <Services servicesList={servicesList} />
+      </div>
+    </section>
+  );
+}
+
 /* ========================= SELECTED WORK ========================= */
 
 function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: string }) {
@@ -628,7 +685,7 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
     <section id="work" className="py-24 lg:py-32 border-t border-[#E9E3DA]">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
-          <Folio index={1} label="Selected work" />
+          <Folio index={2} label="Featured Projects" />
         </Reveal>
 
         <Reveal>
@@ -654,7 +711,7 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
                       </CardItem>
                       <CardItem
                         translateZ="60"
-                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 group-hover/card:text-[#F4C542] transition-colors"
+                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 transition-colors"
                       >
                         {p.title}
                       </CardItem>
@@ -712,6 +769,18 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
             </Reveal>
           ))}
         </div>
+
+        <div className="flex justify-center mt-14">
+          <Reveal delay={0.1}>
+            <a
+              href="/projects"
+              className="inline-flex items-center gap-2 rounded-full border border-[#111111] bg-[#111111] hover:bg-transparent text-white hover:text-[#111111] px-8 py-4 text-[14px] font-semibold transition-all duration-300 shadow-sm hover:shadow-md group"
+            >
+              View all projects
+              <ArrowRight size={16} className="transform group-hover:translate-x-1 transition-transform" />
+            </a>
+          </Reveal>
+        </div>
       </div>
     </section>
   );
@@ -730,52 +799,37 @@ const INDUSTRIES = [
 
 function Industries() {
   return (
-    <section className="border-t border-[#E9E3DA] py-24 lg:py-32">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <Reveal>
-          <Folio index={2} label="Who we work with" />
-        </Reveal>
-        <Reveal>
-          <h2 className="max-w-[640px] text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
-            Six industries.
-            <br />
-            Same operating playbook.
-          </h2>
-        </Reveal>
-
-        <div className="mt-14 grid grid-cols-1 gap-px overflow-hidden rounded-[8px] border border-[#E9E3DA] bg-[#E9E3DA] sm:grid-cols-2 lg:grid-cols-3">
-          {INDUSTRIES.map((ind, i) => (
-            <motion.div
-              key={ind.name}
-              initial={{ opacity: 0, y: 16 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.5, delay: (i % 3) * 0.08, ease: EASE }}
-              whileHover={{ backgroundColor: "#FFFFFF" }}
-              className="group flex flex-col justify-between bg-[#FCFBF8] p-7"
-              style={{ minHeight: 180 }}
+    <div className="grid grid-cols-1 gap-px overflow-hidden rounded-[8px] border border-[#E9E3DA] bg-[#E9E3DA] sm:grid-cols-2 lg:grid-cols-3">
+      {INDUSTRIES.map((ind, i) => (
+        <motion.div
+          key={ind.name}
+          initial={{ opacity: 0, y: 16 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, margin: "-60px" }}
+          transition={{ duration: 0.5, delay: (i % 3) * 0.08, ease: EASE }}
+          whileHover={{ backgroundColor: "#FFFFFF" }}
+          className="group flex flex-col justify-between bg-[#FCFBF8] p-7"
+          style={{ minHeight: 180 }}
+        >
+          <div>
+            <h3 className="text-[18px] font-bold tracking-tight">{ind.name}</h3>
+            <p className="mt-2 text-[14px] leading-[1.6] text-[#6A6A6A]">{ind.detail}</p>
+          </div>
+          <div className="mt-4 flex items-center justify-between">
+            <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#A8A296]">
+              {ind.count}
+            </span>
+            <motion.span
+              initial={{ x: -4, opacity: 0 }}
+              whileHover={{ x: 0, opacity: 1 }}
+              className="text-[#111111]"
             >
-              <div>
-                <h3 className="text-[18px] font-bold tracking-tight">{ind.name}</h3>
-                <p className="mt-2 text-[14px] leading-[1.6] text-[#6A6A6A]">{ind.detail}</p>
-              </div>
-              <div className="mt-4 flex items-center justify-between">
-                <span className="text-[12px] font-semibold uppercase tracking-[0.08em] text-[#A8A296]">
-                  {ind.count}
-                </span>
-                <motion.span
-                  initial={{ x: -4, opacity: 0 }}
-                  whileHover={{ x: 0, opacity: 1 }}
-                  className="text-[#111111]"
-                >
-                  <ArrowUpRight size={16} />
-                </motion.span>
-              </div>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </section>
+              <ArrowUpRight size={16} />
+            </motion.span>
+          </div>
+        </motion.div>
+      ))}
+    </div>
   );
 }
 
@@ -785,74 +839,66 @@ function Services({ servicesList }: { servicesList: any[] }) {
   const [open, setOpen] = useState(0);
 
   return (
-    <section id="services" className="border-t border-[#E9E3DA] py-24 lg:py-32">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <Reveal>
-          <Folio index={3} label="What we do" />
-        </Reveal>
+    <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.7fr_1.3fr]">
+      <Reveal>
+        <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+          Six disciplines.
+          <br />
+          One accountable
+          <br />
+          team.
+        </h2>
+      </Reveal>
 
-        <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.7fr_1.3fr]">
-          <Reveal>
-            <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
-              Six disciplines.
-              <br />
-              One accountable
-              <br />
-              team.
-            </h2>
-          </Reveal>
-
-          <Reveal delay={0.15} className="border-t border-[#111111]">
-            {servicesList.map((service, i) => {
-              const isOpen = open === i;
-              return (
-                <div key={service.title} className="border-b border-[#E9E3DA]">
-                  <motion.button
-                    onClick={() => setOpen(isOpen ? -1 : i)}
-                    whileHover={{ paddingLeft: 8 }}
-                    transition={{ duration: 0.3 }}
-                    className="flex w-full items-center gap-6 py-6 text-left"
+      <Reveal delay={0.15} className="border-t border-[#111111]">
+        {servicesList.map((service, i) => {
+          const isOpen = open === i;
+          return (
+            <div key={service.title} className="border-b border-[#E9E3DA]">
+              <motion.button
+                onClick={() => setOpen(isOpen ? -1 : i)}
+                whileHover={{ paddingLeft: 8 }}
+                transition={{ duration: 0.3 }}
+                className="flex w-full items-center gap-6 py-6 text-left"
+              >
+                <span className="font-mono text-[13px] text-[#A8A296]">
+                  0{i + 1}
+                </span>
+                <span className="flex-1 text-[20px] font-bold tracking-tight sm:text-[24px]">
+                  {service.title}
+                </span>
+                <motion.span
+                  animate={{ rotate: isOpen ? 45 : 0 }}
+                  transition={{ duration: 0.3, ease: EASE }}
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#E9E3DA]"
+                >
+                  <Plus size={15} />
+                </motion.span>
+              </motion.button>
+              <AnimatePresence>
+                {isOpen && (
+                  <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: "auto", opacity: 1 }}
+                    exit={{ height: 0, opacity: 0 }}
+                    transition={{ duration: 0.35, ease: EASE }}
+                    className="overflow-hidden"
                   >
-                    <span className="font-mono text-[13px] text-[#A8A296]">
-                      0{i + 1}
-                    </span>
-                    <span className="flex-1 text-[20px] font-bold tracking-tight sm:text-[24px]">
-                      {service.title}
-                    </span>
-                    <motion.span
-                      animate={{ rotate: isOpen ? 45 : 0 }}
-                      transition={{ duration: 0.3, ease: EASE }}
-                      className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border border-[#E9E3DA]"
-                    >
-                      <Plus size={15} />
-                    </motion.span>
-                  </motion.button>
-                  <AnimatePresence>
-                    {isOpen && (
-                      <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.35, ease: EASE }}
-                        className="overflow-hidden"
-                      >
-                        <p className="max-w-[480px] pb-6 pl-[40px] text-[15px] leading-[1.7] text-[#6A6A6A]">
-                          {service.description}
-                        </p>
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              );
-            })}
-          </Reveal>
-        </div>
-      </div>
-    </section>
+                    <p className="max-w-[480px] pb-6 pl-[40px] text-[15px] leading-[1.7] text-[#6A6A6A]">
+                      {service.description}
+                    </p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          );
+        })}
+      </Reveal>
+    </div>
   );
 }
 
-/* ============================== WHY US ============================== */
+/* ============================ WHY CHOOSE US ============================ */
 
 const comparison = [
   {
@@ -869,23 +915,23 @@ const comparison = [
   },
 ];
 
-function WhyUs() {
+function WhyChooseUs() {
   return (
-    <section id="about" className="border-t border-[#E9E3DA] bg-white/40 py-24 lg:py-32">
+    <section id="why-us" className="border-t border-[#E9E3DA] bg-white/40 py-24 lg:py-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
-          <Folio index={4} label="Why Growth Bridge" />
+          <Folio index={4} label="Why Choose Us" />
         </Reveal>
 
         <Reveal>
-          <h2 className="max-w-[640px] text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+          <h2 className="max-w-[640px] text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em] mb-14">
             Built different,
             <br />
             and built to prove it.
           </h2>
         </Reveal>
 
-        <Reveal delay={0.15} className="mt-14 overflow-hidden rounded-[8px] border border-[#E9E3DA] shadow-[0_20px_50px_-30px_rgba(0,0,0,0.15)]">
+        <Reveal delay={0.15} className="overflow-hidden rounded-[8px] border border-[#E9E3DA] shadow-[0_20px_50px_-30px_rgba(0,0,0,0.15)]">
           <div className="grid grid-cols-2 border-b border-[#E9E3DA] bg-[#FCFBF8]">
             <div className="border-r border-[#E9E3DA] px-7 py-4">
               <span className="text-[13px] font-semibold uppercase tracking-[0.1em] text-[#A8A296]">
@@ -926,6 +972,10 @@ function WhyUs() {
             operators. Fifty-plus projects later, that's still the whole pitch."
           </p>
         </Reveal>
+
+        <div className="mt-24 pt-20 border-t border-[#E9E3DA]/60">
+          <Industries />
+        </div>
       </div>
     </section>
   );
@@ -941,7 +991,7 @@ const processSteps = [
   { number: "05", title: "Grow", description: "Ongoing experimentation that compounds the result instead of resetting the clock every quarter." },
 ];
 
-function Process() {
+function Process({ heroBtnUrl }: { heroBtnUrl: string }) {
   const ref = useRef(null);
   const { scrollYProgress } = useScroll({
     target: ref,
@@ -956,14 +1006,14 @@ function Process() {
         </Reveal>
 
         <Reveal>
-          <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em]">
+          <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em] mb-14">
             Five stages, always
             <br />
             in this order.
           </h2>
         </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-12 lg:grid-cols-12">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 mb-24">
           {/* Left Column: Timeline steps */}
           <div ref={ref} className="relative max-w-[680px] lg:col-span-7">
             <div className="absolute left-[19px] top-5 bottom-5 w-px bg-[#E9E3DA]" />
@@ -1034,62 +1084,57 @@ const ENGAGEMENTS = [
 
 function EngagementModels({ heroBtnUrl }: { heroBtnUrl: string }) {
   return (
-    <section className="border-t border-[#E9E3DA] bg-white/40 py-24 lg:py-32">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <Reveal>
-          <Folio index={6} label="How we engage" />
-        </Reveal>
-        <Reveal>
-          <h2 className="max-w-[640px] text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
-            Three ways to
-            <br />
-            work together.
-          </h2>
-        </Reveal>
+    <div className="mx-auto max-w-[1280px]">
+      <Reveal>
+        <h2 className="max-w-[640px] text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+          Three ways to
+          <br />
+          work together.
+        </h2>
+      </Reveal>
 
-        <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {ENGAGEMENTS.map((e, i) => (
-            <motion.div
-              key={e.name}
-              initial={{ opacity: 0, y: 24 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-60px" }}
-              transition={{ duration: 0.6, delay: i * 0.1, ease: EASE }}
-              whileHover={{ y: -6 }}
-              className={`flex flex-col rounded-[10px] border p-8 transition-shadow ${
-                e.featured
-                  ? "border-[#111111] bg-[#111111] text-white shadow-[0_30px_60px_-25px_rgba(0,0,0,0.4)]"
-                  : "border-[#E9E3DA] bg-[#FCFBF8] hover:shadow-[0_20px_45px_-25px_rgba(0,0,0,0.15)]"
+      <div className="mt-14 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {ENGAGEMENTS.map((e, i) => (
+          <motion.div
+            key={e.name}
+            initial={{ opacity: 0, y: 24 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, margin: "-60px" }}
+            transition={{ duration: 0.6, delay: i * 0.1, ease: EASE }}
+            whileHover={{ y: -6 }}
+            className={`flex flex-col rounded-[10px] border p-8 transition-shadow ${
+              e.featured
+                ? "border-[#111111] bg-[#111111] text-white shadow-[0_30px_60px_-25px_rgba(0,0,0,0.4)]"
+                : "border-[#E9E3DA] bg-[#FCFBF8] hover:shadow-[0_20px_45px_-25px_rgba(0,0,0,0.15)]"
+            }`}
+          >
+            {e.featured && (
+              <span className="mb-4 w-fit rounded-full bg-[#F4C542] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[#111111]">
+                Most common
+              </span>
+            )}
+            <h3 className="text-[22px] font-bold tracking-tight">{e.name}</h3>
+            <p className={`mt-4 text-[28px] font-extrabold tracking-tight ${e.featured ? "text-[#F4C542]" : ""}`}>
+              {e.price}
+            </p>
+            <p className={`text-[13px] ${e.featured ? "text-white/60" : "text-[#A8A296]"}`}>
+              {e.cadence}
+            </p>
+            <p className={`mt-5 flex-1 text-[14px] leading-[1.7] ${e.featured ? "text-white/80" : "text-[#6A6A6A]"}`}>
+              {e.detail}
+            </p>
+            <a
+              href={heroBtnUrl}
+              className={`mt-7 flex items-center gap-2 text-[14px] font-semibold ${
+                e.featured ? "text-white" : "text-[#111111]"
               }`}
             >
-              {e.featured && (
-                <span className="mb-4 w-fit rounded-full bg-[#F4C542] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[#111111]">
-                  Most common
-                </span>
-              )}
-              <h3 className="text-[22px] font-bold tracking-tight">{e.name}</h3>
-              <p className={`mt-4 text-[28px] font-extrabold tracking-tight ${e.featured ? "text-[#F4C542]" : ""}`}>
-                {e.price}
-              </p>
-              <p className={`text-[13px] ${e.featured ? "text-white/60" : "text-[#A8A296]"}`}>
-                {e.cadence}
-              </p>
-              <p className={`mt-5 flex-1 text-[14px] leading-[1.7] ${e.featured ? "text-white/80" : "text-[#6A6A6A]"}`}>
-                {e.detail}
-              </p>
-              <a
-                href={heroBtnUrl}
-                className={`mt-7 flex items-center gap-2 text-[14px] font-semibold ${
-                  e.featured ? "text-white" : "text-[#111111]"
-                }`}
-              >
-                Get in touch <ArrowRight size={15} />
-              </a>
-            </motion.div>
-          ))}
-        </div>
+              Get in touch <ArrowRight size={15} />
+            </a>
+          </motion.div>
+        ))}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -1102,7 +1147,7 @@ function TestimonialsSection({ testimonials }: { testimonials: any[] }) {
     <section className="border-t border-[#E9E3DA] py-24 lg:py-32 bg-white/20">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 text-center">
         <Reveal>
-          <Folio index={7} label="What clients say" />
+          <Folio index={6} label="What clients say" />
         </Reveal>
 
         <div className="max-w-[800px] mx-auto mt-12 flex flex-col items-center">
@@ -1156,6 +1201,166 @@ function TestimonialsSection({ testimonials }: { testimonials: any[] }) {
   );
 }
 
+/* ========================== LATEST BLOGS ========================== */
+
+function LatestBlogs({ blogs }: { blogs: any[] }) {
+  const latestBlogs = (blogs || []).slice(0, 3);
+  
+  return (
+    <section id="blogs" className="border-t border-[#E9E3DA] py-24 lg:py-32">
+      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
+        <Reveal>
+          <Folio index={7} label="Latest Blogs" />
+        </Reveal>
+        
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-14">
+          <Reveal>
+            <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
+              Latest insights &
+              <br />
+              field notes.
+            </h2>
+          </Reveal>
+          <Reveal delay={0.1}>
+            <a
+              href="/admin/blogs"
+              className="inline-flex items-center gap-2 rounded-full border border-[#E9E3DA] bg-white px-6 py-3 text-[13px] font-bold text-[#111111] hover:border-[#111111] transition-all"
+            >
+              Visit CMS Blog Panel <ArrowRight size={14} />
+            </a>
+          </Reveal>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {latestBlogs.map((b: any, i: number) => (
+            <Reveal key={b._id} delay={i * 0.1}>
+              <div className="group flex flex-col h-full bg-white border border-[#E9E3DA] rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+                <div className="h-48 overflow-hidden relative border-b border-[#E9E3DA]">
+                  <img
+                    src={b.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&auto=format&fit=crop&q=80"}
+                    className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-500"
+                    alt={b.title}
+                  />
+                  <div className="absolute top-4 left-4 flex gap-1.5 flex-wrap">
+                    {(b.tags || []).slice(0, 2).map((t: string) => (
+                      <span key={t} className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wide bg-[#111111]/90 text-white rounded-full">
+                        {t}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+                
+                <div className="p-6 flex-1 flex flex-col justify-between">
+                  <div>
+                    <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#A8A296]">
+                      {b.readTime || 3} min read
+                    </span>
+                    <h3 className="text-[18px] font-black text-[#111111] tracking-tight leading-[1.3] mt-2 group-hover:text-[#F4C542] transition-colors">
+                      {b.title}
+                    </h3>
+                    <p className="text-[13px] leading-[1.6] text-[#6A6A6A] mt-3 line-clamp-2">
+                      {b.subtitle || b.content}
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#E9E3DA]/60">
+                    <span className="text-[12px] font-semibold text-[#6A6A6A]">
+                      By {b.author || "Prajwal Shetty"}
+                    </span>
+                    <span className="text-[#111111] text-[12px] font-bold group-hover:translate-x-1.5 transition-transform flex items-center gap-1">
+                      Read article <ArrowRight size={13} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </Reveal>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+/* ============================ FAQ ============================ */
+
+const FAQS = [
+  {
+    q: "How long does a typical project sprint take?",
+    a: "Our project sprints generally take between 4 to 8 weeks, depending on complexity. We focus on delivering a high-fidelity first prototype within the first 14 days so we can iterate quickly together.",
+  },
+  {
+    q: "What is a growth partnership?",
+    a: "A growth partnership is our retainer model (minimum 3 months). It embeds our design and engineering team into your product roadmap, handling continuous feature launches, landing pages, and conversion optimizations.",
+  },
+  {
+    q: "Do you offer post-launch support?",
+    a: "Yes! Every project sprint includes 30 days of complimentary post-launch support. For long-term iterations and scaling, clients usually transition into a monthly growth partnership.",
+  },
+  {
+    q: "How do you handle hosting and handoff?",
+    a: "We provide complete handoff of clean, commented Next.js / Tailwind repositories and Figma systems. We also configure analytics, SEO tags, and CI/CD pipelines on platforms like Vercel or Netlify so your site is ready to launch.",
+  },
+];
+
+function FaqSection() {
+  const [openIdx, setOpenIdx] = useState<number | null>(0);
+  return (
+    <section className="border-t border-[#E9E3DA] py-24 lg:py-32 bg-white/40">
+      <div className="mx-auto max-w-[800px] px-6">
+        <Reveal>
+          <Folio index={8} label="FAQ" />
+        </Reveal>
+        
+        <Reveal delay={0.1}>
+          <div className="text-center mb-16">
+            <span className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#6A6A6A]">
+              Common Questions
+            </span>
+            <h2 className="mt-4 text-[36px] font-extrabold tracking-tight text-[#111111]">
+              Frequently Asked Questions
+            </h2>
+          </div>
+        </Reveal>
+        
+        <div className="flex flex-col gap-4">
+          {FAQS.map((faq, idx) => {
+            const isOpen = openIdx === idx;
+            return (
+              <Reveal key={idx} delay={idx * 0.05}>
+                <div className="border border-[#E9E3DA] rounded-[16px] bg-white overflow-hidden transition-all duration-300">
+                  <button
+                    onClick={() => setOpenIdx(isOpen ? null : idx)}
+                    className="w-full flex justify-between items-center p-6 text-left font-bold text-[16px] text-[#111111]"
+                  >
+                    <span>{faq.q}</span>
+                    <span className="h-6 w-6 rounded-full border border-[#E9E3DA] flex items-center justify-center shrink-0 text-[#6A6A6A]">
+                      {isOpen ? "−" : "+"}
+                    </span>
+                  </button>
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.div
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.3, ease: EASE }}
+                      >
+                        <div className="p-6 pt-0 border-t border-[#E9E3DA]/60 text-[14px] leading-[1.65] text-[#6A6A6A]">
+                          {faq.a}
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 /* ============================== CONTACT ============================== */
 
 function ContactCta({ contactEmail, heroBtnUrl }: { contactEmail: string; heroBtnUrl: string }) {
@@ -1186,7 +1391,7 @@ function ContactCta({ contactEmail, heroBtnUrl }: { contactEmail: string; heroBt
       <div className="relative mx-auto max-w-[800px] px-6">
         <Reveal>
           <span className="inline-flex items-center gap-2 text-[13px] font-semibold uppercase tracking-[0.12em] text-[#F4C542]">
-            <Sparkles size={13} /> Get in touch
+            Get in touch
           </span>
         </Reveal>
         <Reveal delay={0.1}>
@@ -1218,52 +1423,3 @@ function ContactCta({ contactEmail, heroBtnUrl }: { contactEmail: string; heroBt
   );
 }
 
-/* ============================== FOOTER ============================== */
-
-function Footer({ contactEmail }: { contactEmail: string }) {
-  const links = ["Work", "Services", "About", "Contact"];
-  return (
-    <footer className="border-t border-[#E9E3DA] bg-white py-12">
-      <div className="mx-auto max-w-[1280px] px-6 md:px-12">
-        <div className="flex flex-col gap-10 md:flex-row md:items-center md:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="flex h-9 w-9 items-center justify-center rounded-[10px] bg-[#111111] text-[16px] font-extrabold text-[#F4C542]">
-                G
-              </span>
-              <span className="text-[18px] font-bold">Growth Bridge</span>
-            </div>
-            <p className="mt-3 max-w-[320px] text-[14px] text-[#6A6A6A]">
-              Helping ambitious businesses build, launch, and scale digital
-              experiences.
-            </p>
-          </div>
-          <div className="flex flex-wrap gap-8">
-            {links.map((l) => (
-              <a
-                key={l}
-                href={`#${l.toLowerCase()}`}
-                className="text-[14px] font-medium text-[#6A6A6A] transition-colors hover:text-[#111111]"
-              >
-                {l}
-              </a>
-            ))}
-          </div>
-        </div>
-        <div className="mt-10 flex flex-col-reverse gap-4 border-t border-[#E9E3DA] pt-6 sm:flex-row sm:items-center sm:justify-between">
-          <p className="text-[13px] text-[#6A6A6A]">
-            © {new Date().getFullYear()} Growth Bridge. All rights reserved.
-          </p>
-          <div className="flex gap-6">
-            <a href="#" className="text-[13px] text-[#6A6A6A] hover:text-[#111111]">
-              Privacy Policy
-            </a>
-            <a href="#" className="text-[13px] text-[#6A6A6A] hover:text-[#111111]">
-              Terms of Service
-            </a>
-          </div>
-        </div>
-      </div>
-    </footer>
-  );
-}
