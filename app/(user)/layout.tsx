@@ -35,7 +35,7 @@ export default async function UserRootLayout({
           <div className="min-h-screen flex flex-col lg:flex-row items-center justify-center p-6 md:p-12 relative overflow-hidden gap-12 lg:gap-16 w-full">
             {/* background design rays */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(244,197,66,0.06)_0%,_transparent_60%)] pointer-events-none" />
-            
+
             {/* Left Text Block */}
             <div className="max-w-[480px] w-full relative z-20 flex flex-col items-center lg:items-start text-center lg:text-left shrink-0">
               {/* Glowing indicator */}
@@ -52,14 +52,14 @@ export default async function UserRootLayout({
                 <br />
                 digital spaces.
               </h1>
-              
+
               <p className="mt-5 text-[15px] leading-[1.65] text-[#6A6A6A] font-medium">
                 We are performing scheduled updates and tuning our infrastructure. We'll be back online shortly. For urgent inquiries, reach out directly.
               </p>
 
               <div className="mt-8 pt-6 border-t border-[#E9E3DA] w-full flex flex-col gap-1.5 text-[13px] font-semibold text-[#6A6A6A]">
-                <span>Email: <a href={`mailto:${settings?.contactEmail || "hello@growthbridge.studio"}`} className="text-[#111111] hover:underline font-bold">{settings?.contactEmail || "hello@growthbridge.studio"}</a></span>
-                <span>Phone: <span className="text-[#111111] font-bold">{settings?.phoneNumber || "+1 (555) 019-2834"}</span></span>
+                <span>Email: <a href={`mailto:${settings?.contactEmail || "hello@growthbridge.live"}`} className="text-[#111111] hover:underline font-bold">{settings?.contactEmail || "hello@growthbridge.live"}</a></span>
+                <span>Phone: <span className="text-[#111111] font-bold">{settings?.phoneNumber || "+91 62827 59863"}</span></span>
               </div>
             </div>
 

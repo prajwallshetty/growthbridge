@@ -175,13 +175,13 @@ export default function HomeClient({
   const heroDescription = homepage?.heroDescription || "A design and engineering partner for founders who value quality, clarity, and momentum. We bridge complex engineering with premium aesthetics.";
   const heroBtnText = homepage?.heroBtnText || "Start a project";
   const heroBtnUrl = homepage?.heroBtnUrl || "/contact";
-  
+
   const showSelectedWork = homepage?.showSelectedWork !== false;
   const showProcess = homepage?.showProcess !== false;
   const showTestimonials = homepage?.showTestimonials !== false;
 
-  const contactEmail = settings?.contactEmail || "hello@growthbridge.studio";
-  const phoneNumber = settings?.phoneNumber || "+1 (555) 019-2834";
+  const contactEmail = settings?.contactEmail || "hello@growthbridge.live";
+  const phoneNumber = settings?.phoneNumber || "+91 62827 59863";
   const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
   const socialTwitter = settings?.socialTwitter || "https://twitter.com/growthbridge";
   const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
@@ -241,10 +241,10 @@ export default function HomeClient({
         {loading && (
           <motion.div
             initial={{ opacity: 1 }}
-            exit={{ 
+            exit={{
               opacity: 0,
               y: -40,
-              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
+              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] }
             }}
             className="fixed inset-0 z-[9999] bg-[#FCFBF8] flex flex-col items-center justify-center select-none"
           >
@@ -274,8 +274,8 @@ export default function HomeClient({
                 <motion.div
                   initial={{ left: "-100%" }}
                   animate={{ left: "100%" }}
-                  transition={{ 
-                    duration: 0.9, 
+                  transition={{
+                    duration: 0.9,
                     ease: [0.65, 0, 0.35, 1],
                   }}
                   className="absolute top-0 bottom-0 left-0 w-full bg-[#111111]"
@@ -289,50 +289,50 @@ export default function HomeClient({
       <main className="min-h-screen bg-[#FCFBF8] text-[#111111] relative overflow-hidden">
         {/* SideRays background effect to create dynamic elegant borders */}
         <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.35]">
-        <SideRays
-          speed={0.8}
-          rayColor1="#111111"
-          rayColor2="#E9E3DA"
-          intensity={1.0}
-          spread={1.5}
-          origin="top-right"
-          tilt={0}
-          saturation={0.5}
-          blend={0.5}
-          falloff={1.4}
-          opacity={0.3}
-        />
-        <SideRays
-          speed={0.6}
-          rayColor1="#E9E3DA"
-          rayColor2="#111111"
-          intensity={0.8}
-          spread={1.2}
-          origin="top-left"
-          tilt={10}
-          saturation={0.5}
-          blend={0.5}
-          falloff={1.4}
-          opacity={0.2}
-        />
-      </div>
+          <SideRays
+            speed={0.8}
+            rayColor1="#111111"
+            rayColor2="#E9E3DA"
+            intensity={1.0}
+            spread={1.5}
+            origin="top-right"
+            tilt={0}
+            saturation={0.5}
+            blend={0.5}
+            falloff={1.4}
+            opacity={0.3}
+          />
+          <SideRays
+            speed={0.6}
+            rayColor1="#E9E3DA"
+            rayColor2="#111111"
+            intensity={0.8}
+            spread={1.2}
+            origin="top-left"
+            tilt={10}
+            saturation={0.5}
+            blend={0.5}
+            falloff={1.4}
+            opacity={0.2}
+          />
+        </div>
 
-      <Nav heroBtnText={heroBtnText} heroBtnUrl={heroBtnUrl} />
-      <Hero
-        heroTitle={heroTitle}
-        heroDescription={heroDescription}
-        heroBtnText={heroBtnText}
-        heroBtnUrl={heroBtnUrl}
-      />
-      <AboutSection />
-      {showSelectedWork && <SelectedWork projects={displayProjects} heroBtnUrl={heroBtnUrl} />}
-      <ServicesSection servicesList={displayServices} />
-      <WhyChooseUs />
-      {showProcess && <Process heroBtnUrl={heroBtnUrl} />}
-      {showTestimonials && <TestimonialsSection testimonials={displayTestimonials} />}
-      <LatestBlogs blogs={blogs} />
-      <FaqSection />
-      <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} />
+        <Nav heroBtnText={heroBtnText} heroBtnUrl={heroBtnUrl} />
+        <Hero
+          heroTitle={heroTitle}
+          heroDescription={heroDescription}
+          heroBtnText={heroBtnText}
+          heroBtnUrl={heroBtnUrl}
+        />
+        <AboutSection />
+        {showSelectedWork && <SelectedWork projects={displayProjects} heroBtnUrl={heroBtnUrl} />}
+        <ServicesSection servicesList={displayServices} />
+        <WhyChooseUs />
+        {showProcess && <Process heroBtnUrl={heroBtnUrl} />}
+        {showTestimonials && <TestimonialsSection testimonials={displayTestimonials} />}
+        <LatestBlogs blogs={blogs} />
+        <FaqSection />
+        <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} />
       </main>
     </>
   );
@@ -383,11 +383,10 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
             stiffness: 200,
             damping: 50,
           }}
-          className={`relative z-[60] mx-auto hidden w-full flex-row items-center justify-between px-6 py-3 lg:flex transition-colors duration-300 ${
-            visible
-              ? "bg-[#FCFBF8]/95 border border-[#E9E3DA] backdrop-blur-md rounded-full shadow-lg"
-              : "bg-transparent border-transparent"
-          }`}
+          className={`relative z-[60] mx-auto hidden w-full flex-row items-center justify-between px-6 py-3 lg:flex transition-colors duration-300 ${visible
+            ? "bg-[#FCFBF8]/95 border border-[#E9E3DA] backdrop-blur-md rounded-full shadow-lg"
+            : "bg-transparent border-transparent"
+            }`}
         >
           {/* Logo */}
           <a href="#top" className="flex items-center gap-2 z-20 shrink-0">
@@ -478,7 +477,7 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
                       <X size={16} />
                     </button>
                   </div>
-                  
+
                   <nav className="flex flex-col gap-1.5 pt-6">
                     {links.map((item) => (
                       <a
@@ -707,7 +706,7 @@ function AboutSection() {
         <Reveal>
           <Folio index={1} label="About Growth Bridge" />
         </Reveal>
-        
+
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-[0.8fr_1.2fr] items-start mb-20">
           <Reveal>
             <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
@@ -716,7 +715,7 @@ function AboutSection() {
               with engineering.
             </h2>
           </Reveal>
-          
+
           <Reveal delay={0.15}>
             <div className="flex flex-col gap-6 text-[15px] leading-[1.75] text-[#6A6A6A]">
               <p className="text-[18px] text-[#111111] font-medium leading-[1.6]">
@@ -811,7 +810,7 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
                   >
                     {p.description}
                   </CardItem>
-                  
+
                   <div className="flex justify-end gap-2.5 mt-4 pt-4 border-t border-[#E9E3DA]/60">
                     {p.liveUrl && (
                       <CardItem
@@ -1164,11 +1163,10 @@ function EngagementModels({ heroBtnUrl }: { heroBtnUrl: string }) {
             viewport={{ once: true, margin: "-60px" }}
             transition={{ duration: 0.6, delay: i * 0.1, ease: EASE }}
             whileHover={{ y: -6 }}
-            className={`flex flex-col rounded-[10px] border p-8 transition-shadow ${
-              e.featured
-                ? "border-[#111111] bg-[#111111] text-white shadow-[0_30px_60px_-25px_rgba(0,0,0,0.4)]"
-                : "border-[#E9E3DA] bg-[#FCFBF8] hover:shadow-[0_20px_45px_-25px_rgba(0,0,0,0.15)]"
-            }`}
+            className={`flex flex-col rounded-[10px] border p-8 transition-shadow ${e.featured
+              ? "border-[#111111] bg-[#111111] text-white shadow-[0_30px_60px_-25px_rgba(0,0,0,0.4)]"
+              : "border-[#E9E3DA] bg-[#FCFBF8] hover:shadow-[0_20px_45px_-25px_rgba(0,0,0,0.15)]"
+              }`}
           >
             {e.featured && (
               <span className="mb-4 w-fit rounded-full bg-[#F4C542] px-3 py-1 text-[11px] font-bold uppercase tracking-[0.06em] text-[#111111]">
@@ -1187,9 +1185,8 @@ function EngagementModels({ heroBtnUrl }: { heroBtnUrl: string }) {
             </p>
             <a
               href={heroBtnUrl}
-              className={`mt-7 flex items-center gap-2 text-[14px] font-semibold ${
-                e.featured ? "text-white" : "text-[#111111]"
-              }`}
+              className={`mt-7 flex items-center gap-2 text-[14px] font-semibold ${e.featured ? "text-white" : "text-[#111111]"
+                }`}
             >
               Get in touch <ArrowRight size={15} />
             </a>
@@ -1247,11 +1244,10 @@ function TestimonialsSection({ testimonials }: { testimonials: any[] }) {
               <button
                 key={t.name}
                 onClick={() => setActive(idx)}
-                className={`text-[13px] font-semibold transition-all py-1.5 px-4 rounded-full border ${
-                  idx === active
-                    ? "bg-[#111111] text-white border-[#111111] shadow-sm scale-105"
-                    : "bg-white text-[#6A6A6A] border-[#E9E3DA] hover:border-[#111111]"
-                }`}
+                className={`text-[13px] font-semibold transition-all py-1.5 px-4 rounded-full border ${idx === active
+                  ? "bg-[#111111] text-white border-[#111111] shadow-sm scale-105"
+                  : "bg-white text-[#6A6A6A] border-[#E9E3DA] hover:border-[#111111]"
+                  }`}
               >
                 {t.name}
               </button>
@@ -1267,14 +1263,14 @@ function TestimonialsSection({ testimonials }: { testimonials: any[] }) {
 
 function LatestBlogs({ blogs }: { blogs: any[] }) {
   const latestBlogs = (blogs || []).slice(0, 3);
-  
+
   return (
     <section id="blogs" className="border-t border-[#E9E3DA] py-24 lg:py-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
           <Folio index={7} label="Latest Blogs" />
         </Reveal>
-        
+
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-14">
           <Reveal>
             <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold leading-[1.05] tracking-[-0.03em]">
@@ -1284,7 +1280,7 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
             </h2>
           </Reveal>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {latestBlogs.map((b: any, i: number) => (
             <Reveal key={b._id} delay={i * 0.1}>
@@ -1306,7 +1302,7 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
                     ))}
                   </div>
                 </div>
-                
+
                 <div className="p-6 flex-1 flex flex-col justify-between">
                   <div>
                     <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#A8A296]">
@@ -1319,7 +1315,7 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
                       {b.subtitle || b.content}
                     </p>
                   </div>
-                  
+
                   <div className="flex items-center justify-between mt-6 pt-4 border-t border-[#E9E3DA]/60">
                     <span className="text-[12px] font-semibold text-[#6A6A6A]">
                       By {b.author || "Prajwal Shetty"}
@@ -1367,7 +1363,7 @@ function FaqSection() {
         <Reveal>
           <Folio index={8} label="FAQ" />
         </Reveal>
-        
+
         <Reveal delay={0.1}>
           <div className="text-center mb-16">
             <span className="text-[13px] font-semibold uppercase tracking-[0.12em] text-[#6A6A6A]">
@@ -1378,7 +1374,7 @@ function FaqSection() {
             </h2>
           </div>
         </Reveal>
-        
+
         <div className="flex flex-col gap-4">
           {FAQS.map((faq, idx) => {
             const isOpen = openIdx === idx;

@@ -99,7 +99,7 @@ export default function SettingsCmsPage() {
                 required
                 value={settings.contactEmail || ""}
                 onChange={handleChange}
-                placeholder="e.g. hello@growthbridge.studio"
+                placeholder="e.g. hello@growthbridge.live"
                 className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
               />
             </div>
@@ -112,7 +112,7 @@ export default function SettingsCmsPage() {
                 name="phoneNumber"
                 value={settings.phoneNumber || ""}
                 onChange={handleChange}
-                placeholder="e.g. +1 (555) 019-2834"
+                placeholder="e.g. +91 62827 59863"
                 className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
               />
             </div>

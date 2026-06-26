@@ -29,8 +29,8 @@ function Reveal({
 }
 
 export default function ContactClient({ settings }: { settings: any }) {
-  const contactEmail = settings?.contactEmail || "hello@growthbridge.studio";
-  const phoneNumber = settings?.phoneNumber || "+1 (555) 019-2834";
+  const contactEmail = settings?.contactEmail || "hello@growthbridge.live";
+  const phoneNumber = settings?.phoneNumber || "+91 62827 59863";
   const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
 
   const [form, setForm] = useState({
@@ -127,7 +127,7 @@ export default function ContactClient({ settings }: { settings: any }) {
       {/* Contact content layout */}
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 pt-36 relative z-20">
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.3fr] gap-16 items-start">
-          
+
           {/* Left Column: Direct contact info */}
           <div className="flex flex-col gap-10">
             <Reveal>
@@ -184,7 +184,7 @@ export default function ContactClient({ settings }: { settings: any }) {
 
           {/* Right Column: Interaction form */}
           <div className="bg-white border border-[#E9E3DA] p-8 md:p-10 rounded-[32px] shadow-[0_15px_45px_rgba(0,0,0,0.03)] relative overflow-hidden">
-            
+
             <AnimatePresence mode="wait">
               {!success ? (
                 <motion.form
@@ -206,9 +206,8 @@ export default function ContactClient({ settings }: { settings: any }) {
                         placeholder="John Doe"
                         value={form.name}
                         onChange={(e) => setForm({ ...form, name: e.target.value })}
-                        className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all ${
-                          errors.name ? "border-red-500" : "border-[#E9E3DA]"
-                        }`}
+                        className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all ${errors.name ? "border-red-500" : "border-[#E9E3DA]"
+                          }`}
                       />
                       {errors.name && <span className="text-red-500 text-[11px] font-bold">{errors.name}</span>}
                     </div>
@@ -223,9 +222,8 @@ export default function ContactClient({ settings }: { settings: any }) {
                         placeholder="john@company.com"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
-                        className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all ${
-                          errors.email ? "border-red-500" : "border-[#E9E3DA]"
-                        }`}
+                        className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all ${errors.email ? "border-red-500" : "border-[#E9E3DA]"
+                          }`}
                       />
                       {errors.email && <span className="text-red-500 text-[11px] font-bold">{errors.email}</span>}
                     </div>
@@ -258,11 +256,10 @@ export default function ContactClient({ settings }: { settings: any }) {
                             key={b}
                             type="button"
                             onClick={() => setForm({ ...form, budget: b })}
-                            className={`py-2.5 px-2 rounded-full border text-[12px] font-bold text-center transition-all ${
-                              isSelected
-                                ? "bg-[#111111] border-[#111111] text-white"
-                                : "bg-[#FCFBF8] border-[#E9E3DA] text-[#6A6A6A] hover:border-[#111111]"
-                            }`}
+                            className={`py-2.5 px-2 rounded-full border text-[12px] font-bold text-center transition-all ${isSelected
+                              ? "bg-[#111111] border-[#111111] text-white"
+                              : "bg-[#FCFBF8] border-[#E9E3DA] text-[#6A6A6A] hover:border-[#111111]"
+                              }`}
                           >
                             {b}
                           </button>
@@ -281,9 +278,8 @@ export default function ContactClient({ settings }: { settings: any }) {
                       placeholder="We need to build a converting landing page and a clean Next.js dashboard by the end of Q3..."
                       value={form.message}
                       onChange={(e) => setForm({ ...form, message: e.target.value })}
-                      className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all resize-none ${
-                        errors.message ? "border-red-500" : "border-[#E9E3DA]"
-                      }`}
+                      className={`w-full bg-[#FCFBF8] border rounded-[12px] px-4 py-3 text-[14px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all resize-none ${errors.message ? "border-red-500" : "border-[#E9E3DA]"
+                        }`}
                     />
                     {errors.message && <span className="text-red-500 text-[11px] font-bold">{errors.message}</span>}
                   </div>
@@ -321,7 +317,7 @@ export default function ContactClient({ settings }: { settings: any }) {
                   <p className="mt-4 text-[14px] text-[#6A6A6A] leading-[1.7] max-w-[340px]">
                     Thank you for reaching out to Growth Bridge! Prajwal or a member of the team will follow up directly at <span className="text-[#111111] font-bold">{form.email}</span> within 24 hours.
                   </p>
-                  
+
                   <button
                     onClick={() => {
                       setSuccess(false);

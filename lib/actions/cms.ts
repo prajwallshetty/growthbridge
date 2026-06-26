@@ -21,7 +21,7 @@ export async function getSessionUser() {
   const cookieStore = await cookies();
   const token = cookieStore.get("admin_session")?.value;
   if (!token) return null;
-  
+
   try {
     const secret = new TextEncoder().encode(JWT_SECRET);
     const { payload } = await jose.jwtVerify(token, secret);
@@ -37,7 +37,7 @@ export async function logActivity(action: string) {
   try {
     const user = await getSessionUser();
     if (!user) return;
-    
+
     await connectToDatabase();
     await ActivityLog.create({
       userName: user.name,
@@ -60,7 +60,7 @@ function serialize<T>(data: T): T {
 export async function getBlogs() {
   await connectToDatabase();
   let list = await Blog.find({ status: "Published" }).sort({ publishDate: -1 }).lean();
-  
+
   if (list.length === 0) {
     const defaultBlogs = [
       {
@@ -106,7 +106,7 @@ export async function getBlogs() {
     await Blog.create(defaultBlogs);
     list = await Blog.find({ status: "Published" }).sort({ publishDate: -1 }).lean();
   }
-  
+
   return serialize(list);
 }
 
@@ -151,7 +151,7 @@ export async function deleteBlog(id: string) {
 export async function getTeamMembers() {
   await connectToDatabase();
   let list = await TeamMember.find().sort({ order: 1, createdAt: -1 }).lean();
-  
+
   if (list.length === 0) {
     const defaultTeam = [
       {
@@ -162,7 +162,7 @@ export async function getTeamMembers() {
         linkedin: "https://linkedin.com",
         twitter: "https://twitter.com",
         github: "https://github.com",
-        email: "hello@growthbridge.studio",
+        email: "hello@growthbridge.live",
         featured: true,
         order: 0,
       },
@@ -194,7 +194,7 @@ export async function getTeamMembers() {
     await TeamMember.insertMany(defaultTeam);
     list = await TeamMember.find().sort({ order: 1, createdAt: -1 }).lean();
   }
-  
+
   return serialize(list);
 }
 
@@ -233,7 +233,7 @@ export async function deleteTeamMember(id: string) {
 export async function getProjects() {
   await connectToDatabase();
   let list = await Project.find().sort({ createdAt: -1 }).lean();
-  
+
   if (list.length === 0) {
     const defaultProjects = [
       {
@@ -280,7 +280,7 @@ export async function getProjects() {
     await Project.insertMany(defaultProjects);
     list = await Project.find().sort({ createdAt: -1 }).lean();
   }
-  
+
   return serialize(list);
 }
 
@@ -323,7 +323,7 @@ export async function deleteProject(id: string) {
 export async function getServices() {
   await connectToDatabase();
   let list = await Service.find().sort({ createdAt: 1 }).lean();
-  
+
   if (list.length === 0) {
     const defaultServices = [
       {
@@ -394,7 +394,7 @@ export async function deleteService(id: string) {
 export async function getTestimonials() {
   await connectToDatabase();
   let list = await Testimonial.find().sort({ createdAt: -1 }).lean();
-  
+
   if (list.length === 0) {
     const defaultTestimonials = [
       {
@@ -419,7 +419,7 @@ export async function getTestimonials() {
     await Testimonial.insertMany(defaultTestimonials);
     list = await Testimonial.find().sort({ createdAt: -1 }).lean();
   }
-  
+
   return serialize(list);
 }
 
@@ -536,8 +536,8 @@ export async function getSettings() {
   if (!settings) {
     // Seed initial values
     settings = await Setting.create({
-      contactEmail: "hello@growthbridge.studio",
-      phoneNumber: "+1 (555) 019-2834",
+      contactEmail: "hello@growthbridge.live",
+      phoneNumber: "+91 62827 59863",
       officeAddress: "100 Pine St, San Francisco, CA",
       socialTwitter: "https://twitter.com/growthbridge",
       socialLinkedin: "https://linkedin.com/company/growthbridge",
