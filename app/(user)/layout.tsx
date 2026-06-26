@@ -18,6 +18,20 @@ export const metadata: Metadata = {
     title: "Growth Bridge — Creative Digital Agency",
     description: "Helping ambitious businesses build, launch and scale digital experiences.",
     type: "website",
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Growth Bridge — Creative Digital Agency",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Growth Bridge — Creative Digital Agency",
+    description: "Helping ambitious businesses build, launch and scale digital experiences.",
+    images: ["/opengraph-image.png"],
   },
 };
 

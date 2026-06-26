@@ -19,9 +19,31 @@ export async function generateMetadata({ params }: PageProps) {
     };
   }
 
+  const desc = blog.seoDescription || blog.subtitle || "Field notes and engineering insights from the Growth Bridge team.";
+  const title = `${blog.seoTitle || blog.title} | Growth Bridge`;
+  const imageUrl = blog.image || "/opengraph-image.png";
+
   return {
-    title: `${blog.seoTitle || blog.title} | Growth Bridge`,
-    description: blog.seoDescription || blog.subtitle || "Field notes and engineering insights from the Growth Bridge team.",
+    title,
+    description: desc,
+    openGraph: {
+      title,
+      description: desc,
+      type: "article",
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description: desc,
+      images: [imageUrl],
+    },
   };
 }
 
