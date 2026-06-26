@@ -168,47 +168,14 @@ export default function HomeClient({
   const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
   const socialGithub = settings?.socialGithub || "https://github.com/growthbridge";
 
-  // Default projects fallback
-  const defaultProjects = [
-    {
-      title: "Northstar Commerce",
-      category: "E-commerce redesign",
-      description: "A premium storefront rebuild with conversion-first design and lifecycle automation worthy of the product.",
-      result: "+320% revenue",
-      image: "/project-northstar.png",
-    },
-    {
-      title: "Atlas Clinics",
-      category: "Healthcare platform",
-      description: "Local SEO architecture and booking funnels designed to build trust from the first click.",
-      result: "5× more leads",
-      image: "/project-atlas.png",
-    },
-    {
-      title: "Pulse SaaS",
-      category: "Product launch",
-      description: "Brand positioning, launch site, and onboarding for a product-led growth engine.",
-      result: "3× faster growth",
-      image: "/project-pulse.png",
-    },
-    {
-      title: "Loam & Co.",
-      category: "Brand & web",
-      description: "Visual identity and lookbook site for a slow-fashion studio's debut collection.",
-      result: "+180% sessions",
-      image: "/why-growthbridge.png",
-    },
-  ];
-
-  const displayProjects = projects && projects.length > 0
-    ? projects.map((p) => ({
-        title: p.title,
-        category: p.category,
-        description: p.description,
-        result: p.resultMetric || "+100% impact",
-        image: p.image || "/project-pulse.png",
-      }))
-    : defaultProjects;
+  const displayProjects = (projects || []).map((p) => ({
+    title: p.title,
+    category: p.category,
+    description: p.description,
+    result: p.resultMetric || "+100% impact",
+    image: p.image || "/project-pulse.png",
+    liveUrl: p.liveUrl || "",
+  }));
 
   // Default services fallback
   const defaultServices = [
@@ -240,36 +207,12 @@ export default function HomeClient({
 
   const displayServices = services && services.length > 0 ? services : defaultServices;
 
-  // Default testimonials fallback
-  const defaultTestimonials = [
-    {
-      name: "Riya Shah",
-      designation: "Founder, Northstar Commerce",
-      image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-      quote: "Growth Bridge gave our brand the kind of presence we used to think only enterprise teams could afford.",
-    },
-    {
-      name: "Daniel Morris",
-      designation: "Director, Atlas Clinics",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-      quote: "They turned a scattered sales process into one clean system. We saw better leads within weeks.",
-    },
-    {
-      name: "Anika Rao",
-      designation: "CEO, Pulse SaaS",
-      image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
-      quote: "The design taste is obvious, but the operating discipline is what made the project special.",
-    },
-  ];
-
-  const displayTestimonials = testimonials && testimonials.length > 0
-    ? testimonials.map((t) => ({
-        name: t.name,
-        designation: t.designation || t.title || "Client Partner",
-        image: t.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
-        quote: t.quote,
-      }))
-    : defaultTestimonials;
+  const displayTestimonials = (testimonials || []).map((t) => ({
+    name: t.name,
+    designation: t.designation || t.title || "Client Partner",
+    image: t.image || "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+    quote: t.quote,
+  }));
 
   return (
     <main className="min-h-screen bg-[#FCFBF8] text-[#111111] relative overflow-hidden">
@@ -700,53 +643,69 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
           {projects.map((p, i) => (
             <Reveal key={p.title} delay={i * 0.1}>
               <CardContainer containerClassName="py-8">
-                <CardBody className="bg-[#FFFFFF] relative group/card hover:shadow-2xl transition-all border border-[#E9E3DA] w-full max-w-full sm:w-[30rem] h-auto rounded-[32px] p-8">
-                  <CardItem
-                    translateZ="50"
-                    className="text-xs font-semibold uppercase tracking-[0.1em] text-[#F4C542] mb-1"
-                  >
-                    {p.category}
-                  </CardItem>
-                  <CardItem
-                    translateZ="60"
-                    className="text-2xl font-bold text-[#111111] tracking-tight mb-2"
-                  >
-                    {p.title}
-                  </CardItem>
+                <CardBody className="bg-[#FFFFFF]/80 backdrop-blur-md relative group/card hover:shadow-3xl hover:border-[#111111]/30 transition-all duration-500 border border-[#E9E3DA] w-full max-w-full sm:w-[32rem] h-auto rounded-[36px] p-8 lg:p-10 flex flex-col gap-5">
+                  <div className="flex justify-between items-start gap-4">
+                    <div className="flex flex-col">
+                      <CardItem
+                        translateZ="50"
+                        className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#F4C542]"
+                      >
+                        {p.category}
+                      </CardItem>
+                      <CardItem
+                        translateZ="60"
+                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 group-hover/card:text-[#F4C542] transition-colors"
+                      >
+                        {p.title}
+                      </CardItem>
+                    </div>
+                    <CardItem
+                      translateZ="70"
+                      className="px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#111111] bg-[#F4C542] border border-[#111111]/10 shadow-[0_4px_12px_rgba(244,197,66,0.15)] shrink-0"
+                    >
+                      {p.result}
+                    </CardItem>
+                  </div>
+
                   <CardItem
                     translateZ="80"
-                    className="w-full mt-4"
+                    className="w-full overflow-hidden rounded-[20px] border border-[#E9E3DA] relative mt-2"
                   >
                     <img
                       src={p.image}
-                      height="1000"
-                      width="1000"
-                      className="h-60 w-full object-cover rounded-2xl shadow-sm border border-[#E9E3DA] group-hover/card:shadow-md transition-shadow"
+                      className="h-64 w-full object-cover transform group-hover/card:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
                       alt={p.title}
                     />
                   </CardItem>
+
                   <CardItem
                     translateZ="50"
-                    className="text-[#6A6A6A] text-sm max-w-sm mt-6 leading-[1.6]"
+                    className="text-[#6A6A6A] text-[14px] leading-[1.65] font-medium"
                   >
                     {p.description}
                   </CardItem>
                   
-                  <div className="flex justify-between items-center mt-10">
-                    <CardItem
-                      translateZ="60"
-                      className="px-4 py-2 rounded-xl text-xs font-bold text-[#111111] bg-[#F4C542]/20 border border-[#F4C542]/40"
-                    >
-                      {p.result}
-                    </CardItem>
+                  <div className="flex justify-end gap-2.5 mt-4 pt-4 border-t border-[#E9E3DA]/60">
                     <CardItem
                       translateZ="60"
                       as="a"
                       href={heroBtnUrl}
-                      className="px-4 py-2 rounded-xl bg-[#111111] text-white text-xs font-bold hover:bg-[#222222] transition-colors"
+                      className="px-5 py-2.5 rounded-full border border-[#E9E3DA] hover:border-[#111111] hover:bg-[#111111]/5 text-[#111111] text-[12px] font-bold transition-all duration-300 shrink-0"
                     >
                       Case Study →
                     </CardItem>
+                    {p.liveUrl && (
+                      <CardItem
+                        translateZ="60"
+                        as="a"
+                        href={p.liveUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-5 py-2.5 rounded-full bg-[#111111] hover:bg-[#F4C542] text-white hover:text-[#111111] text-[12px] font-bold border border-[#111111] hover:border-[#F4C542] transition-all duration-300 shadow-sm shrink-0"
+                      >
+                        View Demo ↗
+                      </CardItem>
+                    )}
                   </div>
                 </CardBody>
               </CardContainer>

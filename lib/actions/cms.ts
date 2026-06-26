@@ -95,7 +95,51 @@ export async function deleteBlog(id: string) {
    ========================================== */
 export async function getProjects() {
   await connectToDatabase();
-  const list = await Project.find().sort({ createdAt: -1 }).lean();
+  let list = await Project.find().sort({ createdAt: -1 }).lean();
+  
+  if (list.length === 0) {
+    const defaultProjects = [
+      {
+        title: "Northstar Commerce",
+        category: "E-commerce redesign",
+        description: "A premium storefront rebuild with conversion-first design and lifecycle automation worthy of the product.",
+        resultMetric: "+320% revenue",
+        image: "/project-northstar.png",
+        liveUrl: "https://northstar.growthbridge.studio",
+        featured: true,
+      },
+      {
+        title: "Atlas Clinics",
+        category: "Healthcare platform",
+        description: "Local SEO architecture and booking funnels designed to build trust from the first click.",
+        resultMetric: "5× more leads",
+        image: "/project-atlas.png",
+        liveUrl: "https://atlas.growthbridge.studio",
+        featured: true,
+      },
+      {
+        title: "Pulse SaaS",
+        category: "Product launch",
+        description: "Brand positioning, launch site, and onboarding for a product-led growth engine.",
+        resultMetric: "3× faster growth",
+        image: "/project-pulse.png",
+        liveUrl: "https://pulse.growthbridge.studio",
+        featured: true,
+      },
+      {
+        title: "Loam & Co.",
+        category: "Brand & web",
+        description: "Visual identity and lookbook site for a slow-fashion studio's debut collection.",
+        resultMetric: "+180% sessions",
+        image: "/why-growthbridge.png",
+        liveUrl: "https://loam.growthbridge.studio",
+        featured: false,
+      },
+    ];
+    await Project.insertMany(defaultProjects);
+    list = await Project.find().sort({ createdAt: -1 }).lean();
+  }
+  
   return serialize(list);
 }
 
@@ -171,7 +215,33 @@ export async function deleteService(id: string) {
    ========================================== */
 export async function getTestimonials() {
   await connectToDatabase();
-  const list = await Testimonial.find().sort({ createdAt: -1 }).lean();
+  let list = await Testimonial.find().sort({ createdAt: -1 }).lean();
+  
+  if (list.length === 0) {
+    const defaultTestimonials = [
+      {
+        name: "Riya Shah",
+        designation: "Founder, Northstar Commerce",
+        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&h=150&fit=crop&crop=face",
+        quote: "Growth Bridge gave our brand the kind of presence we used to think only enterprise teams could afford.",
+      },
+      {
+        name: "Daniel Morris",
+        designation: "Director, Atlas Clinics",
+        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
+        quote: "They turned a scattered sales process into one clean system. We saw better leads within weeks.",
+      },
+      {
+        name: "Anika Rao",
+        designation: "CEO, Pulse SaaS",
+        image: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&h=150&fit=crop&crop=face",
+        quote: "The design taste is obvious, but the operating discipline is what made the project special.",
+      },
+    ];
+    await Testimonial.insertMany(defaultTestimonials);
+    list = await Testimonial.find().sort({ createdAt: -1 }).lean();
+  }
+  
   return serialize(list);
 }
 
