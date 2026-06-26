@@ -153,6 +153,23 @@ export default function HomeClient({
   settings,
   blogs,
 }: HomeClientProps) {
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (loading) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "";
+    }
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 1000);
+    return () => {
+      document.body.style.overflow = "";
+      clearTimeout(timer);
+    };
+  }, [loading]);
+
   // Configs with Fallbacks
   const heroTitle = homepage?.heroTitle || "Build your startup with Growth Bridge.";
   const heroDescription = homepage?.heroDescription || "A design and engineering partner for founders who value quality, clarity, and momentum. We bridge complex engineering with premium aesthetics.";
@@ -217,9 +234,59 @@ export default function HomeClient({
   }));
 
   return (
-    <main className="min-h-screen bg-[#FCFBF8] text-[#111111] relative overflow-hidden">
-      {/* SideRays background effect to create dynamic elegant borders */}
-      <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.35]">
+    <>
+      <AnimatePresence>
+        {loading && (
+          <motion.div
+            initial={{ opacity: 1 }}
+            exit={{ 
+              opacity: 0,
+              y: -40,
+              transition: { duration: 0.8, ease: [0.76, 0, 0.24, 1] } 
+            }}
+            className="fixed inset-0 z-[9999] bg-[#FCFBF8] flex flex-col items-center justify-center select-none"
+          >
+            {/* Glowing background ray */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(244,197,66,0.06)_0%,_transparent_55%)] pointer-events-none" />
+
+            <div className="relative flex flex-col items-center">
+              {/* Text Animation */}
+              <motion.div
+                initial={{ opacity: 0, y: 16 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.8, ease: EASE }}
+                className="flex items-center gap-2"
+              >
+                <span className="text-[28px] md:text-[36px] font-extrabold tracking-tight text-[#111111]">
+                  Growth Bridge
+                </span>
+                <motion.span
+                  animate={{ scale: [1, 1.3, 1] }}
+                  transition={{ repeat: Infinity, duration: 1.5, ease: "easeInOut" }}
+                  className="h-2 w-2 rounded-full bg-[#F4C542] mt-2.5"
+                />
+              </motion.div>
+
+              {/* Progress bar line */}
+              <div className="w-[140px] h-[1px] bg-[#E9E3DA] overflow-hidden mt-6 rounded-full relative">
+                <motion.div
+                  initial={{ left: "-100%" }}
+                  animate={{ left: "100%" }}
+                  transition={{ 
+                    duration: 0.9, 
+                    ease: [0.65, 0, 0.35, 1],
+                  }}
+                  className="absolute top-0 bottom-0 left-0 w-full bg-[#111111]"
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <main className="min-h-screen bg-[#FCFBF8] text-[#111111] relative overflow-hidden">
+        {/* SideRays background effect to create dynamic elegant borders */}
+        <div className="pointer-events-none fixed inset-0 z-10 opacity-[0.35]">
         <SideRays
           speed={0.8}
           rayColor1="#111111"
@@ -264,7 +331,8 @@ export default function HomeClient({
       <LatestBlogs blogs={blogs} />
       <FaqSection />
       <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} />
-    </main>
+      </main>
+    </>
   );
 }
 
