@@ -62,7 +62,7 @@ body {
 }
 
 ::selection {
-  background-color: #F4C542;
+  background-color: ##ff8210;
   color: #111111;
 }
 
@@ -220,7 +220,7 @@ p {
   align-items: center;
   gap: 8px;
   padding: 18px 40px;
-  background: #F4C542;
+  background: #ff8210;
   color: #111111;
   border-radius: 100px;
   font-weight: 700;
@@ -256,7 +256,7 @@ p {
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #F4C542;
+  color: #ff8210;
 }
 
 /* ========================================

@@ -18,6 +18,7 @@ interface ProjectItem {
   resultMetric?: string;
   technologies: string[];
   featured: boolean;
+  projectType?: string;
   seoTitle?: string;
   seoDescription?: string;
 }
@@ -44,6 +45,7 @@ export default function PortfolioCmsPage() {
     resultMetric: "",
     technologies: [],
     featured: false,
+    projectType: "customised",
     seoTitle: "",
     seoDescription: "",
   });
@@ -76,7 +78,10 @@ export default function PortfolioCmsPage() {
 
   const handleEditClick = (project: ProjectItem) => {
     setEditingProject(project);
-    setFormState({ ...project });
+    setFormState({
+      projectType: "customised",
+      ...project,
+    });
     setTechInput(project.technologies?.join(", ") || "");
     setGalleryInput(project.gallery?.join(", ") || "");
   };
@@ -95,6 +100,7 @@ export default function PortfolioCmsPage() {
       resultMetric: "",
       technologies: [],
       featured: false,
+      projectType: "customised",
       seoTitle: "",
       seoDescription: "",
     };
@@ -242,6 +248,7 @@ export default function PortfolioCmsPage() {
                   <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
                     <th className="py-4 px-8">Client & Project</th>
                     <th className="py-4 px-8">Category</th>
+                    <th className="py-4 px-8">Type</th>
                     <th className="py-4 px-8">Metric</th>
                     <th className="py-4 px-8">Featured</th>
                     <th className="py-4 px-8 text-right">Actions</th>
@@ -259,6 +266,11 @@ export default function PortfolioCmsPage() {
                         </div>
                       </td>
                       <td className="py-5 px-8 text-[#6A6A6A]">{project.category}</td>
+                      <td className="py-5 px-8 text-[#6A6A6A]">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] bg-[#111111]/5 text-[#111111]">
+                          {project.projectType || "customised"}
+                        </span>
+                      </td>
                       <td className="py-5 px-8 text-[#111111] font-extrabold">{project.resultMetric || "—"}</td>
                       <td className="py-5 px-8">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] ${
@@ -351,7 +363,7 @@ export default function PortfolioCmsPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
             <div className="flex flex-col gap-2">
               <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
                 Category
@@ -368,6 +380,21 @@ export default function PortfolioCmsPage() {
                 <option value="Branding">Branding & Strategy</option>
                 <option value="E-commerce">E-commerce Portal</option>
                 <option value="Fintech">Fintech Solution</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                Project Type
+              </label>
+              <select
+                name="projectType"
+                required
+                value={formState.projectType || "customised"}
+                onChange={handleChange}
+                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
+              >
+                <option value="pre-built">Pre-built</option>
+                <option value="customised">Customised</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">

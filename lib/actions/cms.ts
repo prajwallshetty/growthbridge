@@ -1,6 +1,7 @@
 "use server";
 
 import { cookies } from "next/headers";
+import { revalidatePath } from "next/cache";
 import * as jose from "jose";
 import { connectToDatabase } from "@/lib/db";
 import Blog from "@/models/Blog";
@@ -11,6 +12,7 @@ import Page from "@/models/Page";
 import Homepage from "@/models/Homepage";
 import Setting from "@/models/Setting";
 import ActivityLog from "@/models/ActivityLog";
+import TeamMember from "@/models/TeamMember";
 
 const JWT_SECRET = process.env.JWT_SECRET || "growthbridge_admin_jwt_secret_token_12345";
 
@@ -108,6 +110,12 @@ export async function getBlogs() {
   return serialize(list);
 }
 
+export async function getBlogBySlug(slug: string) {
+  await connectToDatabase();
+  const blog = await Blog.findOne({ slug, status: "Published" }).lean();
+  return blog ? serialize(blog) : null;
+}
+
 export async function saveBlog(data: any) {
   const user = await getSessionUser();
   if (!user) throw new Error("Unauthorized");
@@ -138,6 +146,88 @@ export async function deleteBlog(id: string) {
 }
 
 /* ==========================================
+   TEAM MEMBER CMS ACTIONS
+   ========================================== */
+export async function getTeamMembers() {
+  await connectToDatabase();
+  let list = await TeamMember.find().sort({ order: 1, createdAt: -1 }).lean();
+  
+  if (list.length === 0) {
+    const defaultTeam = [
+      {
+        name: "Prajwal Shetty",
+        role: "Founder & Chief Architect",
+        bio: "We started Growth Bridge because we kept watching good businesses get mediocre work from teams that thought like vendors instead of operators. Fifty-plus projects later, that's still the whole pitch.",
+        image: "/founder.png",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com",
+        github: "https://github.com",
+        email: "hello@growthbridge.studio",
+        featured: true,
+        order: 0,
+      },
+      {
+        name: "Sarah Jenkins",
+        role: "Lead Product Designer",
+        bio: "Designing digital experiences that bridge brand strategy with production-ready frontends. Former designer at Stripe and Vercel.",
+        image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com",
+        github: "https://github.com",
+        email: "sarah@growthbridge.studio",
+        featured: true,
+        order: 1,
+      },
+      {
+        name: "Alex Rivera",
+        role: "Senior Fullstack Engineer",
+        bio: "Specializing in low-latency Next.js integrations, dynamic content pipelines, and clean API structure. Obsessed with sub-second page performance.",
+        image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
+        linkedin: "https://linkedin.com",
+        twitter: "https://twitter.com",
+        github: "https://github.com",
+        email: "alex@growthbridge.studio",
+        featured: true,
+        order: 2,
+      },
+    ];
+    await TeamMember.insertMany(defaultTeam);
+    list = await TeamMember.find().sort({ order: 1, createdAt: -1 }).lean();
+  }
+  
+  return serialize(list);
+}
+
+export async function saveTeamMember(data: any) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await connectToDatabase();
+  let member;
+  if (data._id) {
+    member = await TeamMember.findByIdAndUpdate(data._id, data, { new: true });
+    await logActivity(`Updated team member: "${data.name}"`);
+  } else {
+    member = await TeamMember.create(data);
+    await logActivity(`Created new team member: "${data.name}"`);
+  }
+  return serialize(member);
+}
+
+export async function deleteTeamMember(id: string) {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Unauthorized");
+
+  await connectToDatabase();
+  const member = await TeamMember.findById(id);
+  if (member) {
+    await TeamMember.findByIdAndDelete(id);
+    await logActivity(`Deleted team member: "${member.name}"`);
+  }
+  return { success: true };
+}
+
+/* ==========================================
    PORTFOLIO (PROJECT) CMS ACTIONS
    ========================================== */
 export async function getProjects() {
@@ -154,6 +244,7 @@ export async function getProjects() {
         image: "/project-northstar.png",
         liveUrl: "https://northstar.growthbridge.studio",
         featured: true,
+        projectType: "pre-built",
       },
       {
         title: "Atlas Clinics",
@@ -163,6 +254,7 @@ export async function getProjects() {
         image: "/project-atlas.png",
         liveUrl: "https://atlas.growthbridge.studio",
         featured: true,
+        projectType: "customised",
       },
       {
         title: "Pulse SaaS",
@@ -172,6 +264,7 @@ export async function getProjects() {
         image: "/project-pulse.png",
         liveUrl: "https://pulse.growthbridge.studio",
         featured: true,
+        projectType: "pre-built",
       },
       {
         title: "Loam & Co.",
@@ -181,6 +274,7 @@ export async function getProjects() {
         image: "/why-growthbridge.png",
         liveUrl: "https://loam.growthbridge.studio",
         featured: false,
+        projectType: "customised",
       },
     ];
     await Project.insertMany(defaultProjects);
@@ -203,6 +297,8 @@ export async function saveProject(data: any) {
     project = await Project.create(data);
     await logActivity(`Created new portfolio project: "${data.title}"`);
   }
+  revalidatePath("/");
+  revalidatePath("/projects");
   return serialize(project);
 }
 
@@ -216,6 +312,8 @@ export async function deleteProject(id: string) {
     await Project.findByIdAndDelete(id);
     await logActivity(`Deleted portfolio project: "${project.title}"`);
   }
+  revalidatePath("/");
+  revalidatePath("/projects");
   return { success: true };
 }
 
@@ -224,7 +322,38 @@ export async function deleteProject(id: string) {
    ========================================== */
 export async function getServices() {
   await connectToDatabase();
-  const list = await Service.find().sort({ createdAt: -1 }).lean();
+  let list = await Service.find().sort({ createdAt: 1 }).lean();
+  
+  if (list.length === 0) {
+    const defaultServices = [
+      {
+        title: "Website development",
+        description: "Fast, polished marketing sites designed to convert visitors into pipeline. Every pixel intentional, every load time respected.",
+      },
+      {
+        title: "Brand strategy",
+        description: "Positioning, naming, and visual language built on a point of view you can actually defend in a room full of competitors.",
+      },
+      {
+        title: "Product design",
+        description: "Interfaces shaped around clarity and momentum — wireframes through to a system your engineers can build without guessing.",
+      },
+      {
+        title: "Growth marketing",
+        description: "Funnels and experiment systems that turn attention into measurable, compounding pipeline rather than one-off spikes.",
+      },
+      {
+        title: "AI automation",
+        description: "Workflow systems that remove repetitive ops work so your team's time goes toward the calls only a person can make.",
+      },
+      {
+        title: "Product development",
+        description: "From prototype to launch-ready build, engineered with the same restraint and pace as the design that precedes it.",
+      },
+    ];
+    await Service.insertMany(defaultServices);
+    list = await Service.find().sort({ createdAt: 1 }).lean();
+  }
   return serialize(list);
 }
 
@@ -241,6 +370,7 @@ export async function saveService(data: any) {
     service = await Service.create(data);
     await logActivity(`Created new service item: "${data.title}"`);
   }
+  revalidatePath("/");
   return serialize(service);
 }
 
@@ -254,6 +384,7 @@ export async function deleteService(id: string) {
     await Service.findByIdAndDelete(id);
     await logActivity(`Deleted service item: "${service.title}"`);
   }
+  revalidatePath("/");
   return { success: true };
 }
 

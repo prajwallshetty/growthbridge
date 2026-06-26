@@ -187,14 +187,16 @@ export default function HomeClient({
   const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
   const socialGithub = settings?.socialGithub || "https://github.com/growthbridge";
 
-  const displayProjects = (projects || []).map((p) => ({
-    title: p.title,
-    category: p.category,
-    description: p.description,
-    result: p.resultMetric || "+100% impact",
-    image: p.image || "/project-pulse.png",
-    liveUrl: p.liveUrl || "",
-  }));
+  const displayProjects = (projects || [])
+    .filter((p) => p.featured)
+    .map((p) => ({
+      title: p.title,
+      category: p.category,
+      description: p.description,
+      result: p.resultMetric || "+100% impact",
+      image: p.image || "/project-pulse.png",
+      liveUrl: p.liveUrl || "",
+    }));
 
   // Default services fallback
   const defaultServices = [
@@ -345,7 +347,7 @@ function Nav({ heroBtnText, heroBtnUrl }: { heroBtnText: string; heroBtnUrl: str
     { name: "Why Us", link: "/#why-us" },
     { name: "Process", link: "/#process" },
     { name: "Blogs", link: "/#blogs" },
-    { name: "Founder", link: "/founder" },
+    { name: "Team", link: "/team" },
     { name: "Contact", link: "/contact" },
   ];
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -811,14 +813,6 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
                   </CardItem>
                   
                   <div className="flex justify-end gap-2.5 mt-4 pt-4 border-t border-[#E9E3DA]/60">
-                    <CardItem
-                      translateZ="60"
-                      as="a"
-                      href={heroBtnUrl}
-                      className="px-5 py-2.5 rounded-full border border-[#E9E3DA] hover:border-[#111111] hover:bg-[#111111]/5 text-[#111111] text-[12px] font-bold transition-all duration-300 shrink-0"
-                    >
-                      Case Study →
-                    </CardItem>
                     {p.liveUrl && (
                       <CardItem
                         translateZ="60"
@@ -1289,20 +1283,15 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
               field notes.
             </h2>
           </Reveal>
-          <Reveal delay={0.1}>
-            <a
-              href="/admin/blogs"
-              className="inline-flex items-center gap-2 rounded-full border border-[#E9E3DA] bg-white px-6 py-3 text-[13px] font-bold text-[#111111] hover:border-[#111111] transition-all"
-            >
-              Visit CMS Blog Panel <ArrowRight size={14} />
-            </a>
-          </Reveal>
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {latestBlogs.map((b: any, i: number) => (
             <Reveal key={b._id} delay={i * 0.1}>
-              <div className="group flex flex-col h-full bg-white border border-[#E9E3DA] rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300">
+              <a
+                href={`/blog/${b.slug}`}
+                className="group flex flex-col h-full bg-white border border-[#E9E3DA] rounded-[24px] overflow-hidden hover:shadow-xl transition-all duration-300 cursor-pointer block"
+              >
                 <div className="h-48 overflow-hidden relative border-b border-[#E9E3DA]">
                   <img
                     src={b.image || "https://images.unsplash.com/photo-1507238691740-187a5b1d37b8?w=600&auto=format&fit=crop&q=80"}
@@ -1340,7 +1329,7 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
                     </span>
                   </div>
                 </div>
-              </div>
+              </a>
             </Reveal>
           ))}
         </div>

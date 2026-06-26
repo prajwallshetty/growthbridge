@@ -2,9 +2,9 @@ import React from "react";
 import { connectToDatabase } from "@/lib/db";
 import Blog from "@/models/Blog";
 import Project from "@/models/Project";
-import Page from "@/models/Page";
+import Service from "@/models/Service";
 import ActivityLog from "@/models/ActivityLog";
-import { BookOpen, Briefcase, FileText, Activity, AlertCircle, ArrowUpRight } from "lucide-react";
+import { BookOpen, Briefcase, Layers, Activity, AlertCircle, ArrowUpRight } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -12,7 +12,7 @@ export default async function AdminDashboardPage() {
   let stats = {
     blogs: 0,
     projects: 4, // Default cases mapped statically
-    pages: 4,
+    services: 0,
     drafts: 0,
   };
   
@@ -24,13 +24,13 @@ export default async function AdminDashboardPage() {
     // Fetch real metrics
     const bCount = await Blog.countDocuments();
     const pCount = await Project.countDocuments();
-    const pgCount = await Page.countDocuments();
+    const sCount = await Service.countDocuments();
     const dCount = await Blog.countDocuments({ status: "Draft" });
 
     stats = {
       blogs: bCount,
       projects: pCount > 0 ? pCount : 4,
-      pages: pgCount > 0 ? pgCount : 4,
+      services: sCount,
       drafts: dCount,
     };
 
@@ -81,15 +81,15 @@ export default async function AdminDashboardPage() {
         <div className="bg-white border border-[#E9E3DA] rounded-[24px] p-6 shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
           <div className="flex justify-between items-start mb-4">
             <span className="text-[12px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-              Total Pages
+              Total Services
             </span>
             <div className="p-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[10px] text-[#111111]">
-              <FileText size={16} />
+              <Layers size={16} />
             </div>
           </div>
-          <div className="text-[32px] font-extrabold text-[#111111]">{stats.pages}</div>
+          <div className="text-[32px] font-extrabold text-[#111111]">{stats.services}</div>
           <div className="text-[12px] font-semibold text-[#A8A296] mt-2">
-            Includes dynamic CMS pages
+            Active services in directory
           </div>
         </div>
 
@@ -163,10 +163,10 @@ export default async function AdminDashboardPage() {
               <ArrowUpRight size={16} />
             </a>
             <a
-              href="/admin/homepage"
+              href="/admin/services"
               className="flex items-center justify-between p-4 rounded-[12px] bg-[#FCFBF8] border border-[#E9E3DA] hover:border-[#111111] transition-all text-[13px] font-semibold"
             >
-              <span>Configure Hero Content</span>
+              <span>Manage Active Services</span>
               <ArrowUpRight size={16} />
             </a>
           </div>

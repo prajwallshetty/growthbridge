@@ -15,6 +15,7 @@ import {
   Settings,
   LogOut,
   Users,
+  Shield,
 } from "lucide-react";
 
 export default function AdminLayout({
@@ -40,13 +41,12 @@ export default function AdminLayout({
 
   const menuItems = [
     { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
-    { name: "Homepage CMS", href: "/admin/homepage", icon: Home },
-    { name: "Pages", href: "/admin/pages", icon: FileText },
     { name: "Blogs", href: "/admin/blogs", icon: BookOpen },
     { name: "Portfolio", href: "/admin/portfolio", icon: Briefcase },
     { name: "Services", href: "/admin/services", icon: Layers },
     { name: "Testimonials", href: "/admin/testimonials", icon: MessageSquare },
-    { name: "Users & Admins", href: "/admin/users", icon: Users },
+    { name: "Team Management", href: "/admin/team", icon: Users },
+    { name: "Users & Admins", href: "/admin/users", icon: Shield },
     { name: "Media Library", href: "/admin/media", icon: ImageIcon },
     { name: "Site Settings", href: "/admin/settings", icon: Settings },
   ];
