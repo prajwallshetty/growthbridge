@@ -1,0 +1,340 @@
+@import "tailwindcss";
+
+/* ========================================
+   GROWTH BRIDGE — EDITORIAL DESIGN SYSTEM
+   ======================================== */
+
+@theme {
+  /* Color Tokens */
+  --color-paper: #FCFBF8;
+  --color-card: #FFFFFF;
+  --color-text-primary: #111111;
+  --color-text-secondary: #6A6A6A;
+  --color-border: #E9E3DA;
+  --color-border-hover: #D7D0C8;
+  --color-accent: #F4C542;
+
+  /* Shadows */
+  --shadow-card:
+    0 10px 30px rgba(0, 0, 0, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover:
+    0 14px 40px rgba(0, 0, 0, 0.06),
+    0 40px 100px rgba(0, 0, 0, 0.07);
+  --shadow-nav:
+    0 4px 20px rgba(0, 0, 0, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.03);
+
+  /* Spacing */
+  --section-gap: 160px;
+  --content-max: 1280px;
+  --card-radius: 32px;
+  --card-padding: 48px;
+
+  /* Animations */
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from { height: 0; }
+    to { height: var(--radix-accordion-content-height); }
+  }
+
+  @keyframes accordion-up {
+    from { height: var(--radix-accordion-content-height); }
+    to { height: 0; }
+  }
+}
+
+/* ========================================
+   BASE STYLES
+   ======================================== */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: #FCFBF8;
+  color: #111111;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background-color: #F4C542;
+  color: #111111;
+}
+
+/* ========================================
+   EDITORIAL TYPOGRAPHY
+   ======================================== */
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: #111111;
+}
+
+p {
+  line-height: 1.7;
+  color: #6A6A6A;
+}
+
+/* ========================================
+   PAPER CARD MATERIAL
+   ======================================== */
+
+.paper-card {
+  background: #FFFFFF;
+  border: 1px solid #E9E3DA;
+  border-radius: 32px;
+  padding: 48px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.05);
+  transition: transform 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.4s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.4s ease;
+}
+
+.paper-card:hover {
+  transform: translateY(-4px);
+  border-color: #D7D0C8;
+  box-shadow:
+    0 14px 40px rgba(0, 0, 0, 0.06),
+    0 40px 100px rgba(0, 0, 0, 0.07);
+}
+
+.paper-card-static {
+  background: #FFFFFF;
+  border: 1px solid #E9E3DA;
+  border-radius: 32px;
+  padding: 48px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.04),
+    0 30px 80px rgba(0, 0, 0, 0.05);
+}
+
+/* ========================================
+   SCROLL-TRIGGERED ANIMATIONS
+   ======================================== */
+
+.section-fade-in {
+  animation: sectionFadeIn 0.8s ease both;
+  animation-timeline: view();
+  animation-range: entry 5% cover 25%;
+}
+
+@keyframes sectionFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ========================================
+   FLOATING ELEMENTS
+   ======================================== */
+
+.float-gentle {
+  animation: floatGentle 6s ease-in-out infinite;
+}
+
+.float-gentle-delay {
+  animation: floatGentle 7s ease-in-out infinite;
+  animation-delay: -2.5s;
+}
+
+.float-gentle-slow {
+  animation: floatGentle 9s ease-in-out infinite;
+  animation-delay: -4s;
+}
+
+@keyframes floatGentle {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+/* ========================================
+   BUTTON STYLES
+   ======================================== */
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  background: #111111;
+  color: #FFFFFF;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              background 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-primary:hover {
+  transform: scale(1.03);
+  background: #222222;
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 32px;
+  background: transparent;
+  color: #111111;
+  border-radius: 100px;
+  font-weight: 600;
+  font-size: 16px;
+  border: 1px solid #E9E3DA;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.3s ease,
+              background 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-secondary:hover {
+  transform: scale(1.03);
+  border-color: #D7D0C8;
+  background: #FFFFFF;
+}
+
+.btn-accent {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 18px 40px;
+  background: #F4C542;
+  color: #111111;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 18px;
+  border: none;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              box-shadow 0.3s ease;
+  text-decoration: none;
+}
+
+.btn-accent:hover {
+  transform: scale(1.04);
+  box-shadow: 0 8px 30px rgba(244, 197, 66, 0.3);
+}
+
+/* ========================================
+   LABEL STYLES
+   ======================================== */
+
+.editorial-label {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #6A6A6A;
+}
+
+.editorial-label-accent {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #F4C542;
+}
+
+/* ========================================
+   YELLOW UNDERLINE ACCENT
+   ======================================== */
+
+.accent-underline {
+  position: relative;
+  display: inline;
+}
+
+.accent-underline::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 4px;
+  width: 100%;
+  height: 8px;
+  background: #F4C542;
+  border-radius: 4px;
+  z-index: -1;
+  opacity: 0.6;
+}
+
+/* ========================================
+   IMAGE STYLES
+   ======================================== */
+
+.editorial-image {
+  border-radius: 24px;
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.08),
+    0 30px 80px rgba(0, 0, 0, 0.06);
+}
+
+/* ========================================
+   ARROW BUTTON
+   ======================================== */
+
+.arrow-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid #E9E3DA;
+  background: #FFFFFF;
+  cursor: pointer;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1),
+              border-color 0.3s ease,
+              background 0.3s ease;
+}
+
+.arrow-btn:hover {
+  transform: scale(1.08);
+  border-color: #111111;
+  background: #111111;
+  color: #FFFFFF;
+}
+
+.arrow-btn:hover svg {
+  color: #FFFFFF;
+}
+
+/* ========================================
+   RESPONSIVE
+   ======================================== */
+
+@media (max-width: 768px) {
+  .paper-card,
+  .paper-card-static {
+    padding: 28px;
+    border-radius: 24px;
+  }
+
+  .accent-underline::after {
+    height: 6px;
+    bottom: 2px;
+  }
+}
