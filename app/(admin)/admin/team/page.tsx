@@ -16,7 +16,9 @@ import {
   Sparkles, 
   ArrowUpRight,
   HelpCircle,
-  Eye
+  Eye,
+  ImageIcon,
+  Loader2
 } from "lucide-react";
 
 export default function AdminTeamPage() {
@@ -30,15 +32,18 @@ export default function AdminTeamPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingMember, setEditingMember] = useState<any | null>(null);
 
+  // Media Library Picker State
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
+  const [mediaItems, setMediaItems] = useState<any[]>([]);
+  const [mediaLoading, setMediaLoading] = useState(false);
+
   // Form State
   const [form, setForm] = useState({
     name: "",
     role: "",
     bio: "",
     image: "",
-    linkedin: "",
-    twitter: "",
-    github: "",
+    instagram: "",
     email: "",
     featured: false,
     order: 0,
@@ -72,9 +77,7 @@ export default function AdminTeamPage() {
         role: member.role || "",
         bio: member.bio || "",
         image: member.image || "",
-        linkedin: member.linkedin || "",
-        twitter: member.twitter || "",
-        github: member.github || "",
+        instagram: member.instagram || "",
         email: member.email || "",
         featured: !!member.featured,
         order: member.order || 0,
@@ -86,12 +89,10 @@ export default function AdminTeamPage() {
         role: "",
         bio: "",
         image: "",
-        linkedin: "",
-        twitter: "",
-        github: "",
+        instagram: "",
         email: "",
         featured: false,
-        order: team.length, // Defaults to next sequence index
+        order: team.length,
       });
     }
     setError("");
@@ -320,49 +321,51 @@ export default function AdminTeamPage() {
               {/* Image avatar path */}
               <div className="flex flex-col gap-2">
                 <label className="text-[11px] font-bold uppercase tracking-wider text-[#6A6A6A]">Avatar Image Path / URL</label>
-                <input
-                  type="text"
-                  placeholder="/founder.png or https://unsplash.com/..."
-                  value={form.image}
-                  onChange={(e) => setForm({ ...form, image: e.target.value })}
-                  className="w-full bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] px-4 py-3 text-[13px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all"
-                />
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    placeholder="/founder.png or https://unsplash.com/..."
+                    value={form.image}
+                    onChange={(e) => setForm({ ...form, image: e.target.value })}
+                    className="flex-1 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] px-4 py-3 text-[13px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setIsMediaPickerOpen(true);
+                      setMediaLoading(true);
+                      try {
+                        const res = await fetch("/api/media");
+                        const data = await res.json();
+                        if (data.data) setMediaItems(data.data);
+                      } catch (err) {
+                        console.error("Failed to load media", err);
+                      } finally {
+                        setMediaLoading(false);
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-3 bg-[#111111] hover:bg-[#F4C542] text-white hover:text-[#111111] text-[12px] font-bold rounded-[12px] transition-all cursor-pointer shrink-0"
+                  >
+                    <ImageIcon size={14} /> Browse Media
+                  </button>
+                </div>
+                {form.image && (
+                  <div className="mt-2 w-16 h-16 rounded-[12px] border border-[#E9E3DA] overflow-hidden bg-[#FCFBF8]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={form.image} alt="Preview" className="w-full h-full object-cover" />
+                  </div>
+                )}
               </div>
 
               {/* Social URLs row */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6A6A6A]">LinkedIn URL</label>
+                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6A6A6A]">Instagram URL</label>
                   <input
                     type="url"
-                    placeholder="https://linkedin.com/in/..."
-                    value={form.linkedin}
-                    onChange={(e) => setForm({ ...form, linkedin: e.target.value })}
-                    className="w-full bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] px-4 py-3 text-[13px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all"
-                  />
-                </div>
-
-                <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6A6A6A]">Twitter URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://twitter.com/..."
-                    value={form.twitter}
-                    onChange={(e) => setForm({ ...form, twitter: e.target.value })}
-                    className="w-full bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] px-4 py-3 text-[13px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all"
-                  />
-                </div>
-              </div>
-
-              {/* Github and email */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="flex flex-col gap-2">
-                  <label className="text-[11px] font-bold uppercase tracking-wider text-[#6A6A6A]">GitHub URL</label>
-                  <input
-                    type="url"
-                    placeholder="https://github.com/..."
-                    value={form.github}
-                    onChange={(e) => setForm({ ...form, github: e.target.value })}
+                    placeholder="https://instagram.com/..."
+                    value={form.instagram}
+                    onChange={(e) => setForm({ ...form, instagram: e.target.value })}
                     className="w-full bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] px-4 py-3 text-[13px] text-[#111111] font-semibold focus:outline-none focus:border-[#111111] transition-all"
                   />
                 </div>
@@ -425,6 +428,80 @@ export default function AdminTeamPage() {
               </div>
 
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Media Library Picker Modal */}
+      {isMediaPickerOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[24px] border border-[#E9E3DA] shadow-2xl w-full max-w-[720px] max-h-[80vh] flex flex-col overflow-hidden">
+            {/* Header */}
+            <div className="flex items-center justify-between px-6 py-5 border-b border-[#E9E3DA]">
+              <div>
+                <h3 className="text-[18px] font-extrabold tracking-tight">Select from Media Library</h3>
+                <p className="text-[12px] text-[#6A6A6A] mt-0.5">Click an image to use it as the avatar.</p>
+              </div>
+              <button
+                onClick={() => setIsMediaPickerOpen(false)}
+                className="p-2 rounded-full hover:bg-[#F5F2ED] transition-colors cursor-pointer"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {/* Grid */}
+            <div className="flex-1 overflow-y-auto p-6">
+              {mediaLoading ? (
+                <div className="flex flex-col items-center justify-center py-16 gap-3">
+                  <Loader2 className="h-7 w-7 animate-spin text-[#111111]" />
+                  <span className="text-[13px] font-semibold text-[#6A6A6A]">Loading media library...</span>
+                </div>
+              ) : mediaItems.length === 0 ? (
+                <div className="flex flex-col items-center justify-center py-16 text-center">
+                  <ImageIcon className="h-10 w-10 text-[#A8A296] mb-3" />
+                  <p className="text-[14px] font-bold text-[#111111]">No media files uploaded yet</p>
+                  <p className="text-[12px] text-[#6A6A6A] mt-1 max-w-[280px]">
+                    Go to the Media Library page to upload images first.
+                  </p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                  {mediaItems.map((item: any) => (
+                    <button
+                      key={item._id}
+                      type="button"
+                      onClick={() => {
+                        setForm({ ...form, image: item.url });
+                        setIsMediaPickerOpen(false);
+                      }}
+                      className={`group relative aspect-square rounded-[14px] overflow-hidden border-2 transition-all cursor-pointer ${
+                        form.image === item.url
+                          ? "border-[#F4C542] shadow-[0_0_0_2px_rgba(244,197,66,0.3)]"
+                          : "border-[#E9E3DA] hover:border-[#111111]"
+                      }`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={item.url}
+                        alt={item.altText || item.fileName}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      />
+                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent px-2.5 pb-2 pt-6">
+                        <span className="text-[10px] font-bold text-white truncate block">
+                          {item.fileName}
+                        </span>
+                      </div>
+                      {form.image === item.url && (
+                        <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-[#F4C542] flex items-center justify-center">
+                          <CheckCircleIcon size={12} className="text-[#111111]" />
+                        </div>
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}

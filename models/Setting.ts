@@ -11,6 +11,21 @@ const SettingSchema = new Schema(
     seoDefaultTitle: { type: String, default: "Growth Bridge — Creative Digital Agency" },
     seoDefaultDescription: { type: String, default: "We design and build enduring digital interfaces for startups." },
     maintenanceMode: { type: Boolean, default: false },
+    branches: {
+      type: [
+        {
+          name: { type: String, required: true },
+          address: { type: String, required: true },
+          status: { type: String, default: "active" }, // "active" or "coming_soon"
+        }
+      ],
+      default: [
+        { name: "India", address: "Bengaluru, India", status: "active" },
+        { name: "Germany", address: "Munich, Germany", status: "active" },
+        { name: "France", address: "Paris, France", status: "active" },
+        { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }
+      ]
+    }
   },
   { timestamps: true }
 );

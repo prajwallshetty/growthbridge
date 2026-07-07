@@ -9,7 +9,7 @@ import {
   AnimatePresence,
   useMotionValueEvent,
 } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Mail, Plus, Sparkles, Menu, X } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Mail, Plus, Sparkles, Menu, X, MapPin } from "lucide-react";
 import SideRays from "@/components/ui/SideRays";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
@@ -112,7 +112,7 @@ function MagneticButton({
   );
 }
 
-const SECTION_COUNT = 8;
+const SECTION_COUNT = 9;
 
 function Folio({ index, label }: { index: number; label: string }) {
   const ref = useRef(null);
@@ -327,12 +327,13 @@ export default function HomeClient({
         <AboutSection />
         {showSelectedWork && <SelectedWork projects={displayProjects} heroBtnUrl={heroBtnUrl} />}
         <ServicesSection servicesList={displayServices} />
+        <GlobalPresenceSection settings={settings} />
         <WhyChooseUs />
         {showProcess && <Process heroBtnUrl={heroBtnUrl} />}
         {showTestimonials && <TestimonialsSection testimonials={displayTestimonials} />}
         <LatestBlogs blogs={blogs} />
         <FaqSection />
-        <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} />
+        <ContactCta contactEmail={contactEmail} heroBtnUrl={heroBtnUrl} settings={settings} />
       </main>
     </>
   );
@@ -981,7 +982,7 @@ function WhyChooseUs() {
     <section id="why-us" className="border-t border-[#E9E3DA] bg-white/40 py-24 lg:py-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
-          <Folio index={4} label="Why Choose Us" />
+          <Folio index={5} label="Why Choose Us" />
         </Reveal>
 
         <Reveal>
@@ -1020,19 +1021,6 @@ function WhyChooseUs() {
           ))}
         </Reveal>
 
-        <Reveal delay={0.25} className="mt-14 flex flex-col items-start gap-6 sm:flex-row sm:items-center">
-          <img
-            src="/founder.png"
-            alt="Founder of Growth Bridge"
-            className="h-16 w-16 rounded-full object-cover shadow-md border border-[#E9E3DA]"
-          />
-          <p className="max-w-[560px] text-[15px] leading-[1.7] text-[#6A6A6A]">
-            <span className="font-semibold text-[#111111]">Prajwal Shetty, founder —</span>{" "}
-            "We started Growth Bridge because we kept watching good businesses get
-            mediocre work from teams that thought like vendors instead of
-            operators. Fifty-plus projects later, that's still the whole pitch."
-          </p>
-        </Reveal>
 
         <div className="mt-24 pt-20 border-t border-[#E9E3DA]/60">
           <Industries />
@@ -1063,7 +1051,7 @@ function Process({ heroBtnUrl }: { heroBtnUrl: string }) {
     <section id="process" className="border-t border-[#E9E3DA] py-24 lg:py-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
-          <Folio index={5} label="Our process" />
+          <Folio index={6} label="Our process" />
         </Reveal>
 
         <Reveal>
@@ -1206,7 +1194,7 @@ function TestimonialsSection({ testimonials }: { testimonials: any[] }) {
     <section className="border-t border-[#E9E3DA] py-24 lg:py-32 bg-white/20">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12 text-center">
         <Reveal>
-          <Folio index={6} label="What clients say" />
+          <Folio index={7} label="What clients say" />
         </Reveal>
 
         <div className="max-w-[800px] mx-auto mt-12 flex flex-col items-center">
@@ -1268,7 +1256,7 @@ function LatestBlogs({ blogs }: { blogs: any[] }) {
     <section id="blogs" className="border-t border-[#E9E3DA] py-24 lg:py-32">
       <div className="mx-auto max-w-[1280px] px-6 md:px-12">
         <Reveal>
-          <Folio index={7} label="Latest Blogs" />
+          <Folio index={8} label="Latest Blogs" />
         </Reveal>
 
         <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-14">
@@ -1355,13 +1343,185 @@ const FAQS = [
   },
 ];
 
+function GlobalPresenceSection({ settings }: { settings: any }) {
+  const [times, setTimes] = useState<{ [key: string]: string }>({});
+
+  useEffect(() => {
+    const updateTimes = () => {
+      const getLocalTime = (tz: string) => {
+        try {
+          return new Intl.DateTimeFormat("en-US", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false,
+            timeZone: tz,
+          }).format(new Date());
+        } catch {
+          return new Date().toLocaleTimeString();
+        }
+      };
+
+      const computed: { [key: string]: string } = {};
+      computed["San Francisco"] = getLocalTime("America/Los_Angeles");
+      computed["India"] = getLocalTime("Asia/Kolkata");
+      computed["Germany"] = getLocalTime("Europe/Berlin");
+      computed["German"] = getLocalTime("Europe/Berlin");
+      computed["France"] = getLocalTime("Europe/Paris");
+      computed["Poland"] = getLocalTime("Europe/Warsaw");
+      setTimes(computed);
+    };
+
+    updateTimes();
+    const interval = setInterval(updateTimes, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const dbBranches = settings?.branches || [];
+  const activeBranches = dbBranches.length > 0 ? dbBranches : [
+    { name: "India", address: "Bengaluru, India", status: "active" },
+    { name: "Germany", address: "Munich, Germany", status: "active" },
+    { name: "France", address: "Paris, France", status: "active" },
+    { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }
+  ];
+
+  const locations = activeBranches.map((b: any) => {
+      let tz = "UTC";
+      let coords = "N/A";
+      let flag = "🌐";
+      let label = "Global Branch";
+
+      const nameLower = b.name.toLowerCase();
+      if (nameLower.includes("india")) {
+        tz = "Asia/Kolkata";
+        coords = "12.9716° N, 77.5946° E";
+        flag = "🇮🇳";
+        label = "Engineering Hub";
+      } else if (nameLower.includes("german")) {
+        tz = "Europe/Berlin";
+        coords = "48.1351° N, 11.5820° E";
+        flag = "🇩🇪";
+        label = "Design Studio";
+      } else if (nameLower.includes("france")) {
+        tz = "Europe/Paris";
+        coords = "48.8566° N, 2.3522° E";
+        flag = "🇫🇷";
+        label = "Creative Studio";
+      } else if (nameLower.includes("poland")) {
+        tz = "Europe/Warsaw";
+        coords = "52.2297° N, 21.0122° E";
+        flag = "🇵🇱";
+        label = "Coming Soon";
+      }
+
+      return {
+        name: b.name,
+        label,
+        tz,
+        coords,
+        flag,
+        status: b.status,
+        address: b.address
+      };
+  });
+
+  return (
+    <section id="network" className="border-t border-[#E9E3DA] py-24 lg:py-32 bg-white/40">
+      <div className="mx-auto max-w-[1280px] px-6">
+        <Reveal>
+          <Folio index={4} label="Global Network" />
+        </Reveal>
+
+        <Reveal delay={0.1}>
+          <div className="text-center mb-20 max-w-[620px] mx-auto">
+            <span className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-[#E9E3DA] bg-white text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#6A6A6A] shadow-sm mb-4">
+              <Sparkles size={11} className="text-[#F4C542] animate-pulse" /> Our Footprint
+            </span>
+            <h2 className="text-[36px] md:text-[48px] font-extrabold tracking-tight text-[#111111] leading-[1.1] tracking-tight">
+              A borderless partner for ambitious brands.
+            </h2>
+            <p className="mt-4 text-[14px] md:text-[15px] leading-[1.65] text-[#6A6A6A] font-medium">
+              We bridge design and engineering disciplines across time zones. Here is where you can find our squads compiling layout components and pushing commits.
+            </p>
+          </div>
+        </Reveal>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {locations.map((loc: any, idx: number) => {
+            const isComingSoon = loc.status === "coming_soon";
+            const currentTime = times[loc.name] || "--:--:--";
+
+            return (
+              <Reveal key={loc.name} delay={idx * 0.05}>
+                <div className={`group p-6 rounded-[28px] border transition-all duration-500 bg-white flex flex-col justify-between min-h-[220px] shadow-[0_4px_25px_rgba(0,0,0,0.01)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.04)] relative overflow-hidden ${
+                  isComingSoon 
+                    ? "border-dashed border-[#E9E3DA]/80 opacity-80" 
+                    : "border-[#E9E3DA] hover:border-[#111111]"
+                }`}>
+                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_rgba(244,197,66,0.05)_0%,_transparent_50%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+
+                  <div>
+                    <div className="flex items-start justify-between">
+                      <div className="flex flex-col gap-1">
+                        <span className="text-[28px] leading-none mb-2">{loc.flag}</span>
+                        <h3 className="text-[17px] font-extrabold tracking-tight text-[#111111]">
+                          {loc.name}
+                        </h3>
+                        <span className="text-[10px] font-extrabold uppercase tracking-wider text-[#A8A296]">
+                          {loc.label}
+                        </span>
+                      </div>
+
+                      <span className="relative flex h-2 w-2 mt-2">
+                        {isComingSoon ? (
+                          <>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-400"></span>
+                          </>
+                        ) : (
+                          <>
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                          </>
+                        )}
+                      </span>
+                    </div>
+
+                    <div className="mt-6 flex flex-col gap-1.5 border-t border-[#E9E3DA]/50 pt-4">
+                      <span className="font-mono text-[10px] text-[#A8A296] tracking-tight flex items-center gap-1">
+                        <MapPin size={10} /> {loc.coords}
+                      </span>
+                      <p className="text-[12px] text-[#6A6A6A] leading-[1.5] font-semibold">
+                        {loc.address}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-8 pt-4 border-t border-[#E9E3DA]/30 flex items-center justify-between">
+                    <span className="text-[10px] font-extrabold uppercase tracking-[0.05em] text-[#A8A296]">
+                      Local Time
+                    </span>
+                    <span className="font-mono text-[13px] font-extrabold text-[#111111]">
+                      {isComingSoon ? "Soon" : currentTime}
+                    </span>
+                  </div>
+                </div>
+              </Reveal>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 function FaqSection() {
   const [openIdx, setOpenIdx] = useState<number | null>(0);
   return (
     <section className="border-t border-[#E9E3DA] py-24 lg:py-32 bg-white/40">
       <div className="mx-auto max-w-[800px] px-6">
         <Reveal>
-          <Folio index={8} label="FAQ" />
+          <Folio index={9} label="FAQ" />
         </Reveal>
 
         <Reveal delay={0.1}>
@@ -1416,9 +1576,28 @@ function FaqSection() {
 
 /* ============================== CONTACT ============================== */
 
-function ContactCta({ contactEmail, heroBtnUrl }: { contactEmail: string; heroBtnUrl: string }) {
+function ContactCta({ 
+  contactEmail, 
+  heroBtnUrl, 
+  settings 
+}: { 
+  contactEmail: string; 
+  heroBtnUrl: string; 
+  settings: any;
+}) {
   const ref = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
+
+  const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
+  const socialTwitter = settings?.socialTwitter || "https://twitter.com/growthbridge";
+  const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
+  const socialGithub = settings?.socialGithub || "https://github.com/growthbridge";
+  const branches = settings?.branches || [
+    { name: "India", address: "Bengaluru, India", status: "active" },
+    { name: "Germany", address: "Munich, Germany", status: "active" },
+    { name: "France", address: "Paris, France", status: "active" },
+    { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }
+  ];
 
   return (
     <section
@@ -1471,6 +1650,56 @@ function ContactCta({ contactEmail, heroBtnUrl }: { contactEmail: string; heroBt
             <Mail size={15} /> {contactEmail}
           </div>
         </Reveal>
+      </div>
+
+      {/* Global Footer Area */}
+      <div className="relative mx-auto max-w-[1280px] px-6 md:px-12 mt-28 pt-16 border-t border-white/10 text-left grid grid-cols-1 md:grid-cols-4 gap-12 text-white/50 text-[13px] z-20">
+        <div className="flex flex-col gap-4">
+          <h4 className="font-extrabold text-white text-[15px] tracking-tight">Growth Bridge</h4>
+          <p className="leading-[1.7] text-white/40 max-w-[240px]">
+            A design and engineering partner for founders who value quality, clarity, and momentum.
+          </p>
+          <p className="text-[11px] text-white/30 mt-2">
+            © {new Date().getFullYear()} Growth Bridge. All rights reserved.
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h4 className="font-extrabold text-white text-[15px] tracking-tight">Headquarters</h4>
+          <p className="leading-[1.7] text-white/40 max-w-[200px]">
+            {officeAddress}
+          </p>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h4 className="font-extrabold text-white text-[15px] tracking-tight">Global Network</h4>
+          <ul className="flex flex-col gap-3">
+            {branches.map((b: any) => (
+              <li key={b.name} className="flex flex-col gap-0.5">
+                <div className="flex items-center gap-1.5">
+                  <span className="font-bold text-white/80 text-[12px]">{b.name}</span>
+                  {b.status === 'coming_soon' && (
+                    <span className="px-1.5 py-0.2 text-[8px] font-extrabold uppercase tracking-wide bg-white/10 text-white/50 rounded-full">
+                      Soon
+                    </span>
+                  )}
+                </div>
+                {b.status !== 'coming_soon' && (
+                  <span className="text-[11px] text-white/30">{b.address}</span>
+                )}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        <div className="flex flex-col gap-4">
+          <h4 className="font-extrabold text-white text-[15px] tracking-tight">Connect</h4>
+          <div className="flex flex-col gap-2 font-semibold">
+            <a href={socialTwitter} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors w-fit">Twitter</a>
+            <a href={socialLinkedin} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors w-fit">LinkedIn</a>
+            <a href={socialGithub} target="_blank" rel="noopener noreferrer" className="hover:text-white transition-colors w-fit">GitHub</a>
+          </div>
+        </div>
       </div>
     </section>
   );

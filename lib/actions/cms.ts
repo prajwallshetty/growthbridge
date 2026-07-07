@@ -159,9 +159,7 @@ export async function getTeamMembers() {
         role: "Founder & Chief Architect",
         bio: "We started Growth Bridge because we kept watching good businesses get mediocre work from teams that thought like vendors instead of operators. Fifty-plus projects later, that's still the whole pitch.",
         image: "/founder.png",
-        linkedin: "https://linkedin.com",
-        twitter: "https://twitter.com",
-        github: "https://github.com",
+        instagram: "https://instagram.com",
         email: "hello@growthbridge.live",
         featured: true,
         order: 0,
@@ -171,9 +169,7 @@ export async function getTeamMembers() {
         role: "Lead Product Designer",
         bio: "Designing digital experiences that bridge brand strategy with production-ready frontends. Former designer at Stripe and Vercel.",
         image: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=400&h=400&fit=crop&crop=face",
-        linkedin: "https://linkedin.com",
-        twitter: "https://twitter.com",
-        github: "https://github.com",
+        instagram: "https://instagram.com",
         email: "sarah@growthbridge.studio",
         featured: true,
         order: 1,
@@ -183,9 +179,7 @@ export async function getTeamMembers() {
         role: "Senior Fullstack Engineer",
         bio: "Specializing in low-latency Next.js integrations, dynamic content pipelines, and clean API structure. Obsessed with sub-second page performance.",
         image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=400&fit=crop&crop=face",
-        linkedin: "https://linkedin.com",
-        twitter: "https://twitter.com",
-        github: "https://github.com",
+        instagram: "https://instagram.com",
         email: "alex@growthbridge.studio",
         featured: true,
         order: 2,
@@ -545,6 +539,12 @@ export async function getSettings() {
       seoDefaultTitle: "Growth Bridge — Creative Digital Agency",
       seoDefaultDescription: "We design and build enduring digital interfaces for startups.",
       maintenanceMode: false,
+      branches: [
+        { name: "India", address: "Bengaluru, India", status: "active" },
+        { name: "Germany", address: "Munich, Germany", status: "active" },
+        { name: "France", address: "Paris, France", status: "active" },
+        { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }
+      ]
     });
     settings = settings.toObject();
   }

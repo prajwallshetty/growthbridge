@@ -33,6 +33,7 @@ export default function ContactClient({ settings }: { settings: any }) {
   const phoneNumber = settings?.phoneNumber || "+91 62827 59863";
   const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
 
+
   const [form, setForm] = useState({
     name: "",
     email: "",

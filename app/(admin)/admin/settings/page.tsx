@@ -40,6 +40,31 @@ export default function SettingsCmsPage() {
     }));
   };
 
+  const handleBranchChange = (index: number, field: string, value: string) => {
+    setSettings((prev: any) => {
+      const newBranches = [...(prev.branches || [])];
+      newBranches[index] = { ...newBranches[index], [field]: value };
+      return { ...prev, branches: newBranches };
+    });
+  };
+
+  const handleAddBranch = () => {
+    setSettings((prev: any) => ({
+      ...prev,
+      branches: [
+        ...(prev.branches || []),
+        { name: "", address: "", status: "active" }
+      ]
+    }));
+  };
+
+  const handleRemoveBranch = (index: number) => {
+    setSettings((prev: any) => ({
+      ...prev,
+      branches: (prev.branches || []).filter((_: any, i: number) => i !== index)
+    }));
+  };
+
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -174,6 +199,77 @@ export default function SettingsCmsPage() {
                 className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
               />
             </div>
+          </div>
+
+          <div className="flex justify-between items-center pb-4 border-b border-[#E9E3DA] mt-8">
+            <h3 className="text-[16px] font-bold tracking-tight">Global Branch Offices</h3>
+            <button
+              type="button"
+              onClick={handleAddBranch}
+              className="px-4 py-2 bg-[#111111] hover:bg-[#F4C542] text-white hover:text-[#111111] text-[12px] font-bold rounded-full transition-all"
+            >
+              + Add Branch
+            </button>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {(settings.branches || []).map((branch: any, index: number) => (
+              <div key={index} className="p-5 rounded-[16px] border border-[#E9E3DA] bg-[#FCFBF8] flex flex-col gap-4 relative">
+                <button
+                  type="button"
+                  onClick={() => handleRemoveBranch(index)}
+                  className="absolute top-4 right-4 text-[12px] font-bold text-red-600 hover:text-red-800 transition-colors"
+                >
+                  Remove
+                </button>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mt-2">
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                      Branch Name
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={branch.name || ""}
+                      onChange={(e) => handleBranchChange(index, "name", e.target.value)}
+                      placeholder="e.g. India"
+                      className="h-10 px-3 border border-[#E9E3DA] bg-white rounded-[8px] text-[13px] font-medium outline-none focus:border-[#111111] transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                      Branch Address
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={branch.address || ""}
+                      onChange={(e) => handleBranchChange(index, "address", e.target.value)}
+                      placeholder="e.g. Bengaluru, India"
+                      className="h-10 px-3 border border-[#E9E3DA] bg-white rounded-[8px] text-[13px] font-medium outline-none focus:border-[#111111] transition-all"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                      Status
+                    </label>
+                    <select
+                      value={branch.status || "active"}
+                      onChange={(e) => handleBranchChange(index, "status", e.target.value)}
+                      className="h-10 px-3 border border-[#E9E3DA] bg-white rounded-[8px] text-[13px] font-medium outline-none focus:border-[#111111] transition-all"
+                    >
+                      <option value="active">Active</option>
+                      <option value="coming_soon">Coming Soon</option>
+                    </select>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(settings.branches || []).length === 0 && (
+              <div className="text-center py-6 text-[13px] text-[#6A6A6A] font-semibold">
+                No branch offices added. Click "+ Add Branch" to define one.
+              </div>
+            )}
           </div>
         </div>
 
