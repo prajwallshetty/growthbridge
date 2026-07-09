@@ -52,7 +52,7 @@ function CountUp({
   duration?: number;
 }) {
   const ref = useRef(null);
-  const inView = useInView(ref, { once: true, margin: "-100px" });
+  const inView = useInView(ref, { once: true, margin: "-20px" });
   const [val, setVal] = useState(0);
 
   useEffect(() => {
