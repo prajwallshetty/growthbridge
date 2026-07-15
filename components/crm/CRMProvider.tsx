@@ -206,6 +206,8 @@ interface CRMContextType {
   addNote: (clientId: string, note: Omit<CRMNote, "_id" | "id">) => Promise<void>;
   updateNote: (clientId: string, noteId: string, noteUpdates: Partial<CRMNote>) => Promise<void>;
   globalActivities: CRMActivity[];
+  isAddClientOpen: boolean;
+  setIsAddClientOpen: (open: boolean) => void;
   stats: {
     totalRevenue: number;
     activeClients: number;
@@ -228,6 +230,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [view, _setView] = useState<CRMView>(initialView);
   const [clients, setClients] = useState<CRMClient[]>([]);
   const [activeClientId, _setActiveClientId] = useState<string | null>(initialClient);
+  const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [aiActive, setAiActive] = useState(false);
   const [globalActivities, setGlobalActivities] = useState<CRMActivity[]>([]);
@@ -481,6 +484,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         addNote,
         updateNote,
         globalActivities,
+        isAddClientOpen,
+        setIsAddClientOpen,
         stats,
       }}
     >

@@ -56,7 +56,8 @@ export default function AdminPageDispatcher() {
     stats,
     toggleTask,
     globalActivities,
-    loading
+    loading,
+    setIsAddClientOpen
   } = useCRM();
 
   const [searchFocused, setSearchFocused] = useState(false);
@@ -77,6 +78,68 @@ export default function AdminPageDispatcher() {
       .flatMap((c) => c.meetings.map(m => ({ ...m, client: c })))
       .filter((m) => m.status === "Upcoming")
       .slice(0, 3);
+
+    // Date helpers for real dynamic growth calculations
+    const now = new Date();
+    const curYear = now.getFullYear();
+    const curMonth = now.getMonth();
+    const prevMonthYear = curMonth === 0 ? curYear - 1 : curYear;
+    const prevMonthIndex = curMonth === 0 ? 11 : curMonth - 1;
+
+    const parseDateStr = (dateStr: string) => {
+      if (!dateStr) return null;
+      const d = new Date(dateStr);
+      return isNaN(d.getTime()) ? null : d;
+    };
+
+    const inCurrentMonth = (dateStr: string) => {
+      const d = parseDateStr(dateStr);
+      if (!d) return false;
+      return d.getFullYear() === curYear && d.getMonth() === curMonth;
+    };
+
+    const inLastMonth = (dateStr: string) => {
+      const d = parseDateStr(dateStr);
+      if (!d) return false;
+      return d.getFullYear() === prevMonthYear && d.getMonth() === prevMonthIndex;
+    };
+
+    const getGrowthPercent = (current: number, previous: number) => {
+      if (previous === 0) {
+        return current > 0 ? "+100%" : "+0%";
+      }
+      const val = ((current - previous) / previous) * 100;
+      const sign = val >= 0 ? "+" : "";
+      return `${sign}${val.toFixed(1)}%`;
+    };
+
+    // Card 1: Total Revenue Growth
+    const allPaidInvoices = clients.flatMap(c => c.invoices || []).filter(inv => inv.status === "Paid");
+    const thisMonthRevenue = allPaidInvoices.filter(inv => inCurrentMonth(inv.dueDate)).reduce((sum, inv) => sum + inv.amount, 0);
+    const lastMonthRevenue = allPaidInvoices.filter(inv => inLastMonth(inv.dueDate)).reduce((sum, inv) => sum + inv.amount, 0);
+    const revenueGrowthStr = getGrowthPercent(thisMonthRevenue, lastMonthRevenue);
+    const isRevGrowthPositive = !revenueGrowthStr.startsWith("-");
+
+    // Card 2: Active Clients Growth
+    const activeClientsList = clients.filter(c => c.stage !== "Project Completed" && c.stage !== "Lead Created");
+    const thisMonthActive = activeClientsList.filter(c => inCurrentMonth(c.startDate)).length;
+    const lastMonthActive = activeClientsList.filter(c => inLastMonth(c.startDate)).length;
+    const activeClientsGrowthStr = getGrowthPercent(thisMonthActive, lastMonthActive);
+    const isActiveClientsGrowthPositive = !activeClientsGrowthStr.startsWith("-");
+
+    // Card 3: Projects in Progress Growth
+    const activeProjectsList = clients.filter(c => c.stage === "Development" || c.stage === "Testing");
+    const thisMonthProjects = activeProjectsList.filter(c => inCurrentMonth(c.startDate)).length;
+    const lastMonthProjects = activeProjectsList.filter(c => inLastMonth(c.startDate)).length;
+    const projectsGrowthStr = getGrowthPercent(thisMonthProjects, lastMonthProjects);
+    const isProjectsGrowthPositive = !projectsGrowthStr.startsWith("-");
+
+    // Card 4: Pending Payments Growth
+    const allPendingInvoices = clients.flatMap(c => c.invoices || []).filter(inv => inv.status === "Pending");
+    const thisMonthPending = allPendingInvoices.filter(inv => inCurrentMonth(inv.dueDate)).reduce((sum, inv) => sum + inv.amount, 0);
+    const lastMonthPending = allPendingInvoices.filter(inv => inLastMonth(inv.dueDate)).reduce((sum, inv) => sum + inv.amount, 0);
+    const pendingGrowthStr = getGrowthPercent(thisMonthPending, lastMonthPending);
+    const isPendingGrowthPositive = !pendingGrowthStr.startsWith("-");
 
     return (
       <div className="flex flex-col gap-8 pb-10">
@@ -104,9 +167,9 @@ export default function AdminPageDispatcher() {
             </div>
             <div>
               <div className="text-[28px] font-extrabold text-[#111111] tracking-tight">₹{stats.totalRevenue.toLocaleString()}</div>
-              <div className="text-[11.5px] mt-2 flex items-center gap-1 text-emerald-600 font-bold">
-                <TrendingUp size={13} />
-                <span>+12.5% this month</span>
+              <div className={`text-[11.5px] mt-2 flex items-center gap-1 font-bold ${isRevGrowthPositive ? "text-emerald-600" : "text-red-600"}`}>
+                {isRevGrowthPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                <span>{revenueGrowthStr} this month</span>
               </div>
             </div>
           </div>
@@ -119,9 +182,9 @@ export default function AdminPageDispatcher() {
             </div>
             <div>
               <div className="text-[28px] font-extrabold text-[#111111] tracking-tight">{stats.activeClients}</div>
-              <div className="text-[11.5px] mt-2 flex items-center gap-1 text-emerald-600 font-bold">
-                <TrendingUp size={13} />
-                <span>+8.3% this month</span>
+              <div className={`text-[11.5px] mt-2 flex items-center gap-1 font-bold ${isActiveClientsGrowthPositive ? "text-emerald-600" : "text-red-600"}`}>
+                {isActiveClientsGrowthPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                <span>{activeClientsGrowthStr} this month</span>
               </div>
             </div>
           </div>
@@ -134,9 +197,9 @@ export default function AdminPageDispatcher() {
             </div>
             <div>
               <div className="text-[28px] font-extrabold text-[#111111] tracking-tight">{clients.filter(c => c.stage === "Development" || c.stage === "Testing").length}</div>
-              <div className="text-[11.5px] mt-2 flex items-center gap-1 text-emerald-600 font-bold">
-                <TrendingUp size={13} />
-                <span>+11.7% this month</span>
+              <div className={`text-[11.5px] mt-2 flex items-center gap-1 font-bold ${isProjectsGrowthPositive ? "text-emerald-600" : "text-red-600"}`}>
+                {isProjectsGrowthPositive ? <TrendingUp size={13} /> : <TrendingDown size={13} />}
+                <span>{projectsGrowthStr} this month</span>
               </div>
             </div>
           </div>
@@ -149,9 +212,9 @@ export default function AdminPageDispatcher() {
             </div>
             <div>
               <div className="text-[28px] font-extrabold text-[#111111] tracking-tight">₹{stats.pendingPayments.toLocaleString()}</div>
-              <div className="text-[11.5px] mt-2 flex items-center gap-1 text-red-600 font-bold">
-                <TrendingDown size={13} />
-                <span>-3.1% this month</span>
+              <div className={`text-[11.5px] mt-2 flex items-center gap-1 font-bold ${!isPendingGrowthPositive ? "text-emerald-600" : "text-red-600"}`}>
+                {!isPendingGrowthPositive ? <TrendingDown size={13} /> : <TrendingUp size={13} />}
+                <span>{pendingGrowthStr} this month</span>
               </div>
             </div>
           </div>
@@ -426,7 +489,7 @@ export default function AdminPageDispatcher() {
 
         {/* Quick Actions Sticky Bottom Strip */}
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-[#0B0B0BBF] backdrop-blur-md border border-[#1C1C1C] rounded-2xl py-2 px-4 shadow-2xl flex items-center gap-2.5 z-40 select-none">
-          <button onClick={() => { setView("clients"); }} className="flex items-center gap-1.5 px-3 py-1.5 text-white/95 hover:text-white text-[11.5px] font-bold transition-colors cursor-pointer">
+          <button onClick={() => { setIsAddClientOpen(true); }} className="flex items-center gap-1.5 px-3 py-1.5 text-white/95 hover:text-white text-[11.5px] font-bold transition-colors cursor-pointer">
             <User size={13} />
             <span>New Client</span>
           </button>

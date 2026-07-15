@@ -5,6 +5,7 @@ import { usePathname } from "next/navigation";
 import { CRMProvider } from "@/components/crm/CRMProvider";
 import Sidebar from "@/components/crm/Sidebar";
 import AIAssistantWidget from "@/components/crm/AIAssistantWidget";
+import AddClientModal from "@/components/crm/AddClientModal";
 import { Sun, Bell } from "lucide-react";
 
 export default function AdminLayout({
@@ -77,6 +78,7 @@ export default function AdminLayout({
 
         {/* Global Slide-out AI Panel Drawer */}
         <AIAssistantWidget />
+        <AddClientModal />
       </CRMProvider>
     </Suspense>
   );

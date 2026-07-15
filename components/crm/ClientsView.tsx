@@ -5,7 +5,7 @@ import { useCRM, CRMClient } from "./CRMProvider";
 import { ArrowUpRight } from "lucide-react";
 
 export default function ClientsView() {
-  const { clients, setView, setActiveClientId, searchQuery } = useCRM();
+  const { clients, setView, setActiveClientId, searchQuery, setIsAddClientOpen } = useCRM();
   const [filterStage, setFilterStage] = useState<string>("All");
 
   const handleRowClick = (id: string) => {
@@ -55,6 +55,13 @@ export default function ClientsView() {
             Spreadsheet listing of all Growth Bridge partner companies.
           </p>
         </div>
+        <button
+          onClick={() => setIsAddClientOpen(true)}
+          className="px-4 py-2.5 bg-[#111111] hover:bg-[#222222] text-white text-[12.5px] font-bold rounded-xl flex items-center gap-1.5 transition-all shadow-sm cursor-pointer"
+        >
+          <span className="text-[14px] font-extrabold">+</span>
+          <span>Add Client</span>
+        </button>
       </div>
 
       {/* Filter Tabs / Quick filters */}
