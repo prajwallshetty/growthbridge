@@ -9,6 +9,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://growthbridge.live"),
   title: "Growth Bridge Studio — Admin Control Panel",
   description: "Secure administrator dashboard for configuring Growth Bridge Studio.",
 };

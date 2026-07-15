@@ -182,7 +182,7 @@ export default function HomeClient({
 
   const contactEmail = settings?.contactEmail || "hello@growthbridge.live";
   const phoneNumber = settings?.phoneNumber || "+91 62827 59863";
-  const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
+  const officeAddress = settings?.officeAddress || "Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002";
   const socialTwitter = settings?.socialTwitter || "https://twitter.com/growthbridge";
   const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
   const socialGithub = settings?.socialGithub || "https://github.com/growthbridge";
@@ -1379,7 +1379,7 @@ function GlobalPresenceSection({ settings }: { settings: any }) {
 
   const dbBranches = settings?.branches || [];
   const activeBranches = dbBranches.length > 0 ? dbBranches : [
-    { name: "India", address: "Bengaluru, India", status: "active" },
+    { name: "India", address: "Mangalore, India", status: "active" },
     { name: "Germany", address: "Munich, Germany", status: "active" },
     { name: "France", address: "Paris, France", status: "active" },
     { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }
@@ -1394,7 +1394,7 @@ function GlobalPresenceSection({ settings }: { settings: any }) {
       const nameLower = b.name.toLowerCase();
       if (nameLower.includes("india")) {
         tz = "Asia/Kolkata";
-        coords = "12.9716° N, 77.5946° E";
+        coords = "12.9141° N, 74.8560° E";
         flag = "🇮🇳";
         label = "Engineering Hub";
       } else if (nameLower.includes("german")) {
@@ -1588,12 +1588,12 @@ function ContactCta({
   const ref = useRef(null);
   const [pos, setPos] = useState({ x: 50, y: 50 });
 
-  const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
+  const officeAddress = settings?.officeAddress || "Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002";
   const socialTwitter = settings?.socialTwitter || "https://twitter.com/growthbridge";
   const socialLinkedin = settings?.socialLinkedin || "https://linkedin.com/company/growthbridge";
   const socialGithub = settings?.socialGithub || "https://github.com/growthbridge";
   const branches = settings?.branches || [
-    { name: "India", address: "Bengaluru, India", status: "active" },
+    { name: "India", address: "Mangalore, India", status: "active" },
     { name: "Germany", address: "Munich, Germany", status: "active" },
     { name: "France", address: "Paris, France", status: "active" },
     { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }

@@ -532,15 +532,15 @@ export async function getSettings() {
     settings = await Setting.create({
       contactEmail: "hello@growthbridge.live",
       phoneNumber: "+91 62827 59863",
-      officeAddress: "100 Pine St, San Francisco, CA",
+      officeAddress: "Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002",
       socialTwitter: "https://twitter.com/growthbridge",
       socialLinkedin: "https://linkedin.com/company/growthbridge",
       socialGithub: "https://github.com/growthbridge",
-      seoDefaultTitle: "Growth Bridge — Creative Digital Agency",
-      seoDefaultDescription: "We design and build enduring digital interfaces for startups.",
+      seoDefaultTitle: "Growth Bridge — Creative Digital Agency in Mangalore",
+      seoDefaultDescription: "Helping ambitious businesses build, launch and scale digital experiences. Premium websites, AI automation, brand systems, and digital products in Mangalore, India.",
       maintenanceMode: false,
       branches: [
-        { name: "India", address: "Bengaluru, India", status: "active" },
+        { name: "India", address: "Mangalore, India", status: "active" },
         { name: "Germany", address: "Munich, Germany", status: "active" },
         { name: "France", address: "Paris, France", status: "active" },
         { name: "Poland", address: "Warsaw, Poland", status: "coming_soon" }

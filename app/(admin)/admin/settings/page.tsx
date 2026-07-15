@@ -152,7 +152,7 @@ export default function SettingsCmsPage() {
               name="officeAddress"
               value={settings.officeAddress || ""}
               onChange={handleChange}
-              placeholder="e.g. 100 Pine St, San Francisco, CA"
+              placeholder="e.g. Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002"
               className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
             />
           </div>

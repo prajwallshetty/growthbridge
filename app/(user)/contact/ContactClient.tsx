@@ -31,7 +31,7 @@ function Reveal({
 export default function ContactClient({ settings }: { settings: any }) {
   const contactEmail = settings?.contactEmail || "hello@growthbridge.live";
   const phoneNumber = settings?.phoneNumber || "+91 62827 59863";
-  const officeAddress = settings?.officeAddress || "100 Pine St, San Francisco, CA";
+  const officeAddress = settings?.officeAddress || "Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002";
 
 
   const [form, setForm] = useState({

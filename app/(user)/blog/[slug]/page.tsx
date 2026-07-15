@@ -23,7 +23,10 @@ export async function generateMetadata({ params }: PageProps) {
   const title = `${blog.seoTitle || blog.title} | Growth Bridge`;
   const imageUrl = blog.image || "/opengraph-image.png";
 
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://growthbridge.live";
+
   return {
+    metadataBase: new URL(baseUrl),
     title,
     description: desc,
     openGraph: {
