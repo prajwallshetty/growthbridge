@@ -16,28 +16,57 @@ export async function login(formData: FormData) {
     return { success: false, error: "Please enter your email and password" };
   }
 
-  try {
-    await connectToDatabase();
+  const defaultEmail = (process.env.ADMIN_EMAIL || "admin@growthbridge.studio").toLowerCase();
+  const defaultPassword = process.env.ADMIN_PASSWORD || "admin123";
 
-    // Seed or update default admin using environment variables
-    const defaultEmail = process.env.ADMIN_EMAIL || "admin@growthbridge.studio";
-    const defaultPassword = process.env.ADMIN_PASSWORD || "admin123";
-    
+  try {
+    try {
+      await connectToDatabase();
+    } catch (dbError: any) {
+      console.warn("Database connection failed. Falling back to env-variable authentication.", dbError?.message);
+      if (email.toLowerCase() === defaultEmail && password === defaultPassword) {
+        // Sign JWT with mock userId for offline bypass
+        const secret = new TextEncoder().encode(JWT_SECRET);
+        const token = await new jose.SignJWT({
+          userId: "offline_admin_bypass_id",
+          email: defaultEmail,
+          role: "Super Admin",
+          name: "Prajwal Shetty (Offline)",
+        })
+          .setProtectedHeader({ alg: "HS256" })
+          .setIssuedAt()
+          .setExpirationTime("2h")
+          .sign(secret);
+
+        const cookieStore = await cookies();
+        cookieStore.set("admin_session", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          path: "/",
+          maxAge: 7200, // 2 hours
+        });
+
+        return { success: true };
+      }
+      return { success: false, error: "Database offline and credentials mismatched." };
+    }
+
+    // Database is online: seed or update default admin
     const defaultAdmin = await User.findOne({ role: "Super Admin" });
     const hashedDefaultPassword = await bcrypt.hash(defaultPassword, 10);
     
     if (!defaultAdmin) {
       await User.create({
         name: "Prajwal Shetty",
-        email: defaultEmail.toLowerCase(),
+        email: defaultEmail,
         password: hashedDefaultPassword,
         role: "Super Admin",
       });
       console.log(`Default admin seeded: ${defaultEmail}`);
     } else {
       let needsUpdate = false;
-      if (defaultAdmin.email !== defaultEmail.toLowerCase()) {
-        defaultAdmin.email = defaultEmail.toLowerCase();
+      if (defaultAdmin.email !== defaultEmail) {
+        defaultAdmin.email = defaultEmail;
         needsUpdate = true;
       }
       

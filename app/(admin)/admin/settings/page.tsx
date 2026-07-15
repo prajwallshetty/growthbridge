@@ -5,7 +5,7 @@ import { getSettings, saveSettings } from "@/lib/actions/cms";
 import { Loader2, Save } from "lucide-react";
 
 export default function SettingsCmsPage() {
-  const [settings, setSettings] = useState<any>(null);
+  const [settings, setSettings] = useState<any>({});
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState("");
