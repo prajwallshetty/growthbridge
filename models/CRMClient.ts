@@ -1,12 +1,42 @@
 import mongoose, { Schema } from "mongoose";
 
+const SubtaskSchema = new Schema({
+  title: { type: String, required: true },
+  completed: { type: Boolean, default: false },
+});
+
 const TaskSchema = new Schema({
   title: { type: String, required: true },
+  description: { type: String, default: "" },
   priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium" },
   assignee: { type: String, default: "Unassigned" },
-  deadline: { type: String },
+  dueDate: { type: String },
+  deadline: { type: String }, // alias for backward compatibility
   status: { type: String, enum: ["Pending", "In Progress", "Completed"], default: "Pending" },
+  completed: { type: Boolean, default: false },
   progress: { type: Number, default: 0 },
+  completionTime: { type: String },
+  order: { type: Number, default: 0 },
+  subtasks: [SubtaskSchema],
+});
+
+const ExpenseSchema = new Schema({
+  name: { type: String, required: true },
+  category: { type: String, required: true, default: "Material Cost" }, // Material Cost, Miscellaneous Expenses, Vendor, Software, etc.
+  vendor: { type: String, default: "" },
+  amount: { type: Number, required: true, default: 0 },
+  paymentMethod: { type: String, default: "Bank Transfer" },
+  date: { type: String, required: true },
+  notes: { type: String, default: "" },
+  attachment: { type: String, default: "" },
+});
+
+const PaymentSchema = new Schema({
+  amount: { type: Number, required: true, default: 0 },
+  paymentDate: { type: String, required: true },
+  referenceNumber: { type: String, default: "" },
+  paymentMethod: { type: String, default: "Bank Transfer" },
+  notes: { type: String, default: "" },
 });
 
 const InvoiceItemSchema = new Schema({
@@ -77,7 +107,7 @@ const FileSchema = new Schema({
 const ActivitySchema = new Schema({
   text: { type: String, required: true },
   timestamp: { type: String, required: true },
-  type: { type: String, enum: ["document", "invoice", "meeting", "progress", "chat"], default: "progress" },
+  type: { type: String, enum: ["document", "invoice", "meeting", "progress", "chat", "expense", "payment", "task"], default: "progress" },
 });
 
 const MessageSchema = new Schema({
@@ -93,9 +123,14 @@ const CRMClientSchema = new Schema(
     logo: { type: String },
     industry: { type: String },
     budget: { type: Number, default: 0 },
+    projectCost: { type: Number, default: 0 },
     stage: {
       type: String,
       enum: [
+        "Active",
+        "Completed",
+        "Pending",
+        "On Hold",
         "Lead Created",
         "Discovery Call",
         "Meeting Scheduled",
@@ -116,7 +151,7 @@ const CRMClientSchema = new Schema(
         "Maintenance",
         "Upsell"
       ],
-      default: "Lead Created"
+      default: "Active"
     },
     priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium" },
     assignee: { type: String, default: "Unassigned" },
@@ -125,6 +160,8 @@ const CRMClientSchema = new Schema(
     startDate: { type: String },
     expectedDelivery: { type: String },
     tasks: [TaskSchema],
+    expenses: [ExpenseSchema],
+    payments: [PaymentSchema],
     files: [FileSchema],
     invoices: [InvoiceSchema],
     quotations: [QuotationSchema],
@@ -138,3 +175,4 @@ const CRMClientSchema = new Schema(
 );
 
 export default mongoose.models.CRMClient || mongoose.model("CRMClient", CRMClientSchema);
+

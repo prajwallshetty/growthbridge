@@ -2,6 +2,15 @@ import mongoose, { Schema } from "mongoose";
 
 const SettingSchema = new Schema(
   {
+    businessName: { type: String, default: "Growth Bridge" },
+    currency: { type: String, default: "₹" },
+    partner1Name: { type: String, default: "Prajwal" },
+    partner1Share: { type: Number, default: 50 },
+    partner2Name: { type: String, default: "Shaz" },
+    partner2Share: { type: Number, default: 50 },
+    taxRate: { type: Number, default: 18 },
+    theme: { type: String, default: "light" },
+    logoUrl: { type: String, default: "/logo.png" },
     contactEmail: { type: String, default: "hello@growthbridge.live" },
     phoneNumber: { type: String, default: "+91 62827 59863" },
     officeAddress: { type: String, default: "Kadri Temple Road, Kadri, Mangalore, Karnataka, India - 575002" },

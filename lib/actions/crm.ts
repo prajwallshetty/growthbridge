@@ -696,3 +696,153 @@ export async function generateAIDocument(clientId: string, docType: string, user
     return `AI Generation failed: ${error?.message || "Unknown error"}`;
   }
 }
+
+// Add Expense to Project
+export async function addProjectExpense(clientId: string, expenseData: any) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  if (!client.expenses) client.expenses = [];
+  client.expenses.push(expenseData);
+
+  client.activity.unshift({
+    text: `Expense added: "${expenseData.name}" — ₹${expenseData.amount.toLocaleString()} (${expenseData.category})`,
+    timestamp: new Date().toISOString().split("T")[0],
+    type: "expense",
+  });
+
+  await client.save();
+  return serialize(client);
+}
+
+// Delete Expense from Project
+export async function deleteProjectExpense(clientId: string, expenseId: string) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  client.expenses = client.expenses.filter((e: any) => e._id.toString() !== expenseId && e.id !== expenseId);
+  client.activity.unshift({
+    text: `Expense record removed from project`,
+    timestamp: new Date().toISOString().split("T")[0],
+    type: "expense",
+  });
+
+  await client.save();
+  return serialize(client);
+}
+
+// Add Payment to Project
+export async function addProjectPayment(clientId: string, paymentData: any) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  if (!client.payments) client.payments = [];
+  client.payments.push(paymentData);
+
+  client.activity.unshift({
+    text: `Payment received: ₹${paymentData.amount.toLocaleString()} (Ref: ${paymentData.referenceNumber || "N/A"})`,
+    timestamp: new Date().toISOString().split("T")[0],
+    type: "payment",
+  });
+
+  await client.save();
+  return serialize(client);
+}
+
+// Delete Payment from Project
+export async function deleteProjectPayment(clientId: string, paymentId: string) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  client.payments = client.payments.filter((p: any) => p._id.toString() !== paymentId && p.id !== paymentId);
+  client.activity.unshift({
+    text: `Payment record removed from project`,
+    timestamp: new Date().toISOString().split("T")[0],
+    type: "payment",
+  });
+
+  await client.save();
+  return serialize(client);
+}
+
+// Update Project Task (including subtasks & drag ordering)
+export async function updateProjectTask(clientId: string, taskId: string, taskUpdates: any) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  const taskIndex = client.tasks.findIndex((t: any) => t._id.toString() === taskId || t.id === taskId);
+  if (taskIndex !== -1) {
+    Object.assign(client.tasks[taskIndex], taskUpdates);
+  }
+
+  // Recalculate project progress based on completed tasks
+  if (client.tasks.length > 0) {
+    const completedCount = client.tasks.filter((t: any) => t.status === "Completed" || t.completed).length;
+    client.progress = Math.round((completedCount / client.tasks.length) * 100);
+  }
+
+  await client.save();
+  return serialize(client);
+}
+
+// Delete Task
+export async function deleteProjectTask(clientId: string, taskId: string) {
+  await requireAuth();
+  await connectToDatabase();
+
+  const client = await CRMClient.findById(clientId);
+  if (!client) throw new Error("Client project not found");
+
+  client.tasks = client.tasks.filter((t: any) => t._id.toString() !== taskId && t.id !== taskId);
+
+  if (client.tasks.length > 0) {
+    const completedCount = client.tasks.filter((t: any) => t.status === "Completed" || t.completed).length;
+    client.progress = Math.round((completedCount / client.tasks.length) * 100);
+  }
+
+  await client.save();
+  return serialize(client);
+}
+
+// Get CRM Settings
+export async function getCRMSettings() {
+  await requireAuth();
+  await connectToDatabase();
+  const Setting = (await import("@/models/Setting")).default;
+  let settings = await Setting.findOne();
+  if (!settings) {
+    settings = await Setting.create({});
+  }
+  return serialize(settings);
+}
+
+// Update CRM Settings
+export async function updateCRMSettings(settingsData: any) {
+  await requireAuth();
+  await connectToDatabase();
+  const Setting = (await import("@/models/Setting")).default;
+  let settings = await Setting.findOne();
+  if (!settings) {
+    settings = await Setting.create(settingsData);
+  } else {
+    Object.assign(settings, settingsData);
+    await settings.save();
+  }
+  return serialize(settings);
+}
+

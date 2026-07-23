@@ -2,18 +2,13 @@
 
 import React, { useState } from "react";
 import { useCRM } from "./CRMProvider";
-import { Search, Sparkles, Plus, Bell, ChevronRight, HelpCircle } from "lucide-react";
+import { Plus, ChevronRight } from "lucide-react";
 
 export default function TopBar() {
   const {
-    view,
     clients,
     activeClientId,
     setActiveClientId,
-    searchQuery,
-    setSearchQuery,
-    aiActive,
-    setAiActive,
     addClient,
   } = useCRM();
 
@@ -54,28 +49,13 @@ export default function TopBar() {
         </div>
       )}
 
-
-
       {/* Quick Action button */}
       <button
         onClick={() => setShowAddClientModal(true)}
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#111111] hover:bg-[#222222] text-white text-[12px] font-bold transition-all shadow-sm cursor-pointer"
       >
         <Plus size={13} strokeWidth={2.5} />
-        <span>Add Client</span>
-      </button>
-
-      {/* AI Assistant button */}
-      <button
-        onClick={() => setAiActive(!aiActive)}
-        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-bold transition-all cursor-pointer ${
-          aiActive
-            ? "bg-[#111111] border-[#111111] text-white"
-            : "bg-white border-[#E9E3DA] text-[#6A6A6A] hover:text-[#111111] hover:border-[#111111]"
-        }`}
-      >
-        <Sparkles size={13} />
-        <span>AI Panel</span>
+        <span>Add Client Project</span>
       </button>
 
       {/* Add Client Dialog Overlay Modal */}
@@ -141,3 +121,4 @@ export default function TopBar() {
     </div>
   );
 }
+

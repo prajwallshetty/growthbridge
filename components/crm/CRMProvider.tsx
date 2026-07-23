@@ -9,39 +9,69 @@ import {
   updateClientStage,
   addCRMTask,
   toggleCRMTask,
-  addCRMInvoice,
-  updateCRMInvoiceStatus,
-  saveCRMDocument,
-  addCRMMeeting,
-  addCRMFile,
-  addCRMMessage
+  addProjectExpense,
+  deleteProjectExpense,
+  addProjectPayment,
+  deleteProjectPayment,
+  updateProjectTask,
+  deleteProjectTask,
+  getCRMSettings,
+  updateCRMSettings,
 } from "@/lib/actions/crm";
 
 export type CRMView =
   | "dashboard"
-  | "clients"
-  | "kanban"
   | "projects"
-  | "tasks"
-  | "calendar"
-  | "invoices"
-  | "proposals"
-  | "agreements"
-  | "files"
-  | "messages"
-  | "meetings"
-  | "analytics"
-  | "settings";
+  | "expenses"
+  | "revenue"
+  | "settings"
+  | "clients";
+
+export interface CRMSubtask {
+  _id?: string;
+  id?: string;
+  title: string;
+  completed: boolean;
+}
 
 export interface CRMTask {
   _id: string;
   id?: string;
   title: string;
+  description?: string;
   priority: "High" | "Medium" | "Low";
   assignee: string;
-  deadline: string;
+  dueDate?: string;
+  deadline?: string;
   status: "Pending" | "In Progress" | "Completed";
+  completed?: boolean;
   progress: number;
+  completionTime?: string;
+  order?: number;
+  subtasks?: CRMSubtask[];
+}
+
+export interface CRMExpense {
+  _id: string;
+  id?: string;
+  name: string;
+  category: string; // Material Cost, Miscellaneous Expenses, Vendor, Software, etc.
+  vendor?: string;
+  amount: number;
+  paymentMethod: string;
+  date: string;
+  notes?: string;
+  attachment?: string;
+}
+
+export interface CRMPayment {
+  _id: string;
+  id?: string;
+  amount: number;
+  paymentDate: string;
+  referenceNumber?: string;
+  paymentMethod: string;
+  notes?: string;
 }
 
 export interface CRMInvoice {
@@ -55,94 +85,28 @@ export interface CRMInvoice {
   paidAmount: number;
 }
 
-export interface CRMQuotation {
-  _id: string;
-  id?: string;
-  items: { description: string; qty: number; rate: number }[];
-  discount: number;
-  tax: number;
-  subtotal: number;
-  total: number;
-  terms: string;
-  validity: string;
-  status: "Draft" | "Sent" | "Approved" | "Invoiced";
-}
-
-export interface CRMProposal {
-  _id: string;
-  id?: string;
-  title: string;
-  contentBlocks: string[];
-  status: "Draft" | "Sent" | "Approved" | "Declined";
-  version: number;
-}
-
-export interface CRMAgreement {
-  _id: string;
-  id?: string;
-  scope: string;
-  timeline: string;
-  paymentTerms: string;
-  signedStatus: "Unsigned" | "Sent" | "Signed";
-  signedAt?: string;
-}
-
-export interface CRMMeeting {
-  _id: string;
-  id?: string;
-  title: string;
-  date: string;
-  time: string;
-  link: string;
-  notes: string;
-  actionItems?: string[];
-  status: "Upcoming" | "Completed";
-}
-
-export interface CRMFile {
-  _id: string;
-  id?: string;
-  name: string;
-  category: "Logo" | "Brand Assets" | "Images" | "Proposal" | "Agreement" | "Invoices" | "Source Files" | "Credentials";
-  size: string;
-  uploadedAt: string;
-  url: string;
-}
-
-export interface CRMNote {
-  _id: string;
-  id?: string;
-  title: string;
-  content: string;
-  updatedAt: string;
-  pinned: boolean;
-}
-
-export interface CRMMessage {
-  _id: string;
-  id?: string;
-  sender: "client" | "studio";
-  text: string;
-  timestamp: string;
-}
-
 export interface CRMActivity {
   _id: string;
   id?: string;
   text: string;
   timestamp: string;
-  type: "document" | "invoice" | "meeting" | "progress" | "chat";
+  type: "document" | "invoice" | "meeting" | "progress" | "chat" | "expense" | "payment" | "task";
 }
 
 export interface CRMClient {
   _id: string;
-  id?: string; // fallback alias
+  id?: string;
   name: string;
   company: string;
   logo: string;
   industry: string;
   budget: number;
+  projectCost?: number;
   stage:
+    | "Active"
+    | "Completed"
+    | "Pending"
+    | "On Hold"
     | "Lead Created"
     | "Discovery Call"
     | "Meeting Scheduled"
@@ -169,15 +133,23 @@ export interface CRMClient {
   startDate: string;
   expectedDelivery: string;
   tasks: CRMTask[];
-  files: CRMFile[];
-  invoices: CRMInvoice[];
-  quotations: CRMQuotation[];
-  proposals: CRMProposal[];
-  agreements: CRMAgreement[];
-  meetings: CRMMeeting[];
-  notes: CRMNote[];
-  messages: CRMMessage[];
-  activity: CRMActivity[];
+  expenses: CRMExpense[];
+  payments: CRMPayment[];
+  invoices?: CRMInvoice[];
+  files?: any[];
+  activity?: CRMActivity[];
+}
+
+export interface CRMSettingsState {
+  businessName: string;
+  currency: string;
+  partner1Name: string;
+  partner1Share: number;
+  partner2Name: string;
+  partner2Share: number;
+  taxRate: number;
+  theme: string;
+  logoUrl: string;
 }
 
 interface CRMContextType {
@@ -188,32 +160,70 @@ interface CRMContextType {
   setActiveClientId: (id: string | null) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
-  aiActive: boolean;
-  setAiActive: (active: boolean) => void;
   loading: boolean;
   refreshClients: () => Promise<void>;
   addClient: (client: Partial<CRMClient>) => Promise<void>;
   updateClientStage: (id: string, stage: CRMClient["stage"]) => Promise<void>;
   updateClient: (id: string, updates: Partial<CRMClient>) => Promise<void>;
+  
+  // Task Handlers
   addTask: (clientId: string, task: Omit<CRMTask, "_id" | "id">) => Promise<void>;
+  updateTask: (clientId: string, taskId: string, updates: Partial<CRMTask>) => Promise<void>;
   toggleTask: (clientId: string, taskId: string) => Promise<void>;
-  addInvoice: (clientId: string, invoice: Omit<CRMInvoice, "_id" | "id">) => Promise<void>;
-  updateInvoiceStatus: (clientId: string, invoiceId: string, status: CRMInvoice["status"]) => Promise<void>;
-  saveDocument: (clientId: string, docType: "proposal" | "quotation" | "agreement", docData: any) => Promise<void>;
-  addMeeting: (clientId: string, meeting: Omit<CRMMeeting, "_id" | "id">) => Promise<void>;
-  addMessage: (clientId: string, sender: "client" | "studio", text: string) => Promise<void>;
-  addFile: (clientId: string, file: Omit<CRMFile, "_id" | "id">) => Promise<void>;
-  addNote: (clientId: string, note: Omit<CRMNote, "_id" | "id">) => Promise<void>;
-  updateNote: (clientId: string, noteId: string, noteUpdates: Partial<CRMNote>) => Promise<void>;
+  deleteTask: (clientId: string, taskId: string) => Promise<void>;
+  
+  // Financial Handlers
+  addExpense: (clientId: string, expense: Omit<CRMExpense, "_id" | "id">) => Promise<void>;
+  deleteExpense: (clientId: string, expenseId: string) => Promise<void>;
+  addPayment: (clientId: string, payment: Omit<CRMPayment, "_id" | "id">) => Promise<void>;
+  deletePayment: (clientId: string, paymentId: string) => Promise<void>;
+
+  // Settings
+  settings: CRMSettingsState;
+  updateSettings: (newSettings: Partial<CRMSettingsState>) => Promise<void>;
+
   globalActivities: CRMActivity[];
   isAddClientOpen: boolean;
   setIsAddClientOpen: (open: boolean) => void;
-  stats: {
+
+  // Live Financial & Overview Stats
+  financialStats: {
     totalRevenue: number;
-    activeClients: number;
-    completedProjects: number;
-    pendingPayments: number;
-    upcomingMeetings: number;
+    revenueThisMonth: number;
+    revenuePending: number;
+    amountReceived: number;
+    outstandingPayments: number;
+    
+    totalExpenses: number;
+    expensesThisMonth: number;
+    materialCost: number;
+    miscExpenses: number;
+    
+    grossProfit: number;
+    netProfit: number;
+    profitMarginPct: number;
+
+    partner1: {
+      name: string;
+      sharePct: number;
+      revenueShare: number;
+      expensesShare: number;
+      netShare: number;
+      totalPayable: number;
+    };
+    partner2: {
+      name: string;
+      sharePct: number;
+      revenueShare: number;
+      expensesShare: number;
+      netShare: number;
+      totalPayable: number;
+    };
+
+    activeProjectsCount: number;
+    completedProjectsCount: number;
+    pendingProjectsCount: number;
+    onHoldProjectsCount: number;
   };
 }
 
@@ -223,7 +233,6 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const router = useRouter();
   const searchParams = useSearchParams();
 
-  // Read initial view and client parameters from URL
   const initialView = (searchParams.get("view") as CRMView) || "dashboard";
   const initialClient = searchParams.get("client") || null;
 
@@ -232,11 +241,21 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [activeClientId, _setActiveClientId] = useState<string | null>(initialClient);
   const [isAddClientOpen, setIsAddClientOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [aiActive, setAiActive] = useState(false);
   const [globalActivities, setGlobalActivities] = useState<CRMActivity[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Sync state transitions with URL search params
+  const [settings, setSettingsState] = useState<CRMSettingsState>({
+    businessName: "Growth Bridge",
+    currency: "₹",
+    partner1Name: "Prajwal",
+    partner1Share: 50,
+    partner2Name: "Shaz",
+    partner2Share: 50,
+    taxRate: 18,
+    theme: "light",
+    logoUrl: "/logo.png",
+  });
+
   const setView = (newView: CRMView) => {
     _setView(newView);
     const params = new URLSearchParams(window.location.search);
@@ -255,14 +274,19 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     router.push(`${window.location.pathname}?${params.toString()}`);
   };
 
-  // Fetch initial clients list from DB
   const refreshClients = async () => {
     try {
       setLoading(true);
-      const data = await getCRMClients();
+      const [data, fetchedSettings] = await Promise.all([
+        getCRMClients(),
+        getCRMSettings().catch(() => null),
+      ]);
       setClients(data as any);
+      if (fetchedSettings) {
+        setSettingsState((prev) => ({ ...prev, ...fetchedSettings }));
+      }
     } catch (error) {
-      console.error("Failed to load CRM clients from database:", error);
+      console.error("Failed to load CRM clients:", error);
     } finally {
       setLoading(false);
     }
@@ -272,7 +296,6 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     refreshClients();
   }, []);
 
-  // Compute global activities from all client logs
   useEffect(() => {
     const allActs: CRMActivity[] = [];
     clients.forEach((c) => {
@@ -285,12 +308,11 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         });
       }
     });
-    // Sort descending by timestamp
     allActs.sort((a, b) => b.timestamp.localeCompare(a.timestamp));
     setGlobalActivities(allActs);
   }, [clients]);
 
-  // Create Client
+  // Client CRUD
   const addClient = async (newClient: Partial<CRMClient>) => {
     try {
       const saved = await saveCRMClient(newClient);
@@ -300,7 +322,6 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Update Client lifecycle stage
   const updateStage = async (id: string, stage: CRMClient["stage"]) => {
     try {
       const updated = await updateClientStage(id, stage);
@@ -310,7 +331,6 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Generic Client edit
   const editClient = async (id: string, updates: Partial<CRMClient>) => {
     try {
       const saved = await saveCRMClient({ _id: id, ...updates });
@@ -320,17 +340,25 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Add Task
+  // Task Actions
   const addTask = async (clientId: string, task: Omit<CRMTask, "_id" | "id">) => {
     try {
-      const updated = await addCRMTask(clientId, task);
+      const updated = await addCRMTask(clientId, task as any);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Toggle Task Status
+  const updateTask = async (clientId: string, taskId: string, updates: Partial<CRMTask>) => {
+    try {
+      const updated = await updateProjectTask(clientId, taskId, updates);
+      setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   const toggleTask = async (clientId: string, taskId: string) => {
     try {
       const updated = await toggleCRMTask(clientId, taskId);
@@ -340,120 +368,183 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  // Add Invoice
-  const addInvoice = async (clientId: string, invoice: Omit<CRMInvoice, "_id" | "id">) => {
+  const deleteTask = async (clientId: string, taskId: string) => {
     try {
-      const updated = await addCRMInvoice(clientId, invoice);
+      const updated = await deleteProjectTask(clientId, taskId);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Update Invoice Status
-  const updateInvoiceStatusAction = async (clientId: string, invoiceId: string, status: CRMInvoice["status"]) => {
+  // Expense Handlers
+  const addExpense = async (clientId: string, expense: Omit<CRMExpense, "_id" | "id">) => {
     try {
-      const updated = await updateCRMInvoiceStatus(clientId, invoiceId, status);
+      const updated = await addProjectExpense(clientId, expense);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Save Document
-  const saveDocument = async (clientId: string, docType: "proposal" | "quotation" | "agreement", docData: any) => {
+  const deleteExpense = async (clientId: string, expenseId: string) => {
     try {
-      const updated = await saveCRMDocument(clientId, docType, docData);
+      const updated = await deleteProjectExpense(clientId, expenseId);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Add Meeting
-  const addMeeting = async (clientId: string, meeting: Omit<CRMMeeting, "_id" | "id">) => {
+  // Payment Handlers
+  const addPayment = async (clientId: string, payment: Omit<CRMPayment, "_id" | "id">) => {
     try {
-      const updated = await addCRMMeeting(clientId, meeting);
+      const updated = await addProjectPayment(clientId, payment);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Add Message
-  const addMessage = async (clientId: string, sender: "client" | "studio", text: string) => {
+  const deletePayment = async (clientId: string, paymentId: string) => {
     try {
-      const messageData = {
-        sender,
-        text,
-        timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
-      };
-      const updated = await addCRMMessage(clientId, messageData);
+      const updated = await deleteProjectPayment(clientId, paymentId);
       setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Add File
-  const addFile = async (clientId: string, file: Omit<CRMFile, "_id" | "id">) => {
+  // Settings Handler
+  const updateSettings = async (newSettings: Partial<CRMSettingsState>) => {
     try {
-      const fileData = {
-        ...file,
-        uploadedAt: new Date().toISOString().split("T")[0],
-      };
-      const updated = await addCRMFile(clientId, fileData);
-      setClients((prev) => prev.map((c) => (c._id === clientId ? (updated as any) : c)));
+      const updated = await updateCRMSettings(newSettings);
+      setSettingsState((prev) => ({ ...prev, ...updated }));
     } catch (e) {
       console.error(e);
     }
   };
 
-  // Local Notes State Management (since notes are sub-documents but don't have automations, we can update client direct)
-  const addNote = async (clientId: string, note: Omit<CRMNote, "_id" | "id">) => {
-    const client = clients.find((c) => c._id === clientId);
-    if (!client) return;
-    const newNote = { ...note, _id: `note_${Date.now()}`, updatedAt: new Date().toISOString().split("T")[0] };
-    const notes = [newNote, ...(client.notes || [])];
-    await editClient(clientId, { notes } as any);
+  // LIVE FINANCIAL CALCULATIONS
+  const currentMonthStr = new Date().toISOString().substring(0, 7); // "YYYY-MM"
+
+  // 1. Revenue
+  let totalRevenue = 0;
+  let revenueThisMonth = 0;
+  let totalBudgetSum = 0;
+
+  clients.forEach((c) => {
+    totalBudgetSum += c.budget || c.projectCost || 0;
+    
+    // Sum payments array
+    if (c.payments && c.payments.length > 0) {
+      c.payments.forEach((p) => {
+        totalRevenue += p.amount || 0;
+        if (p.paymentDate && p.paymentDate.startsWith(currentMonthStr)) {
+          revenueThisMonth += p.amount || 0;
+        }
+      });
+    } else if (c.invoices && c.invoices.length > 0) {
+      // fallback to paid invoices if no explicit payment log
+      c.invoices.forEach((inv) => {
+        if (inv.status === "Paid") {
+          totalRevenue += inv.amount || 0;
+          if (inv.dueDate && inv.dueDate.startsWith(currentMonthStr)) {
+            revenueThisMonth += inv.amount || 0;
+          }
+        }
+      });
+    }
+  });
+
+  const amountReceived = totalRevenue;
+  const revenuePending = Math.max(0, totalBudgetSum - totalRevenue);
+  const outstandingPayments = revenuePending;
+
+  // 2. Expenses
+  let totalExpenses = 0;
+  let expensesThisMonth = 0;
+  let materialCost = 0;
+  let miscExpenses = 0;
+
+  clients.forEach((c) => {
+    if (c.expenses && c.expenses.length > 0) {
+      c.expenses.forEach((e) => {
+        const amt = e.amount || 0;
+        totalExpenses += amt;
+        if (e.date && e.date.startsWith(currentMonthStr)) {
+          expensesThisMonth += amt;
+        }
+        if (e.category === "Material Cost") {
+          materialCost += amt;
+        } else {
+          miscExpenses += amt;
+        }
+      });
+    }
+  });
+
+  // 3. Profit
+  const netProfit = totalRevenue - totalExpenses;
+  const grossProfit = totalRevenue - materialCost;
+  const profitMarginPct = totalRevenue > 0 ? (netProfit / totalRevenue) * 100 : 0;
+
+  // 4. Partner Distribution
+  const p1SharePct = settings.partner1Share || 50;
+  const p2SharePct = settings.partner2Share || 50;
+
+  const partner1 = {
+    name: settings.partner1Name || "Prajwal",
+    sharePct: p1SharePct,
+    revenueShare: (totalRevenue * p1SharePct) / 100,
+    expensesShare: (totalExpenses * p1SharePct) / 100,
+    netShare: (netProfit * p1SharePct) / 100,
+    totalPayable: (netProfit * p1SharePct) / 100,
   };
 
-  const updateNote = async (clientId: string, noteId: string, noteUpdates: Partial<CRMNote>) => {
-    const client = clients.find((c) => c._id === clientId);
-    if (!client) return;
-    const notes = (client.notes || []).map((n) =>
-      n._id === noteId ? { ...n, ...noteUpdates, updatedAt: new Date().toISOString().split("T")[0] } : n
-    );
-    await editClient(clientId, { notes } as any);
+  const partner2 = {
+    name: settings.partner2Name || "Shaz",
+    sharePct: p2SharePct,
+    revenueShare: (totalRevenue * p2SharePct) / 100,
+    expensesShare: (totalExpenses * p2SharePct) / 100,
+    netShare: (netProfit * p2SharePct) / 100,
+    totalPayable: (netProfit * p2SharePct) / 100,
   };
 
-  // Compute Metrics Dashboard Stats
-  const totalRevenue = clients
-    .flatMap((c) => c.invoices || [])
-    .filter((inv) => inv.status === "Paid")
-    .reduce((sum, inv) => sum + inv.amount, 0);
-
-  const pendingPayments = clients
-    .flatMap((c) => c.invoices || [])
-    .filter((inv) => inv.status === "Pending")
-    .reduce((sum, inv) => sum + inv.amount, 0);
-
-  const activeClientsCount = clients.filter(
-    (c) => c.stage !== "Project Completed" && c.stage !== "Lead Created"
+  // 5. Active Projects Breakdown
+  const activeProjectsCount = clients.filter((c) =>
+    ["Active", "Design Phase", "Development", "Testing", "Client Review", "Deployment", "Advance Payment Received", "Project Created Automatically"].includes(c.stage)
   ).length;
 
-  const completedProjects = clients.filter((c) => c.stage === "Project Completed").length;
+  const completedProjectsCount = clients.filter((c) =>
+    ["Completed", "Project Completed"].includes(c.stage)
+  ).length;
 
-  const upcomingMeetings = clients
-    .flatMap((c) => c.meetings || [])
-    .filter((m) => m.status === "Upcoming").length;
+  const pendingProjectsCount = clients.filter((c) =>
+    ["Pending", "Lead Created", "Discovery Call", "Meeting Scheduled", "Requirements Received"].includes(c.stage)
+  ).length;
 
-  const stats = {
+  const onHoldProjectsCount = clients.filter((c) => c.stage === "On Hold").length;
+
+  const financialStats = {
     totalRevenue,
-    activeClients: activeClientsCount,
-    completedProjects,
-    pendingPayments,
-    upcomingMeetings,
+    revenueThisMonth,
+    revenuePending,
+    amountReceived,
+    outstandingPayments,
+    totalExpenses,
+    expensesThisMonth,
+    materialCost,
+    miscExpenses,
+    grossProfit,
+    netProfit,
+    profitMarginPct,
+    partner1,
+    partner2,
+    activeProjectsCount,
+    completedProjectsCount,
+    pendingProjectsCount,
+    onHoldProjectsCount,
   };
 
   return (
@@ -466,27 +557,25 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setActiveClientId,
         searchQuery,
         setSearchQuery,
-        aiActive,
-        setAiActive,
         loading,
         refreshClients,
         addClient,
         updateClientStage: updateStage,
         updateClient: editClient,
         addTask,
+        updateTask,
         toggleTask,
-        addInvoice,
-        updateInvoiceStatus: updateInvoiceStatusAction,
-        saveDocument,
-        addMeeting,
-        addMessage,
-        addFile,
-        addNote,
-        updateNote,
+        deleteTask,
+        addExpense,
+        deleteExpense,
+        addPayment,
+        deletePayment,
+        settings,
+        updateSettings,
         globalActivities,
         isAddClientOpen,
         setIsAddClientOpen,
-        stats,
+        financialStats,
       }}
     >
       {children}
@@ -501,3 +590,4 @@ export const useCRM = () => {
   }
   return context;
 };
+

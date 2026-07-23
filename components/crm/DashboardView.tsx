@@ -4,359 +4,442 @@ import React from "react";
 import { useCRM } from "./CRMProvider";
 import {
   IndianRupee,
-  Users,
   Briefcase,
-  AlertCircle,
-  Video,
-  ArrowUpRight,
   TrendingUp,
-  FileSpreadsheet,
-  Calendar,
+  Receipt,
+  PieChart,
+  Users,
+  CheckCircle2,
+  Clock,
+  ArrowUpRight,
   Sparkles,
+  Percent,
+  Layers,
+  ArrowDownRight,
+  Calendar,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
 export default function DashboardView() {
-  const { stats, clients, setView, setActiveClientId, globalActivities, setAiActive } = useCRM();
+  const { financialStats, clients, setView, setActiveClientId, globalActivities, settings } = useCRM();
 
-  const recentClients = [...clients]
-    .sort((a, b) => b.startDate.localeCompare(a.startDate))
-    .slice(0, 4);
+  const activeProjects = clients.filter((c) =>
+    ["Active", "Design Phase", "Development", "Testing", "Client Review", "Deployment", "Advance Payment Received", "Project Created Automatically"].includes(c.stage)
+  );
 
-  const recentActs = globalActivities.slice(0, 5);
-
-  const handleClientClick = (id: string) => {
-    setActiveClientId(id);
-    setView("clients");
+  const formatCurrency = (val: number) => {
+    const sym = settings.currency || "₹";
+    if (val >= 100000) {
+      return `${sym}${(val / 100000).toFixed(2)}L`;
+    }
+    return `${sym}${val.toLocaleString("en-IN")}`;
   };
 
-  const revenueHistory = [
-    { month: "Jan", revenue: 800000 },
-    { month: "Feb", revenue: 950000 },
-    { month: "Mar", revenue: 1400000 },
-    { month: "Apr", revenue: 1200000 },
-    { month: "May", revenue: 1850000 },
-    { month: "Jun", revenue: 2300000 },
-    { month: "Jul", revenue: stats.totalRevenue || 2500000 },
-  ];
-
-  const maxRev = Math.max(...revenueHistory.map((d) => d.revenue));
+  const getStatusBadge = (stage: string) => {
+    if (stage === "Completed" || stage === "Project Completed") {
+      return "bg-emerald-50 text-emerald-700 border-emerald-200";
+    }
+    if (stage === "On Hold") {
+      return "bg-amber-50 text-amber-700 border-amber-200";
+    }
+    if (stage === "Pending") {
+      return "bg-slate-50 text-slate-700 border-slate-200";
+    }
+    return "bg-indigo-50 text-indigo-700 border-indigo-200";
+  };
 
   return (
-    <div className="flex flex-col gap-8 pb-10 select-none">
-      {/* Welcome banner */}
+    <div className="flex flex-col gap-8 pb-12 select-none">
+      {/* Top Header */}
       <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
-          <h2 className="text-[22px] font-extrabold tracking-tight text-[#111111] leading-tight">
-            Studio Overview
+          <h2 className="text-[24px] font-extrabold tracking-tight text-[#111111] leading-tight">
+            Financial & Project Overview
           </h2>
           <p className="text-[13px] text-[#6A6A6A] mt-1">
-            CRM Operational analytics and metrics dashboard.
+            Real-time automated business management, project progress, profitability, and partner shares.
           </p>
         </div>
-        <div className="text-[11.5px] font-mono bg-white border border-[#E9E3DA] px-3.5 py-1.5 rounded-lg text-[#6A6A6A] font-bold">
-          Today: {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => setView("projects")}
+            className="flex items-center gap-2 bg-[#111111] text-white px-4 py-2 rounded-xl text-[12.5px] font-bold hover:bg-[#222222] transition-all shadow-sm cursor-pointer"
+          >
+            <Briefcase size={14} />
+            <span>Manage Projects</span>
+          </button>
+          <div className="text-[11.5px] font-mono bg-white border border-[#E9E3DA] px-3.5 py-2 rounded-xl text-[#6A6A6A] font-bold">
+            {new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}
+          </div>
         </div>
       </div>
 
-      {/* Top Statistics Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {/* Total Revenue */}
+      {/* Main 4 Metric Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+        {/* 1. Active Projects Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: EASE }}
-          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm relative overflow-hidden"
+          transition={{ duration: 0.5, ease: EASE }}
+          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex flex-col justify-between"
+        >
+          <div className="flex justify-between items-start mb-3">
+            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Active Projects</span>
+            <div className="p-2 bg-indigo-50 border border-indigo-100 rounded-xl text-indigo-600">
+              <Briefcase size={16} />
+            </div>
+          </div>
+          <div>
+            <div className="text-[28px] font-extrabold text-[#111111] tracking-tight leading-none mb-4">
+              {financialStats.activeProjectsCount}
+            </div>
+            <div className="grid grid-cols-3 gap-2 pt-3 border-t border-[#E9E3DA]/60 text-center font-mono">
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Done</span>
+                <span className="text-[12px] font-bold text-emerald-600">{financialStats.completedProjectsCount}</span>
+              </div>
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Pending</span>
+                <span className="text-[12px] font-bold text-slate-700">{financialStats.pendingProjectsCount}</span>
+              </div>
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">On Hold</span>
+                <span className="text-[12px] font-bold text-amber-600">{financialStats.onHoldProjectsCount}</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* 2. Revenue Card */}
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.05, ease: EASE }}
+          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex flex-col justify-between"
         >
           <div className="flex justify-between items-start mb-3">
             <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Total Revenue</span>
-            <div className="p-1.5 bg-[#FCFBF8] border border-[#E9E3DA] rounded-lg text-[#111111]">
-              <IndianRupee size={14} />
+            <div className="p-2 bg-emerald-50 border border-emerald-100 rounded-xl text-emerald-600">
+              <IndianRupee size={16} />
             </div>
           </div>
-          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight leading-none">
-            ₹{(stats.totalRevenue / 100000).toFixed(1)}L
-          </div>
-          <div className="text-[10px] mt-2 flex items-center gap-1 text-emerald-600 font-semibold">
-            <TrendingUp size={12} />
-            <span>+18.4% vs last month</span>
+          <div>
+            <div className="text-[28px] font-extrabold text-[#111111] tracking-tight leading-none mb-1">
+              {formatCurrency(financialStats.totalRevenue)}
+            </div>
+            <div className="text-[11px] text-emerald-600 font-semibold mb-3 flex items-center gap-1">
+              <TrendingUp size={12} />
+              <span>This Month: {formatCurrency(financialStats.revenueThisMonth)}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E9E3DA]/60 text-center font-mono">
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Received</span>
+                <span className="text-[11.5px] font-bold text-emerald-700">{formatCurrency(financialStats.amountReceived)}</span>
+              </div>
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Pending</span>
+                <span className="text-[11.5px] font-bold text-red-600">{formatCurrency(financialStats.revenuePending)}</span>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Active Clients */}
+        {/* 3. Expenses Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.05, ease: EASE }}
-          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm relative overflow-hidden"
+          transition={{ duration: 0.5, delay: 0.1, ease: EASE }}
+          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex flex-col justify-between"
         >
           <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Active Clients</span>
-            <div className="p-1.5 bg-[#FCFBF8] border border-[#E9E3DA] rounded-lg text-[#111111]">
-              <Users size={14} />
+            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Total Expenses</span>
+            <div className="p-2 bg-red-50 border border-red-100 rounded-xl text-red-600">
+              <Receipt size={16} />
             </div>
           </div>
-          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight leading-none">
-            {stats.activeClients}
-          </div>
-          <div className="text-[10px] text-[#6A6A6A] mt-2 font-medium">
-            Leads in pipeline
+          <div>
+            <div className="text-[28px] font-extrabold text-[#111111] tracking-tight leading-none mb-1">
+              {formatCurrency(financialStats.totalExpenses)}
+            </div>
+            <div className="text-[11px] text-red-600 font-semibold mb-3 flex items-center gap-1">
+              <ArrowDownRight size={12} />
+              <span>This Month: {formatCurrency(financialStats.expensesThisMonth)}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E9E3DA]/60 text-center font-mono">
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Materials</span>
+                <span className="text-[11.5px] font-bold text-[#111111]">{formatCurrency(financialStats.materialCost)}</span>
+              </div>
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Misc</span>
+                <span className="text-[11.5px] font-bold text-[#111111]">{formatCurrency(financialStats.miscExpenses)}</span>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Projects Completed */}
+        {/* 4. Profitability Card */}
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.1, ease: EASE }}
-          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm relative overflow-hidden"
+          transition={{ duration: 0.5, delay: 0.15, ease: EASE }}
+          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex flex-col justify-between"
         >
           <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Completed</span>
-            <div className="p-1.5 bg-[#FCFBF8] border border-[#E9E3DA] rounded-lg text-[#111111]">
-              <Briefcase size={14} />
+            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Net Profit</span>
+            <div className="p-2 bg-purple-50 border border-purple-100 rounded-xl text-purple-600">
+              <PieChart size={16} />
             </div>
           </div>
-          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight leading-none">
-            {stats.completedProjects}
-          </div>
-          <div className="text-[10px] text-[#6A6A6A] mt-2 font-medium">
-            Projects delivered
-          </div>
-        </motion.div>
-
-        {/* Pending Payments */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.15, ease: EASE }}
-          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm relative overflow-hidden"
-        >
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Unpaid Invoices</span>
-            <div className="p-1.5 bg-red-50 border border-red-100 rounded-lg text-red-500">
-              <AlertCircle size={14} />
+          <div>
+            <div className="text-[28px] font-extrabold text-[#111111] tracking-tight leading-none mb-1">
+              {formatCurrency(financialStats.netProfit)}
             </div>
-          </div>
-          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight leading-none">
-            ₹{(stats.pendingPayments / 100000).toFixed(1)}L
-          </div>
-          <div className="text-[10px] text-[#6A6A6A] mt-2 font-medium">
-            Awaiting client release
-          </div>
-        </motion.div>
-
-        {/* Upcoming Meetings */}
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2, ease: EASE }}
-          className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm relative overflow-hidden"
-        >
-          <div className="flex justify-between items-start mb-3">
-            <span className="text-[11px] font-mono text-[#6A6A6A] uppercase tracking-[0.08em] font-bold">Meetings</span>
-            <div className="p-1.5 bg-[#FCFBF8] border border-[#E9E3DA] rounded-lg text-[#111111]">
-              <Video size={14} />
+            <div className="text-[11px] text-purple-700 font-semibold mb-3 flex items-center gap-1">
+              <Percent size={12} />
+              <span>Margin: {financialStats.profitMarginPct.toFixed(1)}%</span>
             </div>
-          </div>
-          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight leading-none">
-            {stats.upcomingMeetings}
-          </div>
-          <div className="text-[10px] text-[#6A6A6A] mt-2 font-medium">
-            Scheduled this week
+            <div className="grid grid-cols-2 gap-2 pt-3 border-t border-[#E9E3DA]/60 text-center font-mono">
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Gross Profit</span>
+                <span className="text-[11.5px] font-bold text-purple-800">{formatCurrency(financialStats.grossProfit)}</span>
+              </div>
+              <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Partner Pool</span>
+                <span className="text-[11.5px] font-bold text-indigo-700">{formatCurrency(financialStats.netProfit)}</span>
+              </div>
+            </div>
           </div>
         </motion.div>
       </div>
 
-      {/* Chart & Side Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Revenue Chart */}
-        <div className="lg:col-span-2 bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-          <div className="flex justify-between items-center mb-6">
-            <div>
-              <h3 className="text-[14px] font-bold text-[#111111]">Monthly Revenue Output</h3>
-              <p className="text-[11.5px] text-[#6A6A6A]">Consolidated agency invoicing stats</p>
-            </div>
-            <span className="text-[11px] bg-[#FCFBF8] border border-[#E9E3DA] px-2.5 py-1 rounded text-[#111111] font-mono font-bold">
-              ₹ INR
-            </span>
+      {/* Partner Share Distribution Section */}
+      <motion.div
+        initial={{ opacity: 0, y: 16 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, delay: 0.2, ease: EASE }}
+        className="bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm"
+      >
+        <div className="flex items-center justify-between flex-wrap gap-4 mb-6">
+          <div>
+            <h3 className="text-[16px] font-extrabold text-[#111111] flex items-center gap-2">
+              <Users size={18} className="text-indigo-600" />
+              <span>Partner Profit Distribution</span>
+            </h3>
+            <p className="text-[12px] text-[#6A6A6A] mt-0.5">
+              Automated real-time partner share calculations after deductable project expenses.
+            </p>
           </div>
+          <button
+            onClick={() => setView("settings")}
+            className="text-[12px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 cursor-pointer"
+          >
+            <span>Edit Share % in Settings</span>
+            <ArrowUpRight size={13} />
+          </button>
+        </div>
 
-          {/* Stark Black/White/Gray Bar Chart */}
-          <div className="relative h-[180px] w-full flex items-end justify-between px-2 pt-4">
-            {/* Gridlines */}
-            <div className="absolute inset-x-0 top-0 h-full flex flex-col justify-between pointer-events-none">
-              <div className="w-full border-t border-[#FCFBF8] h-px" />
-              <div className="w-full border-t border-[#FCFBF8] h-px" />
-              <div className="w-full border-t border-[#FCFBF8] h-px" />
-              <div className="w-full border-t border-[#FCFBF8] h-px" />
-            </div>
-
-            {revenueHistory.map((item, idx) => {
-              const heightPct = (item.revenue / maxRev) * 85;
-              return (
-                <div key={idx} className="flex flex-col items-center gap-2.5 z-10 w-[12%] group relative">
-                  <div className="absolute -top-10 scale-0 group-hover:scale-100 transition-all bg-white border border-[#E9E3DA] px-2 py-1 rounded text-[10.5px] text-[#111111] font-mono z-20 whitespace-nowrap shadow-xl">
-                    ₹{(item.revenue / 100000).toFixed(2)} Lakhs
-                  </div>
-
-                  {/* Vertical bar */}
-                  <div className="w-full bg-[#FCFBF8] border border-[#E9E3DA] rounded-t-lg h-[160px] flex items-end overflow-hidden">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${heightPct}%` }}
-                      transition={{ duration: 1, ease: EASE, delay: idx * 0.05 }}
-                      className="w-full bg-[#111111] rounded-t-lg transition-all cursor-pointer"
-                    />
-                  </div>
-
-                  {/* X Axis Label */}
-                  <span className="text-[11px] font-mono text-[#6A6A6A] font-bold uppercase">
-                    {item.month}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Partner 1 — Prajwal */}
+          <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-indigo-300 transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-bold flex items-center justify-center text-[14px]">
+                  {financialStats.partner1.name.substring(0, 2).toUpperCase()}
+                </div>
+                <div>
+                  <h4 className="text-[15px] font-extrabold text-[#111111] leading-none">
+                    {financialStats.partner1.name}
+                  </h4>
+                  <span className="text-[11px] text-[#6A6A6A] mt-1 block">
+                    Equal Equity Partner ({financialStats.partner1.sharePct}%)
                   </span>
                 </div>
-              );
-            })}
-          </div>
-        </div>
+              </div>
+              <span className="px-2.5 py-1 rounded-lg bg-indigo-50 text-indigo-700 text-[11px] font-bold font-mono border border-indigo-100">
+                {financialStats.partner1.sharePct}% Equity
+              </span>
+            </div>
 
-        {/* Quick Actions Panel */}
-        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
-          <div>
-            <h3 className="text-[14px] font-bold text-[#111111] mb-4">Quick Studio Actions</h3>
-            <div className="flex flex-col gap-2.5">
-              {/* Kanban trigger */}
-              <button
-                onClick={() => setView("kanban")}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E9E3DA] hover:border-[#111111] transition-all text-left cursor-pointer"
-              >
-                <div>
-                  <div className="text-[13px] font-bold text-[#111111]">Open Kanban Pipeline</div>
-                  <div className="text-[10.5px] text-[#6A6A6A] mt-0.5">Drag & drop dashboard</div>
-                </div>
-                <ArrowUpRight size={14} className="text-[#6A6A6A]" />
-              </button>
+            <div className="grid grid-cols-3 gap-3 my-2 text-center">
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Revenue Share</span>
+                <span className="text-[13px] font-bold text-emerald-700">{formatCurrency(financialStats.partner1.revenueShare)}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Expenses Share</span>
+                <span className="text-[13px] font-bold text-red-600">{formatCurrency(financialStats.partner1.expensesShare)}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Net Profit Share</span>
+                <span className="text-[13px] font-bold text-indigo-700">{formatCurrency(financialStats.partner1.netShare)}</span>
+              </div>
+            </div>
 
-              {/* Generate Invoice with AI */}
-              <button
-                onClick={() => {
-                  setView("invoices");
-                  setAiActive(true);
-                }}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E9E3DA] hover:border-[#111111] transition-all text-left cursor-pointer"
-              >
-                <div>
-                  <div className="text-[13px] font-bold text-[#111111] flex items-center gap-1.5">
-                    <span>Draft Invoices / Retainers</span>
-                    <Sparkles size={11} className="text-amber-500" />
-                  </div>
-                  <div className="text-[10.5px] text-[#6A6A6A] mt-0.5">Automated accounting</div>
-                </div>
-                <FileSpreadsheet size={14} className="text-[#6A6A6A]" />
-              </button>
-
-              {/* Calendar deadline scheduling */}
-              <button
-                onClick={() => setView("calendar")}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E9E3DA] hover:border-[#111111] transition-all text-left cursor-pointer"
-              >
-                <div>
-                  <div className="text-[13px] font-bold text-[#111111]">Check Delivery Calendar</div>
-                  <div className="text-[10.5px] text-[#6A6A6A] mt-0.5">Sprint deadlines & meetings</div>
-                </div>
-                <Calendar size={14} className="text-[#6A6A6A]" />
-              </button>
+            <div className="mt-3 pt-3 border-t border-[#E9E3DA] flex items-center justify-between">
+              <span className="text-[12px] font-bold text-[#6A6A6A]">Total Payable Balance:</span>
+              <span className="text-[16px] font-extrabold text-[#111111]">
+                {formatCurrency(financialStats.partner1.totalPayable)}
+              </span>
             </div>
           </div>
 
-          <div className="text-[10.5px] font-mono text-[#6A6A6A] mt-6 border-t border-[#E9E3DA] pt-3 text-center">
-            Linear-style minimal CRM interface v1.0
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Grid: Recent Clients & Activity Feed */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Recent Clients List */}
-        <div className="lg:col-span-2 bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm">
-          <div className="flex justify-between items-center mb-5">
-            <div>
-              <h3 className="text-[14px] font-bold text-[#111111]">Recent Client Onboarding</h3>
-              <p className="text-[11.5px] text-[#6A6A6A]">New client integrations and kickoffs</p>
-            </div>
-            <button
-              onClick={() => setView("clients")}
-              className="text-[11.5px] font-semibold text-[#111111] hover:underline"
-            >
-              See all clients
-            </button>
-          </div>
-
-          <div className="flex flex-col gap-3">
-            {recentClients.map((client) => (
-              <div
-                key={client._id}
-                onClick={() => handleClientClick(client._id)}
-                className="flex items-center justify-between p-3.5 rounded-xl bg-white border border-[#E9E3DA] hover:border-[#111111] cursor-pointer transition-all"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-bold text-[12px] text-[#111111]">
-                    {client.logo}
-                  </div>
-                  <div>
-                    <div className="text-[13px] font-bold text-[#111111] flex items-center gap-1.5 leading-none">
-                      <span>{client.company}</span>
-                      <span className="text-[13px]">{client.countryFlag}</span>
-                    </div>
-                    <div className="text-[11px] text-[#6A6A6A] mt-1.5">{client.name} · {client.industry}</div>
-                  </div>
+          {/* Partner 2 — Shaz */}
+          <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group hover:border-emerald-300 transition-all">
+            <div className="flex justify-between items-center mb-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-500 to-teal-600 text-white font-bold flex items-center justify-center text-[14px]">
+                  {financialStats.partner2.name.substring(0, 2).toUpperCase()}
                 </div>
-
-                <div className="flex items-center gap-6">
-                  {/* Budget */}
-                  <div className="text-right">
-                    <span className="text-[13.5px] font-bold text-[#111111]">
-                      ₹{(client.budget / 100000).toFixed(1)}L
-                    </span>
-                    <p className="text-[10px] text-[#6A6A6A] mt-0.5">Budget</p>
-                  </div>
-
-                  {/* Stage indicator badge */}
-                  <div className="w-32 hidden sm:block">
-                    <div className="flex justify-between items-center text-[10px] mb-1">
-                      <span className="text-[#6A6A6A] font-semibold leading-none">{client.stage}</span>
-                      <span className="text-[#111111] font-mono leading-none">{client.progress}%</span>
-                    </div>
-                    <div className="h-1.5 rounded-full bg-[#E9E3DA] overflow-hidden">
-                      <div
-                        className="h-full rounded-full bg-emerald-500"
-                        style={{ width: `${client.progress}%` }}
-                      />
-                    </div>
-                  </div>
+                <div>
+                  <h4 className="text-[15px] font-extrabold text-[#111111] leading-none">
+                    {financialStats.partner2.name}
+                  </h4>
+                  <span className="text-[11px] text-[#6A6A6A] mt-1 block">
+                    Equal Equity Partner ({financialStats.partner2.sharePct}%)
+                  </span>
                 </div>
               </div>
-            ))}
+              <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 text-[11px] font-bold font-mono border border-emerald-100">
+                {financialStats.partner2.sharePct}% Equity
+              </span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-3 my-2 text-center">
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Revenue Share</span>
+                <span className="text-[13px] font-bold text-emerald-700">{formatCurrency(financialStats.partner2.revenueShare)}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Expenses Share</span>
+                <span className="text-[13px] font-bold text-red-600">{formatCurrency(financialStats.partner2.expensesShare)}</span>
+              </div>
+              <div className="bg-white p-2.5 rounded-xl border border-[#E9E3DA]">
+                <span className="text-[10px] text-[#6A6A6A] uppercase font-bold block">Net Profit Share</span>
+                <span className="text-[13px] font-bold text-emerald-700">{formatCurrency(financialStats.partner2.netShare)}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 pt-3 border-t border-[#E9E3DA] flex items-center justify-between">
+              <span className="text-[12px] font-bold text-[#6A6A6A]">Total Payable Balance:</span>
+              <span className="text-[16px] font-extrabold text-[#111111]">
+                {formatCurrency(financialStats.partner2.totalPayable)}
+              </span>
+            </div>
+          </div>
+        </div>
+      </motion.div>
+
+      {/* Lower Section: Project Progress Tracker & Live Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Project Progress Overview Table */}
+        <div className="lg:col-span-2 bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
+          <div>
+            <div className="flex justify-between items-center mb-5">
+              <div>
+                <h3 className="text-[15px] font-extrabold text-[#111111]">Active Projects Progress</h3>
+                <p className="text-[11.5px] text-[#6A6A6A]">Live status, progress bar, and completion targets</p>
+              </div>
+              <button
+                onClick={() => setView("projects")}
+                className="text-[11.5px] font-bold text-indigo-600 hover:underline"
+              >
+                View all projects
+              </button>
+            </div>
+
+            <div className="flex flex-col gap-3">
+              {activeProjects.slice(0, 5).map((project) => {
+                const completedTasks = (project.tasks || []).filter((t) => t.status === "Completed" || t.completed).length;
+                const totalTasks = (project.tasks || []).length;
+                return (
+                  <div
+                    key={project._id}
+                    onClick={() => {
+                      setActiveClientId(project._id);
+                      setView("projects");
+                    }}
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-[#FCFBF8] border border-[#E9E3DA] hover:border-[#111111] transition-all cursor-pointer gap-4"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-white border border-[#E9E3DA] flex items-center justify-center font-bold text-[13px] text-[#111111] shrink-0">
+                        {project.logo || "GB"}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-[13.5px] font-bold text-[#111111] flex items-center gap-2 truncate">
+                          <span>{project.company}</span>
+                          <span className="text-[12px]">{project.countryFlag}</span>
+                        </div>
+                        <div className="text-[11px] text-[#6A6A6A] mt-0.5">
+                          Client: {project.name} · {project.industry}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-6 min-w-[240px]">
+                      {/* Progress Bar & % */}
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center text-[11px] font-mono mb-1 font-bold">
+                          <span className="text-[#6A6A6A]">Completion</span>
+                          <span className="text-[#111111]">{project.progress}%</span>
+                        </div>
+                        <div className="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                          <div
+                            className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                            style={{ width: `${project.progress}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status badge */}
+                      <div className="shrink-0 text-right">
+                        <span className={`px-2.5 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider border font-mono ${getStatusBadge(project.stage)}`}>
+                          {project.stage}
+                        </span>
+                        <div className="text-[10px] text-[#6A6A6A] mt-1 font-mono flex items-center gap-1 justify-end">
+                          <Clock size={10} />
+                          <span>Due: {project.expectedDelivery || "TBD"}</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+
+              {activeProjects.length === 0 && (
+                <div className="p-8 text-center bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl text-[#6A6A6A]">
+                  <Briefcase className="mx-auto text-[#6A6A6A]/30 mb-2" size={32} />
+                  <p className="text-[13px] font-bold">No active projects running.</p>
+                  <p className="text-[11px] text-[#6A6A6A] mt-0.5">Create a project to start tracking financials and tasks.</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Live Activity Feed */}
+        {/* Workspace Activity Feed */}
         <div className="bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm flex flex-col justify-between">
           <div>
-            <h3 className="text-[14px] font-bold text-[#111111] mb-5">Workspace Live Activity</h3>
+            <div className="flex justify-between items-center mb-5">
+              <h3 className="text-[15px] font-extrabold text-[#111111]">Recent Activity</h3>
+              <span className="text-[10.5px] font-mono bg-[#FCFBF8] border border-[#E9E3DA] px-2 py-0.5 rounded text-[#6A6A6A]">
+                Live Log
+              </span>
+            </div>
+
             <div className="flex flex-col gap-4 relative pl-3 border-l border-[#E9E3DA]">
-              {recentActs.map((act) => (
-                <div key={act.id} className="relative text-[12px]">
-                  <span className="absolute -left-[16.5px] top-1.5 w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.3)]" />
-                  <p className="text-[#111111] leading-normal font-medium">{act.text}</p>
+              {globalActivities.slice(0, 6).map((act, i) => (
+                <div key={i} className="relative text-[12px]">
+                  <span className="absolute -left-[16.5px] top-1.5 w-2 h-2 rounded-full bg-indigo-600 shadow-[0_0_8px_rgba(99,102,241,0.4)]" />
+                  <p className="text-[#111111] leading-snug font-medium">{act.text}</p>
                   <span className="text-[10px] text-[#6A6A6A] block mt-1 font-mono">{act.timestamp}</span>
                 </div>
               ))}
-              {recentActs.length === 0 && (
+              {globalActivities.length === 0 && (
                 <div className="text-[#6A6A6A] text-[12px] italic text-center py-6">
-                  No activity logged yet. Modify a client status or upload a file.
+                  No activity recorded yet. Add an expense or payment to test live logging.
                 </div>
               )}
             </div>
@@ -366,3 +449,4 @@ export default function DashboardView() {
     </div>
   );
 }
+
