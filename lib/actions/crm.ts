@@ -290,6 +290,17 @@ export async function getCRMClients() {
   await connectToDatabase();
   
   let list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
+
+  if (list.length === 0) {
+    // Seed initial demo data with referral linkages
+    const c1 = await CRMClient.create({ ...INITIAL_CLIENTS[0], clientType: "Direct", referralCommissionPct: 5 }); // Haramain
+    const c2 = await CRMClient.create({ ...INITIAL_CLIENTS[1], clientType: "Direct", referralCommissionPct: 5 }); // ArchViz
+    const c3 = await CRMClient.create({ ...INITIAL_CLIENTS[2], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Vapor Wave
+    const c4 = await CRMClient.create({ ...INITIAL_CLIENTS[3], referredBy: c3._id, clientType: "Referred", referralCommissionPct: 5 }); // Cardinal Studio
+    const c5 = await CRMClient.create({ ...INITIAL_CLIENTS[4], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Constructo Corp
+    list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
+  }
+
   return serialize(list);
 }
 

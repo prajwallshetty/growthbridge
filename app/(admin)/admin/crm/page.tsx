@@ -8,10 +8,12 @@ import ProjectsView from "@/components/crm/ProjectsView";
 import ExpensesView from "@/components/crm/ExpensesView";
 import RevenueView from "@/components/crm/RevenueView";
 import SettingsView from "@/components/crm/SettingsView";
+import ClientTreeView from "@/components/crm/ClientTreeView";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Briefcase,
+  GitFork,
   Receipt,
   IndianRupee,
   Settings as SettingsIcon,
@@ -23,6 +25,7 @@ function CRMWorkspaceContent() {
   const subMenuItems = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={14} /> },
     { id: "projects", label: "Projects", icon: <Briefcase size={14} /> },
+    { id: "client-tree", label: "Client Tree", icon: <GitFork size={14} /> },
     { id: "expenses", label: "Expenses", icon: <Receipt size={14} /> },
     { id: "revenue", label: "Revenue", icon: <IndianRupee size={14} /> },
     { id: "settings", label: "Settings", icon: <SettingsIcon size={14} /> },
@@ -39,6 +42,8 @@ function CRMWorkspaceContent() {
         return <DashboardView />;
       case "projects":
         return <ProjectsView />;
+      case "client-tree":
+        return <ClientTreeView />;
       case "expenses":
         return <ExpensesView />;
       case "revenue":

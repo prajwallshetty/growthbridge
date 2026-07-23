@@ -7,6 +7,7 @@ import ProjectsView from "@/components/crm/ProjectsView";
 import ExpensesView from "@/components/crm/ExpensesView";
 import RevenueView from "@/components/crm/RevenueView";
 import SettingsView from "@/components/crm/SettingsView";
+import ClientTreeView from "@/components/crm/ClientTreeView";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 
@@ -19,6 +20,8 @@ export default function AdminPageDispatcher() {
         return <DashboardView />;
       case "projects":
         return <ProjectsView />;
+      case "client-tree":
+        return <ClientTreeView />;
       case "expenses":
         return <ExpensesView />;
       case "revenue":

@@ -207,8 +207,8 @@ export default function DashboardView() {
                 <span className="text-[11.5px] font-bold text-purple-800">{formatCurrency(financialStats.grossProfit)}</span>
               </div>
               <div className="bg-[#FCFBF8] p-1.5 rounded-lg border border-[#E9E3DA]">
-                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Partner Pool</span>
-                <span className="text-[11.5px] font-bold text-indigo-700">{formatCurrency(financialStats.netProfit)}</span>
+                <span className="text-[9.5px] text-[#6A6A6A] uppercase block">Referrals Paid</span>
+                <span className="text-[11.5px] font-bold text-emerald-700">{formatCurrency(financialStats.totalReferralCommissions)}</span>
               </div>
             </div>
           </div>
@@ -229,7 +229,7 @@ export default function DashboardView() {
               <span>Partner Profit Distribution</span>
             </h3>
             <p className="text-[12px] text-[#6A6A6A] mt-0.5">
-              Automated real-time partner share calculations after deductable project expenses.
+              Automated real-time partner share calculations after deducting project expenses & referral commissions.
             </p>
           </div>
           <button

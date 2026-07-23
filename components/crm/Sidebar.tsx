@@ -17,6 +17,7 @@ import {
   LogOut,
   ChevronDown,
   AlertTriangle,
+  GitFork,
 } from "lucide-react";
 
 interface SidebarItemProps {
@@ -66,6 +67,7 @@ export default function Sidebar() {
   const agencyOSItems: SidebarItemProps[] = [
     { viewId: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} strokeWidth={1.8} />, color: "#6366F1" },
     { viewId: "projects", label: "Projects", icon: <Briefcase size={18} strokeWidth={1.8} />, color: "#EC4899" },
+    { viewId: "client-tree", label: "Client Tree", icon: <GitFork size={18} strokeWidth={1.8} />, color: "#8B5CF6" },
     { viewId: "expenses", label: "Expenses", icon: <Receipt size={18} strokeWidth={1.8} />, color: "#EF4444" },
     { viewId: "revenue", label: "Revenue", icon: <IndianRupee size={18} strokeWidth={1.8} />, color: "#10B981" },
     { viewId: "settings", label: "Settings", icon: <Settings size={18} strokeWidth={1.8} />, color: "#6B7280" },

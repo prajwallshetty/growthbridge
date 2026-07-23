@@ -16,20 +16,28 @@ export default function TopBar() {
   const [newClientName, setNewClientName] = useState("");
   const [newClientCompany, setNewClientCompany] = useState("");
   const [newClientBudget, setNewClientBudget] = useState("");
+  const [newReferredBy, setNewReferredBy] = useState("");
+  const [newReferralCommissionPct, setNewReferralCommissionPct] = useState("5");
 
   const activeClient = clients.find((c) => c._id === activeClientId || c.id === activeClientId);
 
   const handleCreateClient = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newClientName || !newClientCompany) return;
+    const isReferred = Boolean(newReferredBy);
     addClient({
       name: newClientName,
       company: newClientCompany,
       budget: Number(newClientBudget) || 200000,
+      referredBy: newReferredBy || null,
+      referralCommissionPct: Number(newReferralCommissionPct) || 5,
+      clientType: isReferred ? "Referred" : "Direct",
     });
     setNewClientName("");
     setNewClientCompany("");
     setNewClientBudget("");
+    setNewReferredBy("");
+    setNewReferralCommissionPct("5");
     setShowAddClientModal(false);
   };
 
@@ -98,6 +106,36 @@ export default function TopBar() {
                   className="px-3.5 py-2 rounded-lg bg-[#FCFBF8] border border-[#E9E3DA] text-[13px] text-[#111111] placeholder-[#6A6A6A]/40 focus:outline-none focus:border-[#111111]"
                 />
               </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[11px] font-bold text-[#6A6A6A] uppercase">Referred By (Optional Referrer)</label>
+                <select
+                  value={newReferredBy}
+                  onChange={(e) => setNewReferredBy(e.target.value)}
+                  className="px-3.5 py-2 rounded-lg bg-[#FCFBF8] border border-[#E9E3DA] text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                >
+                  <option value="">(None - Direct Client)</option>
+                  {clients.map((c) => (
+                    <option key={c._id} value={c._id}>
+                      {c.company} ({c.name})
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {newReferredBy && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[11px] font-bold text-[#6A6A6A] uppercase">Referral Commission Rate (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={newReferralCommissionPct}
+                    onChange={(e) => setNewReferralCommissionPct(e.target.value)}
+                    className="px-3.5 py-2 rounded-lg bg-[#FCFBF8] border border-[#E9E3DA] text-[13px] text-[#111111] focus:outline-none focus:border-[#111111]"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[#E9E3DA]">
                 <button

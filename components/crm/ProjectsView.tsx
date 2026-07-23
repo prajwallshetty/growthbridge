@@ -144,7 +144,11 @@ export default function ProjectsView() {
       expenses = client.expenses.reduce((sum, e) => sum + (e.amount || 0), 0);
     }
 
-    const profit = received - expenses;
+    const referralCommission = client.referredBy
+      ? (received * (client.referralCommissionPct ?? 5)) / 100
+      : 0;
+
+    const profit = received - expenses - referralCommission;
     const p1Share = (profit * (settings.partner1Share || 50)) / 100;
     const p2Share = (profit * (settings.partner2Share || 50)) / 100;
 
@@ -153,6 +157,7 @@ export default function ProjectsView() {
       received,
       pendingAmount,
       expenses,
+      referralCommission,
       profit,
       p1Share,
       p2Share,
