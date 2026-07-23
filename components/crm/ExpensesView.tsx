@@ -313,16 +313,14 @@ export default function ExpensesView() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Category</label>
-                  <select
+                  <input
+                    type="text"
+                    placeholder="e.g. Software, Material, Delivery"
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
                     className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
-                  >
-                    <option value="Material Cost">Material Cost</option>
-                    <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
-                    <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
-                    <option value="Software & Infrastructure">Software & Infrastructure</option>
-                  </select>
+                    required
+                  />
                 </div>
               </div>
 

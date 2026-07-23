@@ -43,6 +43,8 @@ export default function ProjectsView() {
     deletePayment,
     updateClientStage,
     addClient,
+    deleteClient,
+    updateClient,
     settings,
   } = useCRM();
 
@@ -52,19 +54,52 @@ export default function ProjectsView() {
   const [taskFilterPriority, setTaskFilterPriority] = useState<string>("All");
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
 
+  // Edit Project State
+  const [editingProject, setEditingProject] = useState<CRMClient | null>(null);
+  const [editBudget, setEditBudget] = useState("");
+  const [editCompany, setEditCompany] = useState("");
+  const [editClientName, setEditClientName] = useState("");
+  const [editStage, setEditStage] = useState("");
+  const [editDeadline, setEditDeadline] = useState("");
+
+  const openEditModal = (project: CRMClient, e?: React.MouseEvent) => {
+    if (e) e.stopPropagation();
+    setEditingProject(project);
+    setEditBudget((project.budget || 0).toString());
+    setEditCompany(project.company || "");
+    setEditClientName(project.name || "");
+    setEditStage(project.stage || "Active");
+    setEditDeadline(project.expectedDelivery || "");
+  };
+
+  const handleSaveEditProject = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingProject) return;
+
+    await updateClient(editingProject._id, {
+      budget: parseFloat(editBudget) || 0,
+      company: editCompany,
+      name: editClientName,
+      stage: editStage as any,
+      expectedDelivery: editDeadline,
+    });
+
+    setEditingProject(null);
+  };
+
   // New Project Form
   const [newProjectCompany, setNewProjectCompany] = useState("");
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectBudget, setNewProjectBudget] = useState("");
   const [newProjectStartDate, setNewProjectStartDate] = useState(new Date().toISOString().split("T")[0]);
   const [newProjectDeadline, setNewProjectDeadline] = useState("");
-  const [newProjectAssignee, setNewProjectAssignee] = useState("Prajwal Shetty");
+  const [newProjectAssignee, setNewProjectAssignee] = useState("Admin");
 
   // New Task Form
   const [newTaskTitle, setNewTaskTitle] = useState("");
   const [newTaskDesc, setNewTaskDesc] = useState("");
   const [newTaskPriority, setNewTaskPriority] = useState<"High" | "Medium" | "Low">("Medium");
-  const [newTaskAssignee, setNewTaskAssignee] = useState("Prajwal");
+  const [newTaskAssignee, setNewTaskAssignee] = useState("Admin");
   const [newTaskDueDate, setNewTaskDueDate] = useState("");
   const [newSubtaskTitle, setNewSubtaskTitle] = useState<{ [taskId: string]: string }>({});
 
@@ -266,34 +301,35 @@ export default function ProjectsView() {
             <div
               key={project._id}
               onClick={() => setActiveClientId(project._id)}
-              className={`bg-white border rounded-[24px] p-6 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-5 relative overflow-hidden ${
+              className={`bg-white border rounded-[24px] p-5 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-4 relative overflow-hidden ${
                 isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-[#E9E3DA] hover:border-[#111111]"
               }`}
             >
               {/* Header */}
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-bold text-[13px] text-[#111111]">
-                    {project.logo || "GB"}
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex items-center gap-3 min-w-0 flex-1">
+                  <div className="w-10 h-10 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-extrabold text-[13px] text-[#111111] shrink-0">
+                    {project.logo || project.company.substring(0, 2).toUpperCase()}
                   </div>
-                  <div>
-                    <h3 className="text-[15px] font-bold text-[#111111] flex items-center gap-1.5 leading-none">
-                      <span>{project.company}</span>
-                      <span className="text-[12px]">{project.countryFlag}</span>
+                  <div className="min-w-0 flex-1">
+                    <h3 className="text-[15px] font-extrabold text-[#111111] leading-tight truncate flex items-center gap-1.5">
+                      <span className="truncate">{project.company}</span>
+                      <span className="text-[12px] shrink-0">{project.countryFlag}</span>
                     </h3>
-                    <span className="text-[11px] text-[#6A6A6A] block mt-1">{project.name}</span>
+                    <span className="text-[11.5px] text-[#6A6A6A] block mt-0.5 truncate">{project.name}</span>
                   </div>
                 </div>
-                <span className="px-2.5 py-0.5 rounded text-[10.5px] font-mono font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100">
+
+                <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-extrabold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0 max-w-[130px] truncate text-center">
                   {project.stage}
                 </span>
               </div>
 
               {/* Progress Bar */}
               <div>
-                <div className="flex justify-between items-center text-[12px] font-bold text-[#111111] mb-1.5">
+                <div className="flex justify-between items-center text-[11.5px] font-bold text-[#111111] mb-1.5">
                   <span className="text-[#6A6A6A]">Progress</span>
-                  <span className="font-mono">{project.progress}%</span>
+                  <span className="font-mono text-[#111111]">{project.progress}%</span>
                 </div>
                 <div className="w-full h-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-full overflow-hidden">
                   <div
@@ -303,19 +339,28 @@ export default function ProjectsView() {
                 </div>
               </div>
 
-              {/* Quick Financial Summary Pill */}
-              <div className="grid grid-cols-3 gap-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-3 text-center font-mono">
-                <div>
-                  <span className="text-[9.5px] uppercase font-bold text-[#6A6A6A] block">Budget</span>
-                  <span className="text-[12px] font-bold text-[#111111]">{formatCurrency(fin.cost)}</span>
+              {/* Quick Financial Summary Pill with Budget Edit Trigger */}
+              <div className="grid grid-cols-3 gap-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-center font-mono relative">
+                <div
+                  onClick={(e) => openEditModal(project, e)}
+                  className="group/b text-left pl-1 cursor-pointer hover:bg-white/80 p-1 rounded-lg transition-colors"
+                  title="Click to change project budget"
+                >
+                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] flex items-center gap-1">
+                    <span>Budget</span>
+                    <Edit2 size={9} className="text-indigo-600 opacity-60 group-hover/b:opacity-100" />
+                  </span>
+                  <span className="text-[12px] font-extrabold text-[#111111] group-hover/b:text-indigo-600 block truncate">
+                    {formatCurrency(fin.cost)}
+                  </span>
                 </div>
-                <div className="border-x border-[#E9E3DA]">
-                  <span className="text-[9.5px] uppercase font-bold text-[#6A6A6A] block">Received</span>
-                  <span className="text-[12px] font-bold text-emerald-600">{formatCurrency(fin.received)}</span>
+                <div className="border-x border-[#E9E3DA] p-1">
+                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Received</span>
+                  <span className="text-[12px] font-extrabold text-emerald-600 block truncate">{formatCurrency(fin.received)}</span>
                 </div>
-                <div>
-                  <span className="text-[9.5px] uppercase font-bold text-[#6A6A6A] block">Expenses</span>
-                  <span className="text-[12px] font-bold text-red-600">{formatCurrency(fin.expenses)}</span>
+                <div className="p-1">
+                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Expenses</span>
+                  <span className="text-[12px] font-extrabold text-red-600 block truncate">{formatCurrency(fin.expenses)}</span>
                 </div>
               </div>
 
@@ -342,7 +387,7 @@ export default function ProjectsView() {
           <div className="flex items-center justify-between flex-wrap gap-4 border-b border-[#E9E3DA] pb-5">
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-extrabold text-[16px] text-[#111111]">
-                {activeProject.logo || "GB"}
+                {activeProject.logo || activeProject.company.substring(0, 2).toUpperCase()}
               </div>
               <div>
                 <h3 className="text-[20px] font-extrabold text-[#111111] leading-tight flex items-center gap-2">
@@ -355,44 +400,66 @@ export default function ProjectsView() {
               </div>
             </div>
 
-            {/* Navigation Tabs inside Project */}
-            <div className="flex items-center gap-1.5 bg-[#FCFBF8] border border-[#E9E3DA] p-1 rounded-xl">
+            {/* Navigation Tabs & Actions inside Project */}
+            <div className="flex items-center gap-3">
               <button
-                onClick={() => setActiveTab("checklist")}
-                className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === "checklist" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                }`}
+                onClick={(e) => openEditModal(activeProject, e)}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E9E3DA] text-[#111111] hover:bg-[#FCFBF8] text-[12px] font-bold transition-all cursor-pointer shadow-sm"
               >
-                <CheckSquare size={14} />
-                <span>Task Checklist</span>
+                <Edit2 size={13} />
+                <span>Edit Budget & Info</span>
               </button>
+
               <button
-                onClick={() => setActiveTab("expenses")}
-                className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === "expenses" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                }`}
+                onClick={() => {
+                  if (confirm("Are you sure you want to permanently delete this project?")) {
+                    deleteClient(activeProject._id);
+                  }
+                }}
+                className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 text-[12px] font-bold transition-all cursor-pointer shadow-sm"
               >
-                <Receipt size={14} />
-                <span>Expense Manager</span>
+                <Trash2 size={13} />
+                <span>Delete Project</span>
               </button>
-              <button
-                onClick={() => setActiveTab("payments")}
-                className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === "payments" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                }`}
-              >
-                <IndianRupee size={14} />
-                <span>Revenue & Payments</span>
-              </button>
-              <button
-                onClick={() => setActiveTab("financials")}
-                className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                  activeTab === "financials" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                }`}
-              >
-                <TrendingUp size={14} />
-                <span>Financial Breakdown</span>
-              </button>
+
+              <div className="flex items-center gap-1.5 bg-[#FCFBF8] border border-[#E9E3DA] p-1 rounded-xl">
+                <button
+                  onClick={() => setActiveTab("checklist")}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "checklist" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                  }`}
+                >
+                  <CheckSquare size={14} />
+                  <span>Task Checklist</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("expenses")}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "expenses" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                  }`}
+                >
+                  <Receipt size={14} />
+                  <span>Expense Manager</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("payments")}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "payments" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                  }`}
+                >
+                  <IndianRupee size={14} />
+                  <span>Revenue & Payments</span>
+                </button>
+                <button
+                  onClick={() => setActiveTab("financials")}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "financials" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                  }`}
+                >
+                  <TrendingUp size={14} />
+                  <span>Financial Breakdown</span>
+                </button>
+              </div>
             </div>
           </div>
 
@@ -570,16 +637,14 @@ export default function ProjectsView() {
                     className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
                     required
                   />
-                  <select
+                  <input
+                    type="text"
+                    placeholder="Category (e.g. Software, Material)"
                     value={expCategory}
                     onChange={(e) => setExpCategory(e.target.value)}
-                    className="bg-white border border-[#E9E3DA] rounded-xl px-3 py-2 text-[12.5px] font-bold text-[#111111]"
-                  >
-                    <option value="Material Cost">Material Cost</option>
-                    <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
-                    <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
-                    <option value="Software & Infrastructure">Software & Infrastructure</option>
-                  </select>
+                    className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
+                    required
+                  />
                   <div className="flex items-center gap-2">
                     <input
                       type="number"
@@ -850,6 +915,94 @@ export default function ProjectsView() {
                   className="px-5 py-2.5 rounded-xl text-[13px] font-bold bg-[#111111] hover:bg-[#222222] text-white shadow-sm cursor-pointer"
                 >
                   Create Project
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Budget & Project Details Modal */}
+      {editingProject && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl border border-[#E9E3DA] flex flex-col gap-5">
+            <div className="flex items-center justify-between border-b border-[#E9E3DA] pb-3">
+              <h3 className="text-[16px] font-extrabold text-[#111111]">Edit Project & Budget</h3>
+              <button onClick={() => setEditingProject(null)} className="p-1 rounded text-[#6A6A6A] hover:bg-gray-100 cursor-pointer">
+                <X size={18} />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditProject} className="flex flex-col gap-4">
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Project Budget ({settings.currency})</label>
+                <input
+                  type="number"
+                  placeholder="e.g. 15000"
+                  value={editBudget}
+                  onChange={(e) => setEditBudget(e.target.value)}
+                  className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[14px] font-mono font-extrabold text-[#111111] focus:outline-none focus:border-[#111111]"
+                  required
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Company / Project</label>
+                  <input
+                    type="text"
+                    value={editCompany}
+                    onChange={(e) => setEditCompany(e.target.value)}
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Client Contact</label>
+                  <input
+                    type="text"
+                    value={editClientName}
+                    onChange={(e) => setEditClientName(e.target.value)}
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                    required
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Lifecycle Stage</label>
+                  <input
+                    type="text"
+                    value={editStage}
+                    onChange={(e) => setEditStage(e.target.value)}
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Deadline</label>
+                  <input
+                    type="date"
+                    value={editDeadline}
+                    onChange={(e) => setEditDeadline(e.target.value)}
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-3 border-t border-[#E9E3DA]">
+                <button
+                  type="button"
+                  onClick={() => setEditingProject(null)}
+                  className="px-4 py-2.5 rounded-xl text-[13px] font-bold text-[#6A6A6A] hover:bg-[#F3F4F6] cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-5 py-2.5 rounded-xl text-[13px] font-bold bg-[#111111] hover:bg-[#222222] text-white shadow-sm cursor-pointer"
+                >
+                  Save Changes
                 </button>
               </div>
             </form>

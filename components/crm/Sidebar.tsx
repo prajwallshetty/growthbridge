@@ -172,11 +172,11 @@ export default function Sidebar() {
         {/* Footer — Profile + Logout */}
         <div className="px-4 py-3 border-t border-[#E5E7EB] bg-white/60 flex items-center justify-between shrink-0">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#6366F1] to-[#8B5CF6] flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-sm">
-              PS
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#111111] to-[#333333] flex items-center justify-center font-bold text-[11px] text-white shrink-0 shadow-sm">
+              AD
             </div>
             <div className="min-w-0">
-              <div className="text-[13px] font-semibold text-[#111827] leading-tight truncate">Prajwal Shetty</div>
+              <div className="text-[13px] font-semibold text-[#111827] leading-tight truncate">Admin</div>
               <span className="text-[10.5px] text-[#9CA3AF] block">Administrator</span>
             </div>
           </div>

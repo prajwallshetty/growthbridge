@@ -143,6 +143,39 @@ export default function RevenueView() {
         </div>
       </div>
 
+      {/* Partner Revenue Split (50/50) */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[10.5px] font-mono text-[#6A6A6A] uppercase font-bold">
+              {financialStats.partner1.name} Share ({financialStats.partner1.sharePct}%)
+            </span>
+            <div className="text-[20px] font-extrabold text-[#111111] tracking-tight mt-1">
+              {formatCurrency(financialStats.partner1.revenueShare)}
+            </div>
+            <span className="text-[11px] text-[#6A6A6A] block mt-0.5 font-medium">Revenue allocation</span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-[13px]">
+            {financialStats.partner1.name.substring(0, 2).toUpperCase()}
+          </div>
+        </div>
+
+        <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex items-center justify-between">
+          <div>
+            <span className="text-[10.5px] font-mono text-[#6A6A6A] uppercase font-bold">
+              {financialStats.partner2.name} Share ({financialStats.partner2.sharePct}%)
+            </span>
+            <div className="text-[20px] font-extrabold text-[#111111] tracking-tight mt-1">
+              {formatCurrency(financialStats.partner2.revenueShare)}
+            </div>
+            <span className="text-[11px] text-[#6A6A6A] block mt-0.5 font-medium">Revenue allocation</span>
+          </div>
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100 flex items-center justify-center font-bold text-[13px]">
+            {financialStats.partner2.name.substring(0, 2).toUpperCase()}
+          </div>
+        </div>
+      </div>
+
       {/* Search & Filter Toolbar */}
       <div className="bg-white border border-[#E9E3DA] p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-3 flex-1 min-w-[240px]">

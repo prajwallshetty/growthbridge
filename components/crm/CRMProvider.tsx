@@ -163,6 +163,7 @@ interface CRMContextType {
   loading: boolean;
   refreshClients: () => Promise<void>;
   addClient: (client: Partial<CRMClient>) => Promise<void>;
+  deleteClient: (id: string) => Promise<void>;
   updateClientStage: (id: string, stage: CRMClient["stage"]) => Promise<void>;
   updateClient: (id: string, updates: Partial<CRMClient>) => Promise<void>;
   
@@ -317,6 +318,18 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const saved = await saveCRMClient(newClient);
       setClients((prev) => [saved as any, ...prev]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteClient = async (id: string) => {
+    try {
+      await deleteCRMClient(id);
+      setClients((prev) => prev.filter((c) => c._id !== id));
+      if (activeClientId === id) {
+        setActiveClientId(null);
+      }
     } catch (e) {
       console.error(e);
     }
@@ -560,6 +573,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         loading,
         refreshClients,
         addClient,
+        deleteClient,
         updateClientStage: updateStage,
         updateClient: editClient,
         addTask,
