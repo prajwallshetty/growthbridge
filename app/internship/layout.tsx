@@ -48,13 +48,13 @@ export default function InternshipLayout({
               </Link>
             </nav>
 
-            <div className="flex items-center gap-2 md:gap-4">
+            <div className="flex items-center gap-1.5 md:gap-4">
               <Link
                 href="/internship/apply"
-                className="px-3 py-2 md:px-5 md:py-2.5 rounded-xl bg-[#111111] text-white text-[11.5px] md:text-[12.5px] font-bold tracking-tight hover:bg-[#F4C542] hover:text-[#111111] transition-all duration-250 flex items-center gap-1 md:gap-1.5 shadow-sm shrink-0"
+                className="px-2.5 py-1.5 md:px-5 md:py-2.5 rounded-lg md:rounded-xl bg-[#111111] text-white text-[10px] md:text-[12.5px] font-bold tracking-tight hover:bg-[#F4C542] hover:text-[#111111] transition-all duration-250 flex items-center gap-1 md:gap-1.5 shadow-sm shrink-0"
               >
                 <span>Apply<span className="hidden sm:inline"> Now</span></span>
-                <ArrowUpRight size={12} className="shrink-0" />
+                <ArrowUpRight size={10} className="shrink-0" />
               </Link>
             </div>
           </div>
