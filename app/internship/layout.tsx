@@ -90,7 +90,7 @@ export default function InternshipLayout({
             <div className="flex flex-col gap-3">
               <span className="font-bold text-[12px] tracking-wider uppercase text-[#A8A296] font-mono">— Contact</span>
               <div className="flex flex-col gap-1 text-[13px] text-[#6A6A6A] font-semibold">
-                <span>Email: <a href="mailto:internships@growthbridge.live" className="text-[#111111] hover:underline">internships@growthbridge.live</a></span>
+                <span>Email: <a href="mailto:contact@growthbridge.live" className="text-[#111111] hover:underline">contact@growthbridge.live</a></span>
                 <span>Website: <Link href="/" className="text-[#111111] hover:underline">growthbridge.live</Link></span>
               </div>
             </div>
