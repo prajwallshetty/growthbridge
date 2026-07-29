@@ -11,28 +11,28 @@ export default async function InternshipLandingPage() {
   // Default domains to seed or fallback to if the DB is empty
   const defaultDomains = [
     {
-      _id: "default-fs",
+      _id: "65f1a3b8c4d2e10a0a000001",
       name: "Full Stack Web Development",
       description: "Build robust, high-performance web applications using React, Next.js, Node.js, and MongoDB. Learn advanced server action patterns, performance tuning, and database modeling.",
       duration: "3 Weeks",
       isActive: true,
     },
     {
-      _id: "default-rn",
+      _id: "65f1a3b8c4d2e10a0a000002",
       name: "React Native Mobile App Development",
       description: "Design and build cross-platform mobile apps for iOS and Android. Master screen routing, native device sensors integration, state management, and push notifications.",
       duration: "3 Weeks",
       isActive: true,
     },
     {
-      _id: "default-ml",
+      _id: "65f1a3b8c4d2e10a0a000003",
       name: "Machine Learning Engineering",
       description: "Develop, train, and deploy predictive models. Work with TensorFlow, PyTorch, and Scikit-Learn to build NLP engines, recommenders, and automated workflows.",
       duration: "3 Weeks",
       isActive: true,
     },
     {
-      _id: "default-ds",
+      _id: "65f1a3b8c4d2e10a0a000004",
       name: "Data Science & Analytics",
       description: "Uncover insights from complex datasets. Master data cleaning, exploratory data analysis, visual storytelling, and statistical analysis using Python, Pandas, and SQL.",
       duration: "3 Weeks",

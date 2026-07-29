@@ -89,7 +89,10 @@ export default function ApplyForm({ domains }: ApplyFormProps) {
       return;
     }
 
-
+    if (!resumeUrl) {
+      setFormError("Please upload your resume / CV.");
+      return;
+    }
 
     if (!declaration) {
       setFormError("You must accept the declaration to submit your application.");
@@ -313,7 +316,68 @@ export default function ApplyForm({ domains }: ApplyFormProps) {
         <span className="font-mono text-[11px] font-bold text-[#A8A296] uppercase tracking-wider">— Professional Links & Attachments</span>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-
+          {/* Resume Upload Component */}
+          <div className="flex flex-col gap-1.5 md:col-span-2">
+            <label className="text-[12.5px] font-bold text-[#111111]">Resume / CV (PDF) *</label>
+            <div className={`border-2 border-dashed rounded-2xl p-6 transition-all flex flex-col items-center justify-center text-center gap-3 cursor-pointer ${
+              resumeUrl 
+                ? "border-[#4CAF50]/40 bg-[#4CAF50]/5" 
+                : uploadError 
+                  ? "border-red-300 bg-red-50/50" 
+                  : "border-[#E9E3DA] bg-[#FCFBF8] hover:border-[#F4C542] hover:bg-[#F4C542]/5"
+            }`}
+            onClick={() => document.getElementById("resume-file-input")?.click()}
+            >
+              <input
+                id="resume-file-input"
+                type="file"
+                accept=".pdf"
+                className="hidden"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+              
+              {isUploading ? (
+                <div className="flex flex-col items-center gap-2">
+                  <RefreshCw size={24} className="animate-spin text-[#F4C542]" />
+                  <span className="text-[13px] font-bold text-[#111111]">Uploading Resume...</span>
+                  <span className="text-[11.5px] font-medium text-[#6A6A6A]">Please wait while we secure your file.</span>
+                </div>
+              ) : resumeUrl ? (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#4CAF50]/15 flex items-center justify-center text-[#4CAF50]">
+                    <Check size={20} />
+                  </div>
+                  <span className="text-[13px] font-bold text-[#111111]">Resume Uploaded!</span>
+                  <span className="text-[11.5px] font-medium text-[#6A6A6A] underline truncate max-w-xs">{resumeUrl.split('/').pop()}</span>
+                  <button 
+                    type="button" 
+                    className="text-[11.5px] font-bold text-[#F4C542] hover:underline mt-1 focus:outline-none"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setResumeUrl("");
+                    }}
+                  >
+                    Change File
+                  </button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-2">
+                  <div className="w-10 h-10 rounded-full bg-[#111111]/5 flex items-center justify-center text-[#111111]/60">
+                    <Upload size={20} />
+                  </div>
+                  <span className="text-[13px] font-bold text-[#111111]">Click to upload Resume (PDF)</span>
+                  <span className="text-[11.5px] font-medium text-[#6A6A6A]">Max file size: 5MB</span>
+                </div>
+              )}
+            </div>
+            {uploadError && (
+              <div className="text-red-500 text-[11px] font-bold flex items-center gap-1 mt-1">
+                <AlertCircle size={12} />
+                <span>{uploadError}</span>
+              </div>
+            )}
+          </div>
 
           <div className="flex flex-col gap-1.5">
             <label className="text-[12.5px] font-bold text-[#111111]">GitHub Profile URL</label>
