@@ -25,6 +25,20 @@ const EASE = [0.22, 1, 0.36, 1] as const;
 export default function DashboardView() {
   const { financialStats, clients, setView, setActiveClientId, globalActivities, settings } = useCRM();
 
+  // Days countdown from July 9, 2026
+  const getCountdown = () => {
+    const target = new Date("2026-07-09");
+    const today = new Date();
+    const targetMidnight = Date.UTC(target.getFullYear(), target.getMonth(), target.getDate());
+    const todayMidnight = Date.UTC(today.getFullYear(), today.getMonth(), today.getDate());
+    
+    const diffTime = todayMidnight - targetMidnight;
+    const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+    return diffDays;
+  };
+
+  const daysDiff = getCountdown();
+
   const activeProjects = clients.filter((c) =>
     ["Active", "Design Phase", "Development", "Testing", "Client Review", "Deployment", "Advance Payment Received", "Project Created Automatically"].includes(c.stage)
   );
@@ -75,6 +89,50 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+
+      {/* Motivational Countdown Banner */}
+      <motion.div
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: EASE }}
+        className="relative overflow-hidden bg-gradient-to-r from-indigo-50/80 via-purple-50/50 to-pink-50/30 border border-indigo-100/80 rounded-2xl p-5 shadow-sm flex items-center justify-between gap-6"
+      >
+        {/* Decorative background glow blobs */}
+        <div className="absolute top-0 right-0 w-32 h-32 bg-indigo-200/20 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none" />
+        <div className="absolute bottom-0 left-10 w-24 h-24 bg-pink-200/10 rounded-full blur-xl pointer-events-none" />
+
+        <div className="flex items-center gap-4 relative z-10">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-purple-600 text-white flex items-center justify-center shadow-md shadow-indigo-200 animate-pulse">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <span className="text-[11px] font-mono font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50/80 border border-indigo-100 px-2 py-0.5 rounded-md">
+              Focus & Motivation
+            </span>
+            <h3 className="text-[14.5px] font-extrabold text-[#111111] mt-1.5 leading-snug">
+              {daysDiff > 0 ? (
+                <>
+                  Day <span className="text-[17px] font-black text-indigo-600 font-mono underline decoration-wavy decoration-purple-400">{daysDiff}</span> since July 9, 2026. Every single day of persistence builds the bridge to success. Keep pushing!
+                </>
+              ) : daysDiff < 0 ? (
+                <>
+                  <span className="text-[17px] font-black text-indigo-600 font-mono underline decoration-wavy decoration-purple-400">{Math.abs(daysDiff)}</span> days remaining until July 9, 2026. Keep the momentum high!
+                </>
+              ) : (
+                <>
+                  July 9, 2026 is <span className="text-[17px] font-black text-indigo-600 underline decoration-wavy decoration-purple-400">TODAY</span>! The countdown reaches zero. Make today count!
+                </>
+              )}
+            </h3>
+          </div>
+        </div>
+
+        {/* Dynamic Flame / Trophy Graphic for aesthetics */}
+        <div className="hidden sm:flex items-center gap-2 font-mono text-[11px] font-bold text-indigo-600 bg-indigo-50 border border-indigo-100 px-3 py-1.5 rounded-xl shrink-0 z-10">
+          <span>Let's win this</span>
+          <span className="text-[14px]">🔥</span>
+        </div>
+      </motion.div>
 
       {/* Main 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">

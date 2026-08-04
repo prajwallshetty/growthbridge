@@ -61,6 +61,7 @@ export default function ProjectsView() {
   const [editClientName, setEditClientName] = useState("");
   const [editStage, setEditStage] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
+  const [editProgress, setEditProgress] = useState(0);
 
   const openEditModal = (project: CRMClient, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -70,6 +71,7 @@ export default function ProjectsView() {
     setEditClientName(project.name || "");
     setEditStage(project.stage || "Active");
     setEditDeadline(project.expectedDelivery || "");
+    setEditProgress(project.progress || 0);
   };
 
   const handleSaveEditProject = async (e: React.FormEvent) => {
@@ -82,6 +84,7 @@ export default function ProjectsView() {
       name: editClientName,
       stage: editStage as any,
       expectedDelivery: editDeadline,
+      progress: editProgress,
     });
 
     setEditingProject(null);
@@ -991,6 +994,34 @@ export default function ProjectsView() {
                     value={editDeadline}
                     onChange={(e) => setEditDeadline(e.target.value)}
                     className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                  />
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Project Progress</label>
+                  <span className="text-[12.5px] font-mono font-extrabold text-indigo-600">{editProgress}%</span>
+                </div>
+                <div className="flex items-center gap-4">
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={editProgress}
+                    onChange={(e) => setEditProgress(parseInt(e.target.value) || 0)}
+                    className="flex-1 accent-indigo-600 h-2 bg-gray-100 rounded-lg appearance-none cursor-pointer"
+                  />
+                  <input
+                    type="number"
+                    min="0"
+                    max="100"
+                    value={editProgress}
+                    onChange={(e) => {
+                      const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                      setEditProgress(val);
+                    }}
+                    className="w-16 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2 text-center text-[13px] font-mono font-extrabold text-[#111111] focus:outline-none"
                   />
                 </div>
               </div>
