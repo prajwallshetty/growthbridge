@@ -220,6 +220,22 @@ function CustomRelationshipEdge({
   markerEnd,
   data,
 }: any) {
+  const { updateClient } = useCRM();
+
+  const handleDeleteConnection = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (confirm("Remove connection relationship between these nodes?")) {
+      try {
+        await updateClient(data.targetId, {
+          referredBy: null,
+          clientType: "Direct",
+        });
+      } catch (err) {
+        console.error("Failed to delete relationship connection:", err);
+      }
+    }
+  };
+
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -317,8 +333,16 @@ function CustomRelationshipEdge({
               pointerEvents: "all",
               zIndex: 10,
             }}
+            className="flex items-center gap-1 group"
           >
-            {relationshipType}
+            <span>{relationshipType}</span>
+            <button
+              onClick={handleDeleteConnection}
+              className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity ml-1 cursor-pointer pointer-events-auto flex items-center justify-center"
+              title="Delete Connection"
+            >
+              <X size={10} strokeWidth={2.5} />
+            </button>
           </div>
         </EdgeLabelRenderer>
       )}
@@ -852,6 +876,7 @@ function ClientTreeCanvas() {
         data: {
           relationshipType: relationshipSubtypes[c._id] || "Referred",
           isHighlighted,
+          targetId: c._id,
         },
       });
     });
@@ -1172,9 +1197,15 @@ function ClientTreeCanvas() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore shortcut key binds inside form inputs
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
+      if (
+        e.target instanceof HTMLInputElement ||
+        e.target instanceof HTMLSelectElement ||
+        e.target instanceof HTMLTextAreaElement
+      )
+        return;
 
-      if (e.key === "Space") {
+      if (e.code === "Space") {
+        if (e.repeat) return;
         e.preventDefault();
         setActiveTool("hand");
       }
@@ -1193,7 +1224,7 @@ function ClientTreeCanvas() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === "Space") {
+      if (e.code === "Space") {
         setActiveTool("select");
       }
     };
@@ -1470,6 +1501,9 @@ function ClientTreeCanvas() {
             onNodeContextMenu={onNodeContextMenu}
             panOnDrag={activeTool === "hand" ? true : [1, 2]}
             selectionOnDrag={activeTool === "select"}
+            panOnScroll={true}
+            zoomOnScroll={false}
+            zoomOnPinch={true}
             snapToGrid={snapToGrid}
             snapGrid={[15, 15]}
             fitView
@@ -1658,22 +1692,7 @@ function ClientTreeCanvas() {
                     </button>
                   </div>
 
-                  {/* Quick Payout Commission Badge */}
-                  {selectedClient.referredBy && (
-                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 mb-5 flex items-center gap-3">
-                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
-                        <Gift size={16} />
-                      </div>
-                      <div>
-                        <span className="text-[10px] font-bold text-emerald-800 uppercase font-mono tracking-wider">
-                          Referral Agreement
-                        </span>
-                        <div className="text-[13px] font-extrabold text-emerald-800 mt-0.5">
-                          {selectedClient.referralCommissionPct || 5}% Commission Rate
-                        </div>
-                      </div>
-                    </div>
-                  )}
+                  {/* Quick Payout Commission Badge removed */}
 
                   {/* Financial Metrics Card */}
                   <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-4 mb-6 shadow-sm">
@@ -1827,14 +1846,14 @@ function ClientTreeCanvas() {
                   <div className="bg-[#111111] text-white border border-[#333] rounded-2xl p-4 mb-6 shadow-md flex items-center justify-between">
                     <div>
                       <span className="text-[9px] font-bold uppercase tracking-wider text-[#A8A296] font-mono block">
-                        Network Commission Pool
+                        Total Network Portfolio Value
                       </span>
                       <h4 className="text-[20px] font-extrabold text-white mt-1">
-                        {formatCurrency(globalSummaryStats.totalCommissionsPaid)}
+                        {formatCurrency(globalSummaryStats.totalPortfolioBudget)}
                       </h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0">
-                      <Gift size={18} />
+                      <DollarSign size={18} />
                     </div>
                   </div>
 
@@ -1888,10 +1907,6 @@ function ClientTreeCanvas() {
                                 </span>
                               </div>
                             </div>
-
-                            <span className="text-[11.5px] font-extrabold text-emerald-700 font-mono">
-                              +{formatCurrency(entry.earnings)}
-                            </span>
                           </div>
                         ))}
                       </div>
@@ -1996,19 +2011,7 @@ function ClientTreeCanvas() {
                 </select>
               </div>
 
-              {addClientFormData.referredBy && (
-                <div className="flex flex-col gap-1.5">
-                  <label className="text-[10px] font-bold text-[#6A6A6A] uppercase font-mono">Referral Commission Rate (%)</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="50"
-                    value={addClientFormData.referralCommissionPct}
-                    onChange={(e) => setAddClientFormData({ ...addClientFormData, referralCommissionPct: e.target.value })}
-                    className="px-3.5 py-2.5 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] text-[13px] text-[#111111] focus:outline-none"
-                  />
-                </div>
-              )}
+              {/* Referral commission input removed */}
 
               <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[#E9E3DA]">
                 <button
