@@ -309,9 +309,8 @@ export default function ProjectsView() {
             <div
               key={project._id}
               onClick={() => setActiveClientId(project._id)}
-              className={`bg-white border rounded-[24px] p-5 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-4 relative overflow-hidden ${
-                isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-[#E9E3DA] hover:border-[#111111]"
-              }`}
+              className={`bg-white border rounded-[24px] p-5 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-4 relative overflow-hidden ${isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-[#E9E3DA] hover:border-[#111111]"
+                }`}
             >
               {/* Header */}
               <div className="flex items-start justify-between gap-3">
@@ -433,36 +432,32 @@ export default function ProjectsView() {
               <div className="flex items-center gap-1.5 bg-[#FCFBF8] border border-[#E9E3DA] p-1 rounded-xl">
                 <button
                   onClick={() => setActiveTab("checklist")}
-                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === "checklist" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === "checklist" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                    }`}
                 >
                   <CheckSquare size={14} />
                   <span>Task Checklist</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("expenses")}
-                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === "expenses" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === "expenses" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                    }`}
                 >
                   <Receipt size={14} />
                   <span>Expense Manager</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("payments")}
-                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === "payments" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === "payments" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                    }`}
                 >
                   <IndianRupee size={14} />
                   <span>Revenue & Payments</span>
                 </button>
                 <button
                   onClick={() => setActiveTab("financials")}
-                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
-                    activeTab === "financials" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
-                  }`}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${activeTab === "financials" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                    }`}
                 >
                   <TrendingUp size={14} />
                   <span>Financial Breakdown</span>
@@ -517,17 +512,15 @@ export default function ProjectsView() {
                   return (
                     <div
                       key={task._id || idx}
-                      className={`border rounded-2xl p-4 transition-all ${
-                        isDone ? "bg-[#FCFBF8] border-[#E9E3DA]/80 opacity-80" : "bg-white border-[#E9E3DA] shadow-sm"
-                      }`}
+                      className={`border rounded-2xl p-4 transition-all ${isDone ? "bg-[#FCFBF8] border-[#E9E3DA]/80 opacity-80" : "bg-white border-[#E9E3DA] shadow-sm"
+                        }`}
                     >
                       <div className="flex items-start justify-between gap-4">
                         <div className="flex items-start gap-3 min-w-0 flex-1">
                           <button
                             onClick={() => toggleTask(activeProject._id, task._id)}
-                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all mt-0.5 cursor-pointer ${
-                              isDone ? "bg-emerald-500 border-emerald-500 text-white" : "border-[#9CA3AF] bg-white hover:border-[#111111]"
-                            }`}
+                            className={`w-5 h-5 rounded-md border flex items-center justify-center transition-all mt-0.5 cursor-pointer ${isDone ? "bg-emerald-500 border-emerald-500 text-white" : "border-[#9CA3AF] bg-white hover:border-[#111111]"
+                              }`}
                           >
                             {isDone && <Check size={13} strokeWidth={3} />}
                           </button>
@@ -555,11 +548,10 @@ export default function ProjectsView() {
 
                         <div className="flex items-center gap-2 shrink-0">
                           <span
-                            className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${
-                              task.priority === "High"
+                            className={`px-2.5 py-0.5 rounded text-[10px] font-mono font-bold uppercase tracking-wider ${task.priority === "High"
                                 ? "bg-red-50 text-red-600 border border-red-100"
                                 : "bg-amber-50 text-amber-600 border border-amber-100"
-                            }`}
+                              }`}
                           >
                             {task.priority}
                           </span>
@@ -578,9 +570,8 @@ export default function ProjectsView() {
                           <div key={sIdx} className="flex items-center gap-2 text-[12.5px]">
                             <button
                               onClick={() => handleToggleSubtask(task._id, sIdx)}
-                              className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer ${
-                                sub.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-[#9CA3AF]"
-                              }`}
+                              className={`w-4 h-4 rounded border flex items-center justify-center cursor-pointer ${sub.completed ? "bg-emerald-500 border-emerald-500 text-white" : "border-[#9CA3AF]"
+                                }`}
                             >
                               {sub.completed && <Check size={10} strokeWidth={3} />}
                             </button>

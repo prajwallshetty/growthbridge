@@ -220,22 +220,6 @@ function CustomRelationshipEdge({
   markerEnd,
   data,
 }: any) {
-  const { updateClient } = useCRM();
-
-  const handleDeleteConnection = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (confirm("Remove connection relationship between these nodes?")) {
-      try {
-        await updateClient(data.targetId, {
-          referredBy: null,
-          clientType: "Direct",
-        });
-      } catch (err) {
-        console.error("Failed to delete relationship connection:", err);
-      }
-    }
-  };
-
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
     sourceY,
@@ -333,16 +317,8 @@ function CustomRelationshipEdge({
               pointerEvents: "all",
               zIndex: 10,
             }}
-            className="flex items-center gap-1 group"
           >
-            <span>{relationshipType}</span>
-            <button
-              onClick={handleDeleteConnection}
-              className="opacity-0 group-hover:opacity-100 hover:text-red-500 transition-opacity ml-1 cursor-pointer pointer-events-auto flex items-center justify-center"
-              title="Delete Connection"
-            >
-              <X size={10} strokeWidth={2.5} />
-            </button>
+            {relationshipType}
           </div>
         </EdgeLabelRenderer>
       )}
@@ -467,137 +443,134 @@ function ClientNodeComponent({ id, data }: any) {
     }
   };
 
-  return (
-    <div
-      className={`w-[280px] bg-white border rounded-[16px] p-4 shadow-[0_4px_20px_rgba(0,0,0,0.015)] hover:shadow-[0_8px_30px_rgba(0,0,0,0.04)] hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-200 select-none relative ${
-        isHighlighted ? "ring-2 ring-indigo-500 ring-offset-2 scale-102 border-indigo-500" : "border-[#E9E3DA]"
-      }`}
-    >
-      {/* Handles */}
-      <Handle
-        type="target"
-        position={targetPos}
-        style={{
-          background: "#ffffff",
-          width: 8,
-          height: 8,
-          border: "2px solid #6366F1",
-          borderRadius: 99,
-        }}
-      />
-      <Handle
-        type="source"
-        position={sourcePos}
-        style={{
-          background: "#ffffff",
-          width: 8,
-          height: 8,
-          border: "2px solid #6366F1",
-          borderRadius: 99,
-        }}
-      />
+    return (
+      <div
+        className={`w-[340px] bg-white border rounded-[20px] p-5 shadow-[0_6px_25px_rgba(0,0,0,0.02)] hover:shadow-[0_12px_40px_rgba(0,0,0,0.06)] hover:-translate-y-0.5 hover:border-indigo-300 transition-all duration-200 select-none relative ${isHighlighted ? "ring-2 ring-indigo-500 ring-offset-2 scale-102 border-indigo-500" : "border-[#E9E3DA]"
+          }`}
+      >
+        {/* Handles */}
+        <Handle
+          type="target"
+          position={targetPos}
+          style={{
+            background: "#ffffff",
+            width: 8,
+            height: 8,
+            border: "2px solid #6366F1",
+            borderRadius: 99,
+          }}
+        />
+        <Handle
+          type="source"
+          position={sourcePos}
+          style={{
+            background: "#ffffff",
+            width: 8,
+            height: 8,
+            border: "2px solid #6366F1",
+            borderRadius: 99,
+          }}
+        />
 
-      {/* Node Content */}
-      <div className="flex flex-col gap-3">
-        {/* Header */}
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-[12px] tracking-wider shrink-0 shadow-sm">
-              {c.logo || c.company.substring(0, 2).toUpperCase()}
+        {/* Node Content */}
+        <div className="flex flex-col gap-4">
+          {/* Header */}
+          <div className="flex items-start justify-between gap-3">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-2xl bg-slate-900 text-white flex items-center justify-center font-extrabold text-[13px] tracking-wider shrink-0 shadow-sm">
+                {c.logo || c.company.substring(0, 2).toUpperCase()}
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-[14.5px] font-black text-[#111111] leading-tight truncate" title={c.company}>
+                  {c.company}
+                </h4>
+                <span className="text-[11.5px] text-[#6A6A6A] block truncate mt-0.5">{c.name}</span>
+              </div>
             </div>
-            <div className="min-w-0">
-              <h4 className="text-[13px] font-black text-[#111111] leading-tight truncate" title={c.company}>
-                {c.company}
-              </h4>
-              <span className="text-[10.5px] text-[#6A6A6A] block truncate">{c.name}</span>
+
+            <div className="flex flex-col items-end gap-1 shrink-0">
+              <span className="text-[12.5px]">{c.countryFlag || "🇮🇳"}</span>
+              {c.priority && (
+                <span
+                  className={`px-2 py-0.5 rounded text-[9px] font-bold font-mono uppercase tracking-wider ${c.priority === "High"
+                      ? "bg-red-50 text-red-600"
+                      : c.priority === "Medium"
+                        ? "bg-amber-50 text-amber-600"
+                        : "bg-slate-50 text-slate-600"
+                    }`}
+                >
+                  {c.priority}
+                </span>
+              )}
             </div>
           </div>
 
-          <div className="flex flex-col items-end gap-1">
-            <span className="text-[11px]">{c.countryFlag || "🇮🇳"}</span>
-            {c.priority && (
-              <span
-                className={`px-1.5 py-0.5 rounded text-[8px] font-bold font-mono uppercase tracking-wider ${
-                  c.priority === "High"
-                    ? "bg-red-50 text-red-600"
-                    : c.priority === "Medium"
-                    ? "bg-amber-50 text-amber-600"
-                    : "bg-slate-50 text-slate-600"
-                }`}
-              >
-                {c.priority}
+          {/* Subtype and Status Strip */}
+          <div className="flex items-center gap-2 flex-wrap">
+            {relationshipSubtype && (
+              <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold uppercase border ${getSubtypeStyle(relationshipSubtype)}`}>
+                {relationshipSubtype}
               </span>
             )}
+            <span className="flex items-center gap-1.5 text-[11.5px] font-semibold text-[#6A6A6A] bg-[#FCFBF8] border border-[#E9E3DA] px-2.5 py-0.5 rounded-md">
+              <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor(c.stage)}`} />
+              <span className="truncate max-w-[120px]">{c.stage}</span>
+            </span>
+          </div>
+
+          {/* Financial Grid */}
+          <div className="grid grid-cols-2 gap-3 bg-[#FCFBF8] border border-[#E9E3DA]/80 rounded-xl p-3 font-mono text-center">
+            <div className="border-r border-[#E9E3DA]/60">
+              <span className="text-[9px] text-[#6A6A6A] uppercase font-bold block">Paid Rev</span>
+              <span className="text-[12.5px] font-extrabold text-emerald-700">{formatCurrency(receivedRevenue)}</span>
+            </div>
+            <div>
+              <span className="text-[9px] text-[#6A6A6A] uppercase font-bold block">Outstanding</span>
+              <span className="text-[12.5px] font-extrabold text-red-600">{formatCurrency(outstanding)}</span>
+            </div>
+          </div>
+
+          {/* Action / Metrics Row */}
+          <div className="flex items-center justify-between text-[12px] text-[#6A6A6A] mt-0.5 px-0.5">
+            <div className="flex items-center gap-3">
+              <span title="Quotations" className="flex items-center gap-1">
+                <span className="font-bold text-[#111111]">{quotationsCount}</span>
+                <span>Quots</span>
+              </span>
+              <span>•</span>
+              <span title="Active Tasks" className="flex items-center gap-1.5">
+                <span className="font-bold text-[#111111]">{openTasksCount}</span>
+                <span>Tasks</span>
+              </span>
+            </div>
+            <span className="text-[11px] text-indigo-600 font-bold hover:underline cursor-pointer" onClick={() => onView(c._id)}>
+              Inspect →
+            </span>
           </div>
         </div>
 
-        {/* Subtype and Status Strip */}
-        <div className="flex items-center gap-1.5 flex-wrap">
-          {relationshipSubtype && (
-            <span className={`px-2 py-0.5 rounded-md text-[9px] font-mono font-bold uppercase border ${getSubtypeStyle(relationshipSubtype)}`}>
-              {relationshipSubtype}
-            </span>
-          )}
-          <span className="flex items-center gap-1 text-[10.5px] font-semibold text-[#6A6A6A] bg-[#FCFBF8] border border-[#E9E3DA] px-2 py-0.5 rounded-md">
-            <span className={`w-1.5 h-1.5 rounded-full ${getStatusColor(c.stage)}`} />
-            <span className="truncate max-w-[100px]">{c.stage}</span>
-          </span>
-        </div>
-
-        {/* Financial Grid */}
-        <div className="grid grid-cols-2 gap-2 bg-[#FCFBF8] border border-[#E9E3DA]/80 rounded-xl p-2.5 font-mono text-center">
-          <div className="border-r border-[#E9E3DA]/60">
-            <span className="text-[8px] text-[#6A6A6A] uppercase font-bold block">Paid Rev</span>
-            <span className="text-[11.5px] font-extrabold text-emerald-700">{formatCurrency(receivedRevenue)}</span>
-          </div>
-          <div>
-            <span className="text-[8px] text-[#6A6A6A] uppercase font-bold block">Outstanding</span>
-            <span className="text-[11.5px] font-extrabold text-red-600">{formatCurrency(outstanding)}</span>
-          </div>
-        </div>
-
-        {/* Action / Metrics Row */}
-        <div className="flex items-center justify-between text-[11px] text-[#6A6A6A] mt-0.5 px-0.5">
-          <div className="flex items-center gap-2.5">
-            <span title="Quotations" className="flex items-center gap-1">
-              <span className="font-bold text-[#111111]">{quotationsCount}</span>
-              <span>Quots</span>
-            </span>
-            <span>•</span>
-            <span title="Active Tasks" className="flex items-center gap-1">
-              <span className="font-bold text-[#111111]">{openTasksCount}</span>
-              <span>Tasks</span>
-            </span>
-          </div>
-          <span className="text-[10px] text-indigo-600 font-bold hover:underline cursor-pointer" onClick={() => onView(c._id)}>
-            Inspect →
-          </span>
-        </div>
+        {/* Collapse / Expand Toggle Button centered on handles */}
+        {hasChildren && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              onToggleCollapse(c._id);
+            }}
+            className={`w-5 h-5 rounded-full bg-white border border-[#E9E3DA] flex items-center justify-center text-[#111111] hover:bg-[#111111] hover:text-white transition-all shadow-md z-30 pointer-events-auto ${isHorizontal
+                ? "absolute right-[-10px] top-1/2 -translate-y-1/2"
+                : "absolute bottom-[-10px] left-1/2 -translate-x-1/2"
+              }`}
+            title={isCollapsed ? "Expand Subtree" : "Collapse Subtree"}
+          >
+            {isCollapsed ? (
+              <Plus size={10} strokeWidth={2.5} />
+            ) : (
+              <Minimize2 size={9} strokeWidth={2.5} />
+            )}
+          </button>
+        )}
       </div>
-
-      {/* Collapse / Expand Toggle Button centered on handles */}
-      {hasChildren && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            onToggleCollapse(c._id);
-          }}
-          className={`w-5 h-5 rounded-full bg-white border border-[#E9E3DA] flex items-center justify-center text-[#111111] hover:bg-[#111111] hover:text-white transition-all shadow-md z-30 pointer-events-auto ${
-            isHorizontal
-              ? "absolute right-[-10px] top-1/2 -translate-y-1/2"
-              : "absolute bottom-[-10px] left-1/2 -translate-x-1/2"
-          }`}
-          title={isCollapsed ? "Expand Subtree" : "Collapse Subtree"}
-        >
-          {isCollapsed ? (
-            <Plus size={10} strokeWidth={2.5} />
-          ) : (
-            <Minimize2 size={9} strokeWidth={2.5} />
-          )}
-        </button>
-      )}
-    </div>
-  );
+    );
 }
 
 const nodeTypes = {
@@ -732,7 +705,7 @@ function ClientTreeCanvas() {
     const containerGroups = nodesToLayout.filter((n) => n.type === "groupNode");
 
     clientNodes.forEach((node) => {
-      g.setNode(node.id, { width: 280, height: 200 });
+      g.setNode(node.id, { width: 340, height: 230 });
     });
 
     edgesToLayout.forEach((edge) => {
@@ -749,8 +722,8 @@ function ClientTreeCanvas() {
       const dagreNode = g.node(node.id);
       if (!dagreNode) return node;
 
-      let x = dagreNode.x - 140;
-      let y = dagreNode.y - 100;
+      let x = dagreNode.x - 170;
+      let y = dagreNode.y - 115;
 
       // Local coordinate conversion if assigned to a group container
       if (node.parentId) {
@@ -876,7 +849,6 @@ function ClientTreeCanvas() {
         data: {
           relationshipType: relationshipSubtypes[c._id] || "Referred",
           isHighlighted,
-          targetId: c._id,
         },
       });
     });
@@ -980,7 +952,7 @@ function ClientTreeCanvas() {
       }
     }
 
-    setCenter(x + 140, y + 122, { zoom: 1.3, duration: 900 });
+    setCenter(x + 170, y + 115, { zoom: 1.3, duration: 900 });
     setHighlightedNodeId(node.id);
     setSelectedNodeId(node.id);
     setSidebarOpen(true);
@@ -1197,15 +1169,9 @@ function ClientTreeCanvas() {
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Ignore shortcut key binds inside form inputs
-      if (
-        e.target instanceof HTMLInputElement ||
-        e.target instanceof HTMLSelectElement ||
-        e.target instanceof HTMLTextAreaElement
-      )
-        return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLSelectElement) return;
 
-      if (e.code === "Space") {
-        if (e.repeat) return;
+      if (e.key === "Space") {
         e.preventDefault();
         setActiveTool("hand");
       }
@@ -1224,7 +1190,7 @@ function ClientTreeCanvas() {
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.code === "Space") {
+      if (e.key === "Space") {
         setActiveTool("select");
       }
     };
@@ -1347,9 +1313,8 @@ function ClientTreeCanvas() {
                 setLayoutDirection("TB");
                 triggerAutoLayout("TB");
               }}
-              className={`p-1.5 rounded-lg text-[10.5px] font-bold transition-all ${
-                layoutDirection === "TB" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg text-[10.5px] font-bold transition-all ${layoutDirection === "TB" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-100"
+                }`}
               title="Auto arrange vertically (Top-Bottom)"
             >
               Vertical Tree
@@ -1359,9 +1324,8 @@ function ClientTreeCanvas() {
                 setLayoutDirection("LR");
                 triggerAutoLayout("LR");
               }}
-              className={`p-1.5 rounded-lg text-[10.5px] font-bold transition-all ${
-                layoutDirection === "LR" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg text-[10.5px] font-bold transition-all ${layoutDirection === "LR" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-100"
+                }`}
               title="Auto arrange horizontally (Left-Right)"
             >
               Horizontal Tree
@@ -1387,25 +1351,22 @@ function ClientTreeCanvas() {
           <div className="flex items-center bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-0.5 gap-0.5">
             <button
               onClick={() => setGridType("dots")}
-              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${
-                gridType === "dots" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${gridType === "dots" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
+                }`}
             >
               Dots
             </button>
             <button
               onClick={() => setGridType("lines")}
-              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${
-                gridType === "lines" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${gridType === "lines" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
+                }`}
             >
               Lines
             </button>
             <button
               onClick={() => setGridType("none")}
-              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${
-                gridType === "none" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
-              }`}
+              className={`p-1.5 rounded-lg text-[10px] font-mono font-bold ${gridType === "none" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:bg-slate-100"
+                }`}
             >
               Off
             </button>
@@ -1442,23 +1403,21 @@ function ClientTreeCanvas() {
         <div className="absolute left-6 top-6 z-20 flex flex-col bg-white border border-[#E9E3DA] p-1.5 rounded-2xl shadow-lg gap-2 shrink-0">
           <button
             onClick={() => setActiveTool("select")}
-            className={`p-2.5 rounded-xl transition-all ${
-              activeTool === "select" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-50"
-            }`}
+            className={`p-2.5 rounded-xl transition-all ${activeTool === "select" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-50"
+              }`}
             title="Select & Drag Tool (Keyboard V)"
           >
             <MousePointer size={16} strokeWidth={2.2} />
           </button>
           <button
             onClick={() => setActiveTool("hand")}
-            className={`p-2.5 rounded-xl transition-all ${
-              activeTool === "hand" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-50"
-            }`}
+            className={`p-2.5 rounded-xl transition-all ${activeTool === "hand" ? "bg-[#111111] text-white shadow-sm" : "text-[#6A6A6A] hover:bg-slate-50"
+              }`}
             title="Pan Hand Tool (Keyboard Space)"
           >
             <Hand size={16} strokeWidth={2.2} />
           </button>
-          
+
           <div className="h-px bg-[#E9E3DA]" />
 
           <button
@@ -1501,9 +1460,6 @@ function ClientTreeCanvas() {
             onNodeContextMenu={onNodeContextMenu}
             panOnDrag={activeTool === "hand" ? true : [1, 2]}
             selectionOnDrag={activeTool === "select"}
-            panOnScroll={true}
-            zoomOnScroll={false}
-            zoomOnPinch={true}
             snapToGrid={snapToGrid}
             snapGrid={[15, 15]}
             fitView
@@ -1517,7 +1473,7 @@ function ClientTreeCanvas() {
                 color="#E9E3DA"
               />
             )}
-            
+
             {/* Custom controls placement */}
             <Controls
               showInteractive={false}
@@ -1692,7 +1648,22 @@ function ClientTreeCanvas() {
                     </button>
                   </div>
 
-                  {/* Quick Payout Commission Badge removed */}
+                  {/* Quick Payout Commission Badge */}
+                  {selectedClient.referredBy && (
+                    <div className="bg-emerald-50 border border-emerald-200 rounded-2xl p-3.5 mb-5 flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-xl bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                        <Gift size={16} />
+                      </div>
+                      <div>
+                        <span className="text-[10px] font-bold text-emerald-800 uppercase font-mono tracking-wider">
+                          Referral Agreement
+                        </span>
+                        <div className="text-[13px] font-extrabold text-emerald-800 mt-0.5">
+                          {selectedClient.referralCommissionPct || 5}% Commission Rate
+                        </div>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Financial Metrics Card */}
                   <div className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-2xl p-4 mb-6 shadow-sm">
@@ -1736,7 +1707,7 @@ function ClientTreeCanvas() {
                               100,
                               ((clientRevenueMap[selectedClient._id] || 0) /
                                 (selectedClient.budget || selectedClient.projectCost || 1)) *
-                                100
+                              100
                             )}%`,
                           }}
                         />
@@ -1846,14 +1817,14 @@ function ClientTreeCanvas() {
                   <div className="bg-[#111111] text-white border border-[#333] rounded-2xl p-4 mb-6 shadow-md flex items-center justify-between">
                     <div>
                       <span className="text-[9px] font-bold uppercase tracking-wider text-[#A8A296] font-mono block">
-                        Total Network Portfolio Value
+                        Network Commission Pool
                       </span>
                       <h4 className="text-[20px] font-extrabold text-white mt-1">
-                        {formatCurrency(globalSummaryStats.totalPortfolioBudget)}
+                        {formatCurrency(globalSummaryStats.totalCommissionsPaid)}
                       </h4>
                     </div>
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-600 text-white flex items-center justify-center shrink-0">
-                      <DollarSign size={18} />
+                      <Gift size={18} />
                     </div>
                   </div>
 
@@ -1907,6 +1878,10 @@ function ClientTreeCanvas() {
                                 </span>
                               </div>
                             </div>
+
+                            <span className="text-[11.5px] font-extrabold text-emerald-700 font-mono">
+                              +{formatCurrency(entry.earnings)}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -2011,7 +1986,19 @@ function ClientTreeCanvas() {
                 </select>
               </div>
 
-              {/* Referral commission input removed */}
+              {addClientFormData.referredBy && (
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[10px] font-bold text-[#6A6A6A] uppercase font-mono">Referral Commission Rate (%)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="50"
+                    value={addClientFormData.referralCommissionPct}
+                    onChange={(e) => setAddClientFormData({ ...addClientFormData, referralCommissionPct: e.target.value })}
+                    className="px-3.5 py-2.5 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] text-[13px] text-[#111111] focus:outline-none"
+                  />
+                </div>
+              )}
 
               <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[#E9E3DA]">
                 <button
