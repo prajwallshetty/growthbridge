@@ -287,21 +287,42 @@ const INITIAL_CLIENTS = [
 // Fetch all CRM Clients
 export async function getCRMClients() {
   await requireAuth();
-  await connectToDatabase();
-  
-  let list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
+  try {
+    await connectToDatabase();
+    
+    let list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
 
-  if (list.length === 0) {
-    // Seed initial demo data with referral linkages
-    const c1 = await CRMClient.create({ ...INITIAL_CLIENTS[0], clientType: "Direct", referralCommissionPct: 5 }); // Haramain
-    const c2 = await CRMClient.create({ ...INITIAL_CLIENTS[1], clientType: "Direct", referralCommissionPct: 5 }); // ArchViz
-    const c3 = await CRMClient.create({ ...INITIAL_CLIENTS[2], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Vapor Wave
-    const c4 = await CRMClient.create({ ...INITIAL_CLIENTS[3], referredBy: c3._id, clientType: "Referred", referralCommissionPct: 5 }); // Cardinal Studio
-    const c5 = await CRMClient.create({ ...INITIAL_CLIENTS[4], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Constructo Corp
-    list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
+    if (list.length === 0) {
+      // Seed initial demo data with referral linkages
+      const c1 = await CRMClient.create({ ...INITIAL_CLIENTS[0], clientType: "Direct", referralCommissionPct: 5 }); // Haramain
+      const c2 = await CRMClient.create({ ...INITIAL_CLIENTS[1], clientType: "Direct", referralCommissionPct: 5 }); // ArchViz
+      const c3 = await CRMClient.create({ ...INITIAL_CLIENTS[2], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Vapor Wave
+      const c4 = await CRMClient.create({ ...INITIAL_CLIENTS[3], referredBy: c3._id, clientType: "Referred", referralCommissionPct: 5 }); // Cardinal Studio
+      const c5 = await CRMClient.create({ ...INITIAL_CLIENTS[4], referredBy: c1._id, clientType: "Referred", referralCommissionPct: 5 }); // Constructo Corp
+      list = await CRMClient.find().sort({ updatedAt: -1 }).lean();
+    }
+
+    return serialize(list);
+  } catch (error) {
+    console.warn("Database connection failed. Falling back to offline client data.", error);
+    // Add mock IDs since the lean documents normally have _id
+    const offlineList: any[] = INITIAL_CLIENTS.map((client, index) => ({
+      ...client,
+      _id: `offline_client_id_${index + 1}`,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }));
+    // Resolve referral linkages offline (c3, c4, c5 referredBy)
+    const hMansoori = offlineList[0];
+    const vWave = offlineList[2];
+    vWave.referredBy = hMansoori._id;
+    const cStudio = offlineList[3];
+    cStudio.referredBy = vWave._id;
+    const cCorp = offlineList[4];
+    cCorp.referredBy = hMansoori._id;
+
+    return serialize(offlineList);
   }
-
-  return serialize(list);
 }
 
 // Create or Update CRM Client details
@@ -833,13 +854,28 @@ export async function deleteProjectTask(clientId: string, taskId: string) {
 // Get CRM Settings
 export async function getCRMSettings() {
   await requireAuth();
-  await connectToDatabase();
-  const Setting = (await import("@/models/Setting")).default;
-  let settings = await Setting.findOne();
-  if (!settings) {
-    settings = await Setting.create({});
+  try {
+    await connectToDatabase();
+    const Setting = (await import("@/models/Setting")).default;
+    let settings = await Setting.findOne();
+    if (!settings) {
+      settings = await Setting.create({});
+    }
+    return serialize(settings);
+  } catch (error) {
+    console.warn("Database connection failed. Falling back to default settings.", error);
+    return serialize({
+      businessName: "Growth Bridge",
+      currency: "₹",
+      partner1Name: "Prajwal",
+      partner1Share: 50,
+      partner2Name: "Shaz",
+      partner2Share: 50,
+      taxRate: 18,
+      theme: "light",
+      logoUrl: "/logo.png",
+    });
   }
-  return serialize(settings);
 }
 
 // Update CRM Settings
