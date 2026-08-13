@@ -9,7 +9,7 @@ import {
   AnimatePresence,
   useMotionValueEvent,
 } from "framer-motion";
-import { ArrowRight, ArrowUpRight, Mail, Plus, Sparkles, Menu, X, MapPin } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Mail, Plus, Sparkles, Menu, X, MapPin, Check } from "lucide-react";
 import SideRays from "@/components/ui/SideRays";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
@@ -196,6 +196,7 @@ export default function HomeClient({
       result: p.resultMetric || "+100% impact",
       image: p.image || "/project-pulse.png",
       liveUrl: p.liveUrl || "",
+      completed: p.completed ?? false,
     }));
 
   // Default services fallback
@@ -781,9 +782,14 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
                       </CardItem>
                       <CardItem
                         translateZ="60"
-                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 transition-colors"
+                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 transition-colors flex items-center gap-2"
                       >
-                        {p.title}
+                        <span>{p.title}</span>
+                        {p.completed && (
+                          <span className="inline-flex items-center justify-center bg-emerald-100 text-emerald-700 rounded-full p-0.5 shadow-sm shrink-0" title="Completed">
+                            <Check size={12} className="stroke-[3]" />
+                          </span>
+                        )}
                       </CardItem>
                     </div>
                     <CardItem

@@ -18,6 +18,7 @@ interface ProjectItem {
   resultMetric?: string;
   technologies: string[];
   featured: boolean;
+  completed?: boolean;
   projectType?: string;
   seoTitle?: string;
   seoDescription?: string;
@@ -45,6 +46,7 @@ export default function PortfolioCmsPage() {
     resultMetric: "",
     technologies: [],
     featured: false,
+    completed: false,
     projectType: "customised",
     seoTitle: "",
     seoDescription: "",
@@ -80,6 +82,7 @@ export default function PortfolioCmsPage() {
     setEditingProject(project);
     setFormState({
       projectType: "customised",
+      completed: project.completed ?? false,
       ...project,
     });
     setTechInput(project.technologies?.join(", ") || "");
@@ -100,6 +103,7 @@ export default function PortfolioCmsPage() {
       resultMetric: "",
       technologies: [],
       featured: false,
+      completed: false,
       projectType: "customised",
       seoTitle: "",
       seoDescription: "",
@@ -251,6 +255,7 @@ export default function PortfolioCmsPage() {
                     <th className="py-4 px-8">Type</th>
                     <th className="py-4 px-8">Metric</th>
                     <th className="py-4 px-8">Featured</th>
+                    <th className="py-4 px-8">Status</th>
                     <th className="py-4 px-8 text-right">Actions</th>
                   </tr>
                 </thead>
@@ -279,6 +284,15 @@ export default function PortfolioCmsPage() {
                             : "bg-[#FCFBF8] text-[#A8A296] border border-[#E9E3DA]"
                         }`}>
                           {project.featured ? "Featured" : "Standard"}
+                        </span>
+                      </td>
+                      <td className="py-5 px-8">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] ${
+                          project.completed
+                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : "bg-[#FCFBF8] text-[#A8A296] border border-[#E9E3DA]"
+                        }`}>
+                          {project.completed ? "Completed" : "In Progress"}
                         </span>
                       </td>
                       <td className="py-5 px-8 text-right">
@@ -569,6 +583,23 @@ export default function PortfolioCmsPage() {
                   type="checkbox"
                   checked={formState.featured}
                   onChange={(e) => handleToggleChange("featured", e.target.checked)}
+                  className="sr-only peer"
+                />
+                <div className="w-11 h-6 bg-[#E9E3DA] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[#E9E3DA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#111111]"></div>
+              </label>
+            </div>
+
+            {/* Completed toggle check */}
+            <div className="flex items-center justify-between p-4 rounded-[12px] bg-[#FCFBF8] border border-[#E9E3DA]">
+              <div className="flex flex-col">
+                <span className="text-[13px] font-bold text-[#111111]">Completed Project</span>
+                <span className="text-[11px] text-[#6A6A6A]">Mark project as completed (adds tick mark)</span>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formState.completed || false}
+                  onChange={(e) => handleToggleChange("completed", e.target.checked)}
                   className="sr-only peer"
                 />
                 <div className="w-11 h-6 bg-[#E9E3DA] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[#E9E3DA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#111111]"></div>

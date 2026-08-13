@@ -238,6 +238,7 @@ export async function getProjects() {
         image: "/project-northstar.png",
         liveUrl: "https://northstar.growthbridge.studio",
         featured: true,
+        completed: true,
         projectType: "pre-built",
       },
       {
@@ -248,6 +249,7 @@ export async function getProjects() {
         image: "/project-atlas.png",
         liveUrl: "https://atlas.growthbridge.studio",
         featured: true,
+        completed: true,
         projectType: "customised",
       },
       {
@@ -258,6 +260,7 @@ export async function getProjects() {
         image: "/project-pulse.png",
         liveUrl: "https://pulse.growthbridge.studio",
         featured: true,
+        completed: false,
         projectType: "pre-built",
       },
       {
@@ -268,6 +271,7 @@ export async function getProjects() {
         image: "/why-growthbridge.png",
         liveUrl: "https://loam.growthbridge.studio",
         featured: false,
+        completed: true,
         projectType: "customised",
       },
     ];

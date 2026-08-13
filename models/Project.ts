@@ -14,6 +14,7 @@ const ProjectSchema = new Schema(
     resultMetric: { type: String }, // e.g. "+320% revenue"
     technologies: [{ type: String }],
     featured: { type: Boolean, default: false },
+    completed: { type: Boolean, default: false },
     projectType: { type: String, default: "customised" }, // "pre-built" or "customised"
     seoTitle: { type: String },
     seoDescription: { type: String },
