@@ -153,6 +153,11 @@ const CRMClientSchema = new Schema(
       ],
       default: "Active"
     },
+    status: {
+      type: String,
+      enum: ["Not Started", "Ongoing", "Completed"],
+      default: "Ongoing"
+    },
     priority: { type: String, enum: ["High", "Medium", "Low"], default: "Medium" },
     assignee: { type: String, default: "Unassigned" },
     progress: { type: Number, default: 0 },

@@ -127,6 +127,7 @@ export interface CRMClient {
     | "Project Completed"
     | "Maintenance"
     | "Upsell";
+  status?: "Not Started" | "Ongoing" | "Completed";
   priority: "High" | "Medium" | "Low";
   assignee: string;
   progress: number;

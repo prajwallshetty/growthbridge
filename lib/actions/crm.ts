@@ -28,6 +28,7 @@ const INITIAL_CLIENTS = [
     industry: "Real Estate & Hospitality",
     budget: 1200000,
     stage: "Advance Payment Received",
+    status: "Ongoing",
     priority: "High",
     assignee: "Prajwal Shetty",
     progress: 35,
@@ -121,6 +122,7 @@ const INITIAL_CLIENTS = [
     industry: "Architectural Visualizations",
     budget: 850000,
     stage: "Development",
+    status: "Ongoing",
     priority: "High",
     assignee: "Arjun Dev",
     progress: 55,
@@ -176,6 +178,7 @@ const INITIAL_CLIENTS = [
     industry: "AI Automations & Agents",
     budget: 680000,
     stage: "Development",
+    status: "Ongoing",
     priority: "Medium",
     assignee: "Sarah Lin",
     progress: 75,
@@ -216,6 +219,7 @@ const INITIAL_CLIENTS = [
     industry: "Luxury Fashion Branding",
     budget: 450000,
     stage: "Development",
+    status: "Ongoing",
     priority: "Low",
     assignee: "Arjun Dev",
     progress: 90,
@@ -254,6 +258,7 @@ const INITIAL_CLIENTS = [
     industry: "Commercial Construction",
     budget: 1500000,
     stage: "Lead Created",
+    status: "Not Started",
     priority: "High",
     assignee: "Unassigned",
     progress: 5,
@@ -331,6 +336,39 @@ export async function saveCRMClient(clientData: any) {
   await connectToDatabase();
 
   const { _id, ...fields } = clientData;
+
+  // Sync status and stage/progress fields
+  if (fields.status) {
+    if (fields.status === "Completed") {
+      fields.stage = fields.stage || "Completed";
+      fields.progress = fields.progress !== undefined ? fields.progress : 100;
+    } else if (fields.status === "Not Started") {
+      fields.stage = fields.stage || "Lead Created";
+      fields.progress = fields.progress !== undefined ? fields.progress : 0;
+    } else {
+      fields.stage = fields.stage || "Active";
+    }
+  } else if (fields.stage) {
+    if (fields.stage === "Completed" || fields.stage === "Project Completed") {
+      fields.status = "Completed";
+    } else if (
+      [
+        "Lead Created",
+        "Discovery Call",
+        "Meeting Scheduled",
+        "Requirements Received",
+        "Proposal Generated",
+        "Quotation Generated",
+        "Client Approval",
+        "Agreement Generated",
+      ].includes(fields.stage)
+    ) {
+      fields.status = "Not Started";
+    } else {
+      fields.status = "Ongoing";
+    }
+  }
+
   let client;
 
   if (_id) {
@@ -465,6 +503,29 @@ async function runLifecycleAutomation(client: any) {
     isModified = true;
   }
 
+  const oldStatus = client.status;
+  let newStatus = "Ongoing";
+  if (client.stage === "Completed" || client.stage === "Project Completed") {
+    newStatus = "Completed";
+  } else if (
+    [
+      "Lead Created",
+      "Discovery Call",
+      "Meeting Scheduled",
+      "Requirements Received",
+      "Proposal Generated",
+      "Quotation Generated",
+      "Client Approval",
+      "Agreement Generated",
+    ].includes(client.stage)
+  ) {
+    newStatus = "Not Started";
+  }
+  if (oldStatus !== newStatus) {
+    client.status = newStatus;
+    isModified = true;
+  }
+
   return isModified;
 }
 
@@ -477,6 +538,25 @@ export async function updateClientStage(clientId: string, stage: string) {
   if (!client) throw new Error("Client not found");
 
   client.stage = stage;
+  if (stage === "Completed" || stage === "Project Completed") {
+    client.status = "Completed";
+  } else if (
+    [
+      "Lead Created",
+      "Discovery Call",
+      "Meeting Scheduled",
+      "Requirements Received",
+      "Proposal Generated",
+      "Quotation Generated",
+      "Client Approval",
+      "Agreement Generated",
+    ].includes(stage)
+  ) {
+    client.status = "Not Started";
+  } else {
+    client.status = "Ongoing";
+  }
+
   client.activity.unshift({
     text: `Stage manually updated to: ${stage}`,
     timestamp: new Date().toISOString().split("T")[0],

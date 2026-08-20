@@ -53,6 +53,7 @@ export default function ProjectsView() {
   const [taskFilterStatus, setTaskFilterStatus] = useState<string>("All");
   const [taskFilterPriority, setTaskFilterPriority] = useState<string>("All");
   const [isAddProjectModalOpen, setIsAddProjectModalOpen] = useState(false);
+  const [projectListTab, setProjectListTab] = useState<"Not Started" | "Ongoing" | "Completed">("Ongoing");
 
   // Edit Project State
   const [editingProject, setEditingProject] = useState<CRMClient | null>(null);
@@ -62,6 +63,35 @@ export default function ProjectsView() {
   const [editStage, setEditStage] = useState("");
   const [editDeadline, setEditDeadline] = useState("");
   const [editProgress, setEditProgress] = useState(0);
+  const [editStatus, setEditStatus] = useState<"Not Started" | "Ongoing" | "Completed">("Ongoing");
+
+  // Launch Project State
+  const [newProjectStatus, setNewProjectStatus] = useState<"Not Started" | "Ongoing" | "Completed">("Ongoing");
+
+  const getProjectStatus = (project: CRMClient): "Not Started" | "Ongoing" | "Completed" => {
+    if (project.status) {
+      if (project.status === "Completed") return "Completed";
+      if (project.status === "Not Started") return "Not Started";
+      return "Ongoing";
+    }
+    const stage = project.stage;
+    if (stage === "Completed" || stage === "Project Completed") return "Completed";
+    if (
+      [
+        "Lead Created",
+        "Discovery Call",
+        "Meeting Scheduled",
+        "Requirements Received",
+        "Proposal Generated",
+        "Quotation Generated",
+        "Client Approval",
+        "Agreement Generated",
+      ].includes(stage)
+    ) {
+      return "Not Started";
+    }
+    return "Ongoing";
+  };
 
   const openEditModal = (project: CRMClient, e?: React.MouseEvent) => {
     if (e) e.stopPropagation();
@@ -72,6 +102,7 @@ export default function ProjectsView() {
     setEditStage(project.stage || "Active");
     setEditDeadline(project.expectedDelivery || "");
     setEditProgress(project.progress || 0);
+    setEditStatus(project.status as any || getProjectStatus(project));
   };
 
   const handleSaveEditProject = async (e: React.FormEvent) => {
@@ -85,6 +116,7 @@ export default function ProjectsView() {
       stage: editStage as any,
       expectedDelivery: editDeadline,
       progress: editProgress,
+      status: editStatus,
     });
 
     setEditingProject(null);
@@ -178,7 +210,8 @@ export default function ProjectsView() {
       startDate: newProjectStartDate,
       expectedDelivery: newProjectDeadline || newProjectStartDate,
       assignee: newProjectAssignee,
-      stage: "Active",
+      stage: newProjectStatus === "Completed" ? "Completed" : newProjectStatus === "Not Started" ? "Lead Created" : "Active",
+      status: newProjectStatus,
       priority: "High",
       countryFlag: "🇮🇳",
       logo: newProjectCompany.substring(0, 2).toUpperCase(),
@@ -190,6 +223,7 @@ export default function ProjectsView() {
     setNewProjectCompany("");
     setNewProjectName("");
     setNewProjectBudget("");
+    setNewProjectStatus("Ongoing"); // Reset
     setIsAddProjectModalOpen(false);
   };
 
@@ -276,6 +310,17 @@ export default function ProjectsView() {
     setPayNotes("");
   };
 
+  const ongoingProjects = clients.filter((p) => getProjectStatus(p) === "Ongoing");
+  const completedProjects = clients.filter((p) => getProjectStatus(p) === "Completed");
+  const notStartedProjects = clients.filter((p) => getProjectStatus(p) === "Not Started");
+
+  const filteredProjects =
+    projectListTab === "Ongoing"
+      ? ongoingProjects
+      : projectListTab === "Completed"
+      ? completedProjects
+      : notStartedProjects;
+
   return (
     <div className="flex flex-col gap-6 pb-12 select-none">
       {/* Top Header */}
@@ -297,95 +342,139 @@ export default function ProjectsView() {
         </button>
       </div>
 
-      {/* Projects Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {clients.map((project) => {
-          const fin = getProjectFinancials(project);
-          const completedTasksCount = (project.tasks || []).filter((t) => t.status === "Completed" || t.completed).length;
-          const totalTasksCount = (project.tasks || []).length;
-          const isSelected = activeProject?._id === project._id;
-
-          return (
-            <div
-              key={project._id}
-              onClick={() => setActiveClientId(project._id)}
-              className={`bg-white border rounded-[24px] p-5 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-4 relative overflow-hidden ${isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-[#E9E3DA] hover:border-[#111111]"
-                }`}
-            >
-              {/* Header */}
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0 flex-1">
-                  <div className="w-10 h-10 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-extrabold text-[13px] text-[#111111] shrink-0">
-                    {project.logo || project.company.substring(0, 2).toUpperCase()}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-[15px] font-extrabold text-[#111111] leading-tight truncate flex items-center gap-1.5">
-                      <span className="truncate">{project.company}</span>
-                      <span className="text-[12px] shrink-0">{project.countryFlag}</span>
-                    </h3>
-                    <span className="text-[11.5px] text-[#6A6A6A] block mt-0.5 truncate">{project.name}</span>
-                  </div>
-                </div>
-
-                <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-extrabold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0 max-w-[130px] truncate text-center">
-                  {project.stage}
-                </span>
-              </div>
-
-              {/* Progress Bar */}
-              <div>
-                <div className="flex justify-between items-center text-[11.5px] font-bold text-[#111111] mb-1.5">
-                  <span className="text-[#6A6A6A]">Progress</span>
-                  <span className="font-mono text-[#111111]">{project.progress}%</span>
-                </div>
-                <div className="w-full h-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-full overflow-hidden">
-                  <div
-                    className="h-full rounded-full bg-emerald-500 transition-all duration-500"
-                    style={{ width: `${project.progress}%` }}
-                  />
-                </div>
-              </div>
-
-              {/* Quick Financial Summary Pill with Budget Edit Trigger */}
-              <div className="grid grid-cols-3 gap-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-center font-mono relative">
-                <div
-                  onClick={(e) => openEditModal(project, e)}
-                  className="group/b text-left pl-1 cursor-pointer hover:bg-white/80 p-1 rounded-lg transition-colors"
-                  title="Click to change project budget"
-                >
-                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] flex items-center gap-1">
-                    <span>Budget</span>
-                    <Edit2 size={9} className="text-indigo-600 opacity-60 group-hover/b:opacity-100" />
-                  </span>
-                  <span className="text-[12px] font-extrabold text-[#111111] group-hover/b:text-indigo-600 block truncate">
-                    {formatCurrency(fin.cost)}
-                  </span>
-                </div>
-                <div className="border-x border-[#E9E3DA] p-1">
-                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Received</span>
-                  <span className="text-[12px] font-extrabold text-emerald-600 block truncate">{formatCurrency(fin.received)}</span>
-                </div>
-                <div className="p-1">
-                  <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Expenses</span>
-                  <span className="text-[12px] font-extrabold text-red-600 block truncate">{formatCurrency(fin.expenses)}</span>
-                </div>
-              </div>
-
-              {/* Footer details */}
-              <div className="border-t border-[#E9E3DA] pt-3 flex items-center justify-between text-[11.5px]">
-                <span className="text-[#6A6A6A] flex items-center gap-1 font-mono">
-                  <Clock size={12} />
-                  <span>Due: {project.expectedDelivery || "TBD"}</span>
-                </span>
-                <span className="font-bold text-indigo-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
-                  <span>Open Workspace</span>
-                  <ArrowUpRight size={13} />
-                </span>
-              </div>
-            </div>
-          );
-        })}
+      {/* Project Status Tabs */}
+      <div className="flex bg-[#FCFBF8] border border-[#E9E3DA] p-1 rounded-xl w-fit shadow-[0_2px_10px_rgba(0,0,0,0.01)]">
+        <button
+          onClick={() => setProjectListTab("Ongoing")}
+          className={`px-4 py-2 rounded-lg text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            projectListTab === "Ongoing"
+              ? "bg-[#111111] text-white shadow-sm"
+              : "text-[#6A6A6A] hover:text-[#111111] hover:bg-neutral-100"
+          }`}
+        >
+          <span>Ongoing</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${projectListTab === "Ongoing" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{ongoingProjects.length}</span>
+        </button>
+        <button
+          onClick={() => setProjectListTab("Completed")}
+          className={`px-4 py-2 rounded-lg text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            projectListTab === "Completed"
+              ? "bg-[#111111] text-white shadow-sm"
+              : "text-[#6A6A6A] hover:text-[#111111] hover:bg-neutral-100"
+          }`}
+        >
+          <span>Completed</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${projectListTab === "Completed" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{completedProjects.length}</span>
+        </button>
+        <button
+          onClick={() => setProjectListTab("Not Started")}
+          className={`px-4 py-2 rounded-lg text-[13px] font-bold transition-all cursor-pointer flex items-center gap-2 ${
+            projectListTab === "Not Started"
+              ? "bg-[#111111] text-white shadow-sm"
+              : "text-[#6A6A6A] hover:text-[#111111] hover:bg-neutral-100"
+          }`}
+        >
+          <span>Not Started</span>
+          <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${projectListTab === "Not Started" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{notStartedProjects.length}</span>
+        </button>
       </div>
+
+      {/* Projects Grid */}
+      {filteredProjects.length === 0 ? (
+        <div className="py-16 text-center border border-dashed border-[#E9E3DA] bg-white rounded-[24px] text-[#6A6A6A] text-[13.5px] font-semibold flex flex-col items-center justify-center gap-2 shadow-sm">
+          <Briefcase className="text-[#6A6A6A]/30" size={32} />
+          <span>No {projectListTab.toLowerCase()} projects found.</span>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {filteredProjects.map((project) => {
+            const fin = getProjectFinancials(project);
+            const completedTasksCount = (project.tasks || []).filter((t) => t.status === "Completed" || t.completed).length;
+            const totalTasksCount = (project.tasks || []).length;
+            const isSelected = activeProject?._id === project._id;
+
+            return (
+              <div
+                key={project._id}
+                onClick={() => setActiveClientId(project._id)}
+                className={`bg-white border rounded-[24px] p-5 transition-all cursor-pointer shadow-sm group flex flex-col justify-between gap-4 relative overflow-hidden ${isSelected ? "border-indigo-600 ring-2 ring-indigo-500/20" : "border-[#E9E3DA] hover:border-[#111111]"
+                  }`}
+              >
+                {/* Header */}
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-[#FCFBF8] border border-[#E9E3DA] flex items-center justify-center font-extrabold text-[13px] text-[#111111] shrink-0">
+                      {project.logo || project.company.substring(0, 2).toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-[15px] font-extrabold text-[#111111] leading-tight truncate flex items-center gap-1.5">
+                        <span className="truncate">{project.company}</span>
+                        <span className="text-[12px] shrink-0">{project.countryFlag}</span>
+                      </h3>
+                      <span className="text-[11.5px] text-[#6A6A6A] block mt-0.5 truncate">{project.name}</span>
+                    </div>
+                  </div>
+
+                  <span className="px-2.5 py-1 rounded-md text-[10px] font-mono font-extrabold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-100 shrink-0 max-w-[130px] truncate text-center">
+                    {project.stage}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div>
+                  <div className="flex justify-between items-center text-[11.5px] font-bold text-[#111111] mb-1.5">
+                    <span className="text-[#6A6A6A]">Progress</span>
+                    <span className="font-mono text-[#111111]">{project.progress}%</span>
+                  </div>
+                  <div className="w-full h-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-full overflow-hidden">
+                    <div
+                      className="h-full rounded-full bg-emerald-500 transition-all duration-500"
+                      style={{ width: `${project.progress}%` }}
+                    />
+                  </div>
+                </div>
+
+                {/* Quick Financial Summary Pill with Budget Edit Trigger */}
+                <div className="grid grid-cols-3 gap-2 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-center font-mono relative">
+                  <div
+                    onClick={(e) => openEditModal(project, e)}
+                    className="group/b text-left pl-1 cursor-pointer hover:bg-white/80 p-1 rounded-lg transition-colors"
+                    title="Click to change project budget"
+                  >
+                    <span className="text-[9px] uppercase font-bold text-[#6A6A6A] flex items-center gap-1">
+                      <span>Budget</span>
+                      <Edit2 size={9} className="text-indigo-600 opacity-60 group-hover/b:opacity-100" />
+                    </span>
+                    <span className="text-[12px] font-extrabold text-[#111111] group-hover/b:text-indigo-600 block truncate">
+                      {formatCurrency(fin.cost)}
+                    </span>
+                  </div>
+                  <div className="border-x border-[#E9E3DA] p-1">
+                    <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Received</span>
+                    <span className="text-[12px] font-extrabold text-emerald-600 block truncate">{formatCurrency(fin.received)}</span>
+                  </div>
+                  <div className="p-1">
+                    <span className="text-[9px] uppercase font-bold text-[#6A6A6A] block">Expenses</span>
+                    <span className="text-[12px] font-extrabold text-red-600 block truncate">{formatCurrency(fin.expenses)}</span>
+                  </div>
+                </div>
+
+                {/* Footer details */}
+                <div className="border-t border-[#E9E3DA] pt-3 flex items-center justify-between text-[11.5px]">
+                  <span className="text-[#6A6A6A] flex items-center gap-1 font-mono">
+                    <Clock size={12} />
+                    <span>Due: {project.expectedDelivery || "TBD"}</span>
+                  </span>
+                  <span className="font-bold text-indigo-600 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform">
+                    <span>Open Workspace</span>
+                    <ArrowUpRight size={13} />
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
 
       {/* Expanded Active Project Detailed Workspace Drawer / Modal */}
       {activeProject && (
@@ -901,6 +990,19 @@ export default function ProjectsView() {
                 </div>
               </div>
 
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Status</label>
+                <select
+                  value={newProjectStatus}
+                  onChange={(e) => setNewProjectStatus(e.target.value as any)}
+                  className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111] focus:outline-none"
+                >
+                  <option value="Not Started">Not Started</option>
+                  <option value="Ongoing">Ongoing</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+
               <div className="flex justify-end gap-3 pt-3">
                 <button
                   type="button"
@@ -970,6 +1072,33 @@ export default function ProjectsView() {
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Status</label>
+                  <select
+                    value={editStatus}
+                    onChange={(e) => {
+                      const nextStatus = e.target.value as any;
+                      setEditStatus(nextStatus);
+                      if (nextStatus === "Completed") {
+                        setEditProgress(100);
+                        setEditStage("Completed");
+                      } else if (nextStatus === "Not Started") {
+                        setEditProgress(0);
+                        setEditStage("Lead Created");
+                      } else {
+                        if (editProgress === 0 || editProgress === 100) {
+                          setEditProgress(10);
+                        }
+                        setEditStage("Development");
+                      }
+                    }}
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111] focus:outline-none"
+                  >
+                    <option value="Not Started">Not Started</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Lifecycle Stage</label>
                   <input
                     type="text"
@@ -978,15 +1107,16 @@ export default function ProjectsView() {
                     className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
                   />
                 </div>
-                <div className="flex flex-col gap-1">
-                  <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Deadline</label>
-                  <input
-                    type="date"
-                    value={editDeadline}
-                    onChange={(e) => setEditDeadline(e.target.value)}
-                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
-                  />
-                </div>
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Deadline</label>
+                <input
+                  type="date"
+                  value={editDeadline}
+                  onChange={(e) => setEditDeadline(e.target.value)}
+                  className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                />
               </div>
 
               <div className="flex flex-col gap-1.5">
