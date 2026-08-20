@@ -1,884 +1,483 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import { getProjects, saveProject, deleteProject, getTeamMembers } from "@/lib/actions/cms";
-import { Loader2, Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, Sparkles } from "lucide-react";
+import { getProjects, saveProject, deleteProject } from "@/lib/actions/cms";
+import { Loader2, Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, ExternalLink, Upload, Check } from "lucide-react";
 
-interface ProjectItem {
+interface PortfolioItem {
   _id?: string;
   title: string;
-  client?: string;
-  category: string;
-  description: string;
-  detailContent?: string;
   image: string;
-  gallery: string[];
   liveUrl?: string;
-  githubUrl?: string;
-  resultMetric?: string;
-  technologies: string[];
-  featured: boolean;
-  completed?: boolean;
-  projectType?: string;
-  status?: string;
-  progress?: number;
-  startDate?: string;
-  dueDate?: string;
-  completionDate?: string;
-  priority?: string;
-  assignedTeam?: string[];
-  projectValue?: number;
-  seoTitle?: string;
-  seoDescription?: string;
+  status: "Completed" | "Ongoing" | "Not Started";
 }
 
 export default function PortfolioCmsPage() {
-  const [projects, setProjects] = useState<ProjectItem[]>([]);
-  const [mediaList, setMediaList] = useState<any[]>([]);
-  const [teamMembers, setTeamMembers] = useState<any[]>([]);
+  const [projects, setProjects] = useState<PortfolioItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
-  const [aiLoading, setAiLoading] = useState(false);
-  const [editingProject, setEditingProject] = useState<ProjectItem | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [editingProject, setEditingProject] = useState<PortfolioItem | null>(null);
+  const [activeTab, setActiveTab] = useState<"All" | "Completed" | "Ongoing" | "Not Started">("All");
 
-  // Form inputs state
-  const [formState, setFormState] = useState<ProjectItem>({
+  // Form State containing ONLY the 4 fields
+  const [formState, setFormState] = useState<PortfolioItem>({
     title: "",
-    client: "",
-    category: "Website",
-    description: "",
-    detailContent: "",
     image: "",
-    gallery: [],
     liveUrl: "",
-    githubUrl: "",
-    resultMetric: "",
-    technologies: [],
-    featured: false,
-    completed: false,
-    projectType: "customised",
-    status: "not-started",
-    progress: 0,
-    startDate: "",
-    dueDate: "",
-    completionDate: "",
-    priority: "medium",
-    assignedTeam: [],
-    projectValue: 0,
-    seoTitle: "",
-    seoDescription: "",
+    status: "Ongoing",
   });
 
-  const [techInput, setTechInput] = useState("");
-  const [galleryInput, setGalleryInput] = useState("");
-  const [showMainImagePicker, setShowMainImagePicker] = useState(false);
-
-  const fetchProjectsAndMedia = async () => {
+  const fetchProjects = async () => {
     try {
       setIsLoading(true);
-      const [data, teamData] = await Promise.all([
-        getProjects(),
-        getTeamMembers().catch(() => []),
-      ]);
-      setProjects(data);
-      setTeamMembers(teamData);
-
-      const mediaRes = await fetch("/api/media");
-      const mediaData = await mediaRes.json();
-      if (mediaData.data) {
-        setMediaList(mediaData.data);
-      }
-    } catch (err) {
-      console.error("Error fetching projects:", err);
+      const data = await getProjects();
+      setProjects(data as any[]);
     } finally {
       setIsLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchProjectsAndMedia();
+    fetchProjects();
   }, []);
 
-  const handleEditClick = (project: ProjectItem) => {
-    setEditingProject(project);
-    
-    // Format dates to YYYY-MM-DD for standard html inputs
-    const formatDate = (dateVal: any) => {
-      if (!dateVal) return "";
-      try {
-        return new Date(dateVal).toISOString().split("T")[0];
-      } catch (e) {
-        return "";
-      }
-    };
+  // Format Live Link URL safely
+  const formatLiveUrl = (url?: string) => {
+    if (!url) return "";
+    const trimmed = url.trim();
+    if (trimmed && !trimmed.startsWith("http://") && !trimmed.startsWith("https://")) {
+      return `https://${trimmed}`;
+    }
+    return trimmed;
+  };
 
+  const handleEditClick = (project: PortfolioItem) => {
+    setEditingProject(project);
     setFormState({
-      projectType: "customised",
-      completed: project.completed ?? false,
-      status: "not-started",
-      progress: 0,
-      priority: "medium",
-      assignedTeam: [],
-      projectValue: 0,
-      ...project,
-      startDate: formatDate(project.startDate),
-      dueDate: formatDate(project.dueDate),
-      completionDate: formatDate(project.completionDate),
+      _id: project._id,
+      title: project.title || "",
+      image: project.image || "",
+      liveUrl: project.liveUrl || "",
+      status: (project.status as any) || "Ongoing",
     });
-    setTechInput(project.technologies?.join(", ") || "");
-    setGalleryInput(project.gallery?.join(", ") || "");
   };
 
   const handleCreateClick = () => {
-    const defaultProj: ProjectItem = {
+    const newProj: PortfolioItem = {
       title: "",
-      client: "",
-      category: "Website",
-      description: "",
-      detailContent: "",
       image: "",
-      gallery: [],
       liveUrl: "",
-      githubUrl: "",
-      resultMetric: "",
-      technologies: [],
-      featured: false,
-      completed: false,
-      projectType: "customised",
-      status: "not-started",
-      progress: 0,
-      startDate: "",
-      dueDate: "",
-      completionDate: "",
-      priority: "medium",
-      assignedTeam: [],
-      projectValue: 0,
-      seoTitle: "",
-      seoDescription: "",
+      status: "Ongoing",
     };
-    setEditingProject(defaultProj);
-    setFormState(defaultProj);
-    setTechInput("");
-    setGalleryInput("");
+    setEditingProject(newProj);
+    setFormState(newProj);
   };
 
-  const handleDeleteClick = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this case study project?")) return;
+  // Image Upload handler via /api/media
+  const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingImage(true);
     try {
-      await deleteProject(id);
-      fetchProjectsAndMedia();
-    } catch (err) {
-      alert("Delete failed");
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("alt", formState.title || "Portfolio Project Image");
+
+      const res = await fetch("/api/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      const json = await res.json();
+      if (json.data && json.data.url) {
+        setFormState((prev) => ({ ...prev, image: json.data.url }));
+      } else {
+        alert("Image upload failed: " + (json.error || "Unknown error"));
+      }
+    } catch (err: any) {
+      alert("Image upload error: " + err.message);
+    } finally {
+      setIsUploadingImage(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    setFormState((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? (e.target as HTMLInputElement).checked : value,
-    }));
+  // Delete project handler with optimistic UI update and permanent DB removal
+  const handleDeleteClick = async (project: PortfolioItem) => {
+    if (!project._id) return;
+    if (!confirm(`Are you sure you want to permanently delete "${project.title}"?`)) return;
+
+    // Save previous state for rollback if server error occurs
+    const previousProjects = [...projects];
+
+    // Optimistic UI update
+    setProjects((prev) => prev.filter((p) => p._id !== project._id));
+
+    try {
+      const res = await deleteProject(project._id);
+      if (!res.success) {
+        setProjects(previousProjects);
+        alert("Failed to delete project from database.");
+      }
+    } catch (err: any) {
+      setProjects(previousProjects);
+      alert("Delete failed: " + (err.message || "Unauthorized"));
+    }
   };
 
-  const handleToggleChange = (name: string, checked: boolean) => {
-    setFormState((prev) => ({
-      ...prev,
-      [name]: checked,
-    }));
-  };
-
+  // Save / Update form submit handler
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formState.image) {
-      alert("Please upload or enter a main mockup image URL.");
+
+    if (!formState.title.trim()) {
+      alert("Please enter a project name.");
+      return;
+    }
+    if (!formState.image.trim()) {
+      alert("Please upload or enter a project image URL.");
       return;
     }
 
-    const technologies = techInput.split(",").map(t => t.trim()).filter(Boolean);
-    const gallery = galleryInput.split(",").map(g => g.trim()).filter(Boolean);
-
     const payload = {
       ...formState,
-      technologies,
-      gallery,
+      title: formState.title.trim(),
+      image: formState.image.trim(),
+      liveUrl: formatLiveUrl(formState.liveUrl),
     };
 
     startTransition(async () => {
       try {
         await saveProject(payload);
         setEditingProject(null);
-        fetchProjectsAndMedia();
-      } catch (err) {
-        alert("Failed to save portfolio project");
+        await fetchProjects();
+      } catch (err: any) {
+        alert("Failed to save project: " + err.message);
       }
     });
   };
 
-  // Gemini AI SEO helper
-  const handleGenerateSEO = async () => {
-    if (!formState.description) {
-      alert("Please write a project description first so Gemini can optimize metadata.");
-      return;
-    }
-    setAiLoading(true);
-    try {
-      const prompt = `Rewrite the following project description into a search-engine optimized title (max 60 chars) and meta description (max 150 chars). 
-      Return JSON format exactly like:
-      {
-        "seoTitle": "...",
-        "seoDescription": "..."
-      }
-      Project Title: "${formState.title}"
-      Description: "${formState.description}"`;
-      
-      const { generateCopy } = await import("@/lib/actions/ai");
-      const generated = await generateCopy(prompt);
-      
-      const jsonStart = generated.indexOf("{");
-      const jsonEnd = generated.lastIndexOf("}") + 1;
-      if (jsonStart !== -1 && jsonEnd !== -1) {
-        const parsed = JSON.parse(generated.substring(jsonStart, jsonEnd));
-        setFormState(prev => ({
-          ...prev,
-          seoTitle: parsed.seoTitle || prev.seoTitle,
-          seoDescription: parsed.seoDescription || prev.seoDescription,
-        }));
-      } else {
-        setFormState(prev => ({
-          ...prev,
-          seoTitle: `${prev.title} Case Study | Growth Bridge`,
-          seoDescription: generated.substring(0, 150),
-        }));
-      }
-    } catch (err) {
-      alert("AI failed to optimize portfolio SEO");
-    } finally {
-      setAiLoading(false);
-    }
-  };
+  // Categories Count Calculation
+  const completedCount = projects.filter((p) => p.status === "Completed").length;
+  const ongoingCount = projects.filter((p) => p.status === "Ongoing").length;
+  const notStartedCount = projects.filter((p) => p.status === "Not Started").length;
+
+  const filteredProjects = projects.filter((p) => {
+    if (activeTab === "All") return true;
+    return p.status === activeTab;
+  });
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-20 gap-3">
+      <div className="flex flex-col items-center justify-center py-20 gap-3 select-none">
         <Loader2 className="h-8 w-8 animate-spin text-[#111111]" />
-        <span className="text-[13px] font-semibold text-[#6A6A6A]">Loading portfolio items...</span>
+        <span className="text-[13px] font-semibold text-[#6A6A6A]">Loading portfolio projects...</span>
       </div>
     );
   }
 
-  // LIST STATE
+  // 1. LIST VIEW (READ PROJECTS)
   if (!editingProject) {
     return (
-      <div className="flex flex-col gap-10">
+      <div className="flex flex-col gap-8 pb-16 select-none">
+        {/* Top Header */}
         <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-4">
           <div>
-            <h2 className="text-[28px] font-extrabold tracking-tight">Portfolio CMS</h2>
-            <p className="text-[14px] text-[#6A6A6A] mt-1">Manage case studies, project stats, client metrics, and tech stacks.</p>
+            <h1 className="text-[28px] font-extrabold tracking-tight text-[#111111]">Portfolio</h1>
+            <p className="text-[13.5px] text-[#6A6A6A] mt-1 font-medium">
+              Manage showcase projects displayed on your public website.
+            </p>
           </div>
           <button
             onClick={handleCreateClick}
-            className="flex items-center justify-center gap-2 h-12 px-6 rounded-[12px] bg-[#111111] hover:bg-[#111111]/90 text-white text-[13px] font-bold shadow-sm transition-all cursor-pointer shrink-0"
+            className="flex items-center justify-center gap-2 bg-[#111111] hover:bg-[#222222] text-white px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all shadow-sm cursor-pointer shrink-0"
           >
             <Plus size={16} />
-            Add Project
+            <span>Add Project</span>
           </button>
         </div>
 
-        <div className="bg-white border border-[#E9E3DA] rounded-[24px] overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.02)]">
-          <div className="p-8 border-b border-[#E9E3DA]">
-            <h3 className="text-[16px] font-bold tracking-tight">Projects Showcase</h3>
-          </div>
+        {/* Status Navigation Segmented Tabs */}
+        <div className="flex items-center bg-[#FCFBF8] border border-[#E9E3DA] p-1 rounded-xl w-fit shadow-2xs">
+          <button
+            onClick={() => setActiveTab("All")}
+            className={`px-4 py-2 rounded-lg text-[12.5px] transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === "All"
+                ? "bg-[#111111] text-white font-extrabold shadow-xs"
+                : "text-[#6A6A6A] hover:text-[#111111] font-semibold hover:bg-neutral-100"
+            }`}
+          >
+            <span>All Projects</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${activeTab === "All" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{projects.length}</span>
+          </button>
 
-          {projects.length === 0 ? (
-            <div className="text-center py-16 text-[#A8A296] text-[13px] font-medium">
-              No portfolio projects found. Add a project case study to showcase on your landing page.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                    <th className="py-4 px-8">Client & Project</th>
-                    <th className="py-4 px-8">Category</th>
-                    <th className="py-4 px-8">Type</th>
-                    <th className="py-4 px-8">Metric</th>
-                    <th className="py-4 px-8">Featured</th>
-                    <th className="py-4 px-8">Status</th>
-                    <th className="py-4 px-8 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E9E3DA]/60">
-                  {projects.map((project) => (
-                    <tr key={project._id} className="hover:bg-[#FCFBF8]/40 transition-colors text-[13px] font-semibold">
-                      <td className="py-5 px-8 flex items-center gap-4 max-w-[320px]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={project.image} alt="" className="h-10 w-12 object-cover bg-[#E9E3DA] rounded-[6px] shrink-0" />
-                        <div className="flex flex-col gap-0.5 truncate">
-                          <span className="text-[#111111] truncate">{project.title}</span>
-                          <span className="text-[11px] text-[#A8A296] truncate font-medium">{project.client || "Self-Initiated"}</span>
-                        </div>
-                      </td>
-                      <td className="py-5 px-8 text-[#6A6A6A]">{project.category}</td>
-                      <td className="py-5 px-8 text-[#6A6A6A]">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] bg-[#111111]/5 text-[#111111]">
-                          {project.projectType || "customised"}
-                        </span>
-                      </td>
-                      <td className="py-5 px-8 text-[#111111] font-extrabold">{project.resultMetric || "—"}</td>
-                      <td className="py-5 px-8">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] ${
-                          project.featured
-                            ? "bg-amber-50 text-amber-700 border border-amber-200"
-                            : "bg-[#FCFBF8] text-[#A8A296] border border-[#E9E3DA]"
-                        }`}>
-                          {project.featured ? "Featured" : "Standard"}
-                        </span>
-                      </td>
-                      <td className="py-5 px-8">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] ${
-                          project.status === "completed"
-                            ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                            : project.status === "ongoing"
-                            ? "bg-blue-50 text-blue-700 border border-blue-200"
-                            : "bg-[#FCFBF8] text-[#A8A296] border border-[#E9E3DA]"
-                        }`}>
-                          {project.status === "completed" ? "Completed" : project.status === "ongoing" ? "Ongoing" : "Not Started"}
-                        </span>
-                      </td>
-                      <td className="py-5 px-8 text-right">
-                        <div className="flex justify-end gap-2">
-                          <button
-                            onClick={() => handleEditClick(project)}
-                            className="p-2 hover:bg-[#111111]/5 rounded-[8px] text-[#111111] cursor-pointer"
-                            title="Edit Project"
-                          >
-                            <Edit size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteClick(project._id!)}
-                            className="p-2 hover:bg-red-50 rounded-[8px] text-red-600 cursor-pointer"
-                            title="Delete Project"
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
+          <button
+            onClick={() => setActiveTab("Completed")}
+            className={`px-4 py-2 rounded-lg text-[12.5px] transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === "Completed"
+                ? "bg-[#111111] text-white font-extrabold shadow-xs"
+                : "text-[#6A6A6A] hover:text-[#111111] font-semibold hover:bg-neutral-100"
+            }`}
+          >
+            <span>Completed</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${activeTab === "Completed" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{completedCount}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("Ongoing")}
+            className={`px-4 py-2 rounded-lg text-[12.5px] transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === "Ongoing"
+                ? "bg-[#111111] text-white font-extrabold shadow-xs"
+                : "text-[#6A6A6A] hover:text-[#111111] font-semibold hover:bg-neutral-100"
+            }`}
+          >
+            <span>Ongoing</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${activeTab === "Ongoing" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{ongoingCount}</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("Not Started")}
+            className={`px-4 py-2 rounded-lg text-[12.5px] transition-all cursor-pointer flex items-center gap-2 ${
+              activeTab === "Not Started"
+                ? "bg-[#111111] text-white font-extrabold shadow-xs"
+                : "text-[#6A6A6A] hover:text-[#111111] font-semibold hover:bg-neutral-100"
+            }`}
+          >
+            <span>Not Started</span>
+            <span className={`px-2 py-0.5 rounded-full text-[10px] font-mono font-bold ${activeTab === "Not Started" ? "bg-white/20 text-white" : "bg-[#111111]/5 text-[#111111]"}`}>{notStartedCount}</span>
+          </button>
         </div>
+
+        {/* Portfolio Projects Cards Grid */}
+        {filteredProjects.length === 0 ? (
+          <div className="py-20 text-center border border-dashed border-[#E9E3DA] bg-white rounded-[24px] text-[#6A6A6A] flex flex-col items-center justify-center gap-3 shadow-2xs">
+            <ImageIcon className="text-[#A8A296]" size={40} />
+            <h3 className="text-[15px] font-bold text-[#111111]">No portfolio projects in this category</h3>
+            <p className="text-[13px] text-[#6A6A6A]">Add a project to showcase it on your public website.</p>
+            <button
+              onClick={handleCreateClick}
+              className="mt-2 flex items-center gap-2 bg-[#111111] text-white px-4 py-2 rounded-xl text-[13px] font-bold hover:bg-[#222222] transition-all cursor-pointer shadow-xs"
+            >
+              <Plus size={15} />
+              <span>Add Project</span>
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredProjects.map((project) => (
+              <div
+                key={project._id}
+                className="bg-white border border-[#E9E3DA] rounded-[22px] p-4 flex flex-col justify-between gap-4 shadow-2xs hover:shadow-md transition-all duration-200 group"
+              >
+                {/* Project Cover Image */}
+                <div className="w-full aspect-[16/10] bg-[#FCFBF8] border border-[#E9E3DA] rounded-[16px] overflow-hidden relative group/img">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={project.image}
+                    alt={project.title}
+                    className="w-full h-full object-cover group-hover/img:scale-105 transition-transform duration-300"
+                    onError={(e) => {
+                      (e.target as HTMLElement).style.display = "none";
+                    }}
+                  />
+                </div>
+
+                {/* Content: Title & Status */}
+                <div className="flex items-start justify-between gap-3">
+                  <h3 className="text-[16px] font-extrabold text-[#111111] leading-tight truncate flex-1">
+                    {project.title}
+                  </h3>
+
+                  {/* Status Badge */}
+                  <span
+                    className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-mono font-extrabold uppercase tracking-wider border shrink-0 ${
+                      project.status === "Completed"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                        : project.status === "Not Started"
+                        ? "bg-[#111111]/5 text-[#6A6A6A] border-[#E9E3DA]"
+                        : "bg-[#111111] text-white border-[#111111]"
+                    }`}
+                  >
+                    {project.status === "Ongoing" && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />}
+                    <span>{project.status}</span>
+                  </span>
+                </div>
+
+                {/* Actions Footer: View Live, Edit, Delete */}
+                <div className="flex items-center justify-between pt-3 border-t border-[#E9E3DA]">
+                  {project.liveUrl ? (
+                    <a
+                      href={formatLiveUrl(project.liveUrl)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[12.5px] font-bold text-indigo-600 hover:text-indigo-800 flex items-center gap-1 group-hover:translate-x-0.5 transition-transform"
+                    >
+                      <span>View Live</span>
+                      <ExternalLink size={13} />
+                    </a>
+                  ) : (
+                    <span className="text-[11.5px] text-[#A8A296] italic font-medium">No link provided</span>
+                  )}
+
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={() => handleEditClick(project)}
+                      className="px-3 py-1.5 rounded-lg border border-[#E9E3DA] hover:bg-[#FCFBF8] text-[#111111] text-[12px] font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1"
+                    >
+                      <Edit size={13} />
+                      <span>Edit</span>
+                    </button>
+                    <button
+                      onClick={() => handleDeleteClick(project)}
+                      className="px-3 py-1.5 rounded-lg border border-rose-200 hover:bg-rose-50 text-rose-600 text-[12px] font-bold transition-all cursor-pointer shadow-xs flex items-center gap-1"
+                    >
+                      <Trash2 size={13} />
+                      <span>Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     );
   }
 
-  // EDIT STATE
+  // 2. CREATE / EDIT FORM VIEW (ONLY 4 REQUIRED FIELDS)
   return (
-    <div className="flex flex-col gap-10">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-6 max-w-2xl mx-auto pb-16 select-none">
+      <div className="flex items-center gap-3 border-b border-[#E9E3DA] pb-4">
         <button
           onClick={() => setEditingProject(null)}
-          className="p-2.5 hover:bg-[#111111]/5 rounded-[12px] border border-[#E9E3DA] text-[#111111] cursor-pointer"
+          className="p-2 hover:bg-gray-100 rounded-xl border border-[#E9E3DA] text-[#111111] cursor-pointer"
         >
           <ArrowLeft size={16} />
         </button>
         <div>
-          <h2 className="text-[28px] font-extrabold tracking-tight">
-            {editingProject._id ? "Edit Case Study" : "Add Portfolio Project"}
-          </h2>
-          <p className="text-[14px] text-[#6A6A6A] mt-1">Configure client details, technologies, result banners, and cover graphics.</p>
+          <h1 className="text-[24px] font-extrabold tracking-tight text-[#111111]">
+            {editingProject._id ? "Edit Portfolio Project" : "Add Portfolio Project"}
+          </h1>
+          <p className="text-[13px] text-[#6A6A6A]">
+            Configure project name, image, website link, and status.
+          </p>
         </div>
       </div>
 
-      <form onSubmit={handleSave} className="grid grid-cols-1 lg:grid-cols-[1.8fr_1fr] gap-8 items-start">
-        {/* Left primary form */}
-        <div className="bg-white border border-[#E9E3DA] rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col gap-6">
-          <h3 className="text-[16px] font-bold tracking-tight pb-4 border-b border-[#E9E3DA]">Project Information</h3>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Project Name / Title
-              </label>
-              <input
-                type="text"
-                name="title"
-                required
-                value={formState.title}
-                onChange={handleChange}
-                placeholder="e.g. Project Pulse Mobile App"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-semibold outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Client Name
-              </label>
-              <input
-                type="text"
-                name="client"
-                value={formState.client || ""}
-                onChange={handleChange}
-                placeholder="e.g. Acme Corporation"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Category
-              </label>
-              <select
-                name="category"
-                required
-                value={formState.category}
-                onChange={handleChange}
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
-              >
-                <option value="Website">Website</option>
-                <option value="CRM">CRM</option>
-                <option value="App">App</option>
-                <option value="Branding">Branding</option>
-                <option value="SaaS">SaaS Platform</option>
-                <option value="Mobile">Mobile Application</option>
-                <option value="E-commerce">E-commerce Portal</option>
-                <option value="Fintech">Fintech Solution</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Project Type
-              </label>
-              <select
-                name="projectType"
-                required
-                value={formState.projectType || "customised"}
-                onChange={handleChange}
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
-              >
-                <option value="pre-built">Pre-built</option>
-                <option value="customised">Customised</option>
-              </select>
-            </div>
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Impact Metric / Result
-              </label>
-              <input
-                type="text"
-                name="resultMetric"
-                value={formState.resultMetric || ""}
-                onChange={handleChange}
-                placeholder="e.g. +320% user signups"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all font-mono"
-              />
-            </div>
-          </div>
-
-          {/* Kanban Board Fields */}
-          <div className="border-t border-[#E9E3DA]/80 pt-6 mt-4 flex flex-col gap-6">
-            <h4 className="text-[14px] font-extrabold text-[#111111] uppercase tracking-[0.08em]">Kanban Board Settings</h4>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Kanban Status
-                </label>
-                <select
-                  name="status"
-                  value={formState.status || "not-started"}
-                  onChange={(e) => {
-                    const nextVal = e.target.value;
-                    setFormState(prev => ({
-                      ...prev,
-                      status: nextVal,
-                      completed: nextVal === "completed",
-                      progress: nextVal === "completed" ? 100 : nextVal === "not-started" ? 0 : prev.progress
-                    }));
-                  }}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
-                >
-                  <option value="not-started">Not Started</option>
-                  <option value="ongoing">Ongoing</option>
-                  <option value="completed">Completed</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Priority
-                </label>
-                <select
-                  name="priority"
-                  value={formState.priority || "medium"}
-                  onChange={handleChange}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
-                >
-                  <option value="low">Low Priority</option>
-                  <option value="medium">Medium Priority</option>
-                  <option value="high">High Priority</option>
-                </select>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Progress (%)
-                </label>
-                <input
-                  type="number"
-                  name="progress"
-                  min={0}
-                  max={100}
-                  value={formState.progress ?? 0}
-                  onChange={(e) => {
-                    const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
-                    setFormState(prev => ({ ...prev, progress: val }));
-                  }}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-semibold outline-none focus:border-[#111111] transition-all font-mono"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Project Value ($)
-                </label>
-                <input
-                  type="number"
-                  name="projectValue"
-                  min={0}
-                  value={formState.projectValue ?? 0}
-                  onChange={(e) => {
-                    const val = Math.max(0, parseFloat(e.target.value) || 0);
-                    setFormState(prev => ({ ...prev, projectValue: val }));
-                  }}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-semibold outline-none focus:border-[#111111] transition-all font-mono"
-                />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Start Date / Planned Start
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formState.startDate || ""}
-                  onChange={handleChange}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Due Date / Target End
-                </label>
-                <input
-                  type="date"
-                  name="dueDate"
-                  value={formState.dueDate || ""}
-                  onChange={handleChange}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Completion Date
-                </label>
-                <input
-                  type="date"
-                  name="completionDate"
-                  value={formState.completionDate || ""}
-                  onChange={handleChange}
-                  disabled={formState.status !== "completed"}
-                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all disabled:opacity-50"
-                />
-              </div>
-            </div>
-
-            {/* Assigned Team Members multi-select checklist */}
-            <div className="flex flex-col gap-2.5">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Assigned Team Members
-              </label>
-              {teamMembers.length === 0 ? (
-                <div className="text-[12px] text-[#A8A296] italic p-3 border border-[#E9E3DA] rounded-[12px] bg-[#FCFBF8]">
-                  No team members found. Add team members in the Team section first to assign them.
-                </div>
-              ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-[#E9E3DA] rounded-[12px] bg-[#FCFBF8] max-h-36 overflow-y-auto">
-                  {teamMembers.map((member) => {
-                    const isChecked = (formState.assignedTeam || []).includes(member.name);
-                    return (
-                      <label key={member._id} className="flex items-center gap-2.5 text-[13px] font-medium text-[#111111] cursor-pointer">
-                        <input
-                          type="checkbox"
-                          checked={isChecked}
-                          onChange={(e) => {
-                            const updatedTeam = e.target.checked
-                              ? [...(formState.assignedTeam || []), member.name]
-                              : (formState.assignedTeam || []).filter(name => name !== member.name);
-                            setFormState(prev => ({ ...prev, assignedTeam: updatedTeam }));
-                          }}
-                          className="w-4 h-4 rounded border-[#E9E3DA] text-[#111111] focus:ring-0 accent-[#111111]"
-                        />
-                        <span>{member.name}</span>
-                      </label>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-              Short Description / Excerpt
-            </label>
-            <textarea
-              name="description"
-              required
-              rows={3}
-              value={formState.description}
-              onChange={handleChange}
-              placeholder="Provide a concise 1-2 sentence overview of what this project accomplished..."
-              className="w-full p-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all resize-none"
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-              Extended Case Study Content (Markdown)
-            </label>
-            <textarea
-              name="detailContent"
-              rows={8}
-              value={formState.detailContent || ""}
-              onChange={handleChange}
-              placeholder="Write the deep-dive case study context here using Markdown layout structure..."
-              className="w-full p-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all resize-none font-mono"
-            />
-          </div>
+      <form onSubmit={handleSave} className="bg-white border border-[#E9E3DA] rounded-[24px] p-6 shadow-sm flex flex-col gap-6">
+        {/* 1. Project Name */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">
+            Project Name <span className="text-rose-500">*</span>
+          </label>
+          <input
+            type="text"
+            required
+            value={formState.title}
+            onChange={(e) => setFormState({ ...formState, title: e.target.value })}
+            placeholder="e.g. Northstar Commerce"
+            className="w-full h-11 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl text-[14px] font-semibold text-[#111111] outline-none focus:border-[#111111] transition-all"
+          />
         </div>
 
-        {/* Right Settings Panel */}
-        <div className="flex flex-col gap-6 w-full">
-          {/* Mockup parameters */}
-          <div className="bg-white border border-[#E9E3DA] rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col gap-6">
-            <h3 className="text-[15px] font-bold tracking-tight pb-4 border-b border-[#E9E3DA]">Mockup Assets</h3>
+        {/* 2. Project Image (Upload + URL input + Live Preview) */}
+        <div className="flex flex-col gap-2">
+          <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">
+            Project Image <span className="text-rose-500">*</span>
+          </label>
 
-            {/* Main Cover Image picker */}
-            <div className="flex flex-col gap-2 relative">
-              <div className="flex justify-between items-center">
-                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                  Main Mockup Image URL
-                </label>
-                <button
-                  type="button"
-                  onClick={() => setShowMainImagePicker(!showMainImagePicker)}
-                  className="flex items-center gap-1 text-[11px] font-bold text-[#111111] hover:text-[#111111]/70 transition-all bg-[#FCFBF8] border border-[#E9E3DA] px-2.5 py-1 rounded-[6px] cursor-pointer"
-                >
-                  <ImageIcon size={12} />
-                  Choose Uploaded
-                </button>
-              </div>
+          {/* Upload Button + URL Input */}
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 px-4 py-2.5 bg-[#111111] hover:bg-[#222222] text-white rounded-xl text-[12.5px] font-bold transition-all cursor-pointer shrink-0 shadow-xs">
+              {isUploadingImage ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+              <span>{isUploadingImage ? "Uploading..." : "Upload Image"}</span>
               <input
-                type="text"
-                name="image"
-                required
-                value={formState.image}
-                onChange={handleChange}
-                placeholder="Paste direct URL or select asset..."
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
+                type="file"
+                accept="image/*"
+                onChange={handleImageFileUpload}
+                disabled={isUploadingImage}
+                className="hidden"
               />
+            </label>
 
-              {showMainImagePicker && (
-                <div className="absolute top-[76px] left-0 right-0 z-50 bg-white border border-[#E9E3DA] rounded-[16px] p-4 shadow-xl max-h-[220px] overflow-y-auto flex flex-col gap-2">
-                  <div className="text-[11px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A] pb-2 border-b border-[#E9E3DA]">
-                    Select Project Mockup
-                  </div>
-                  {mediaList.length === 0 ? (
-                    <span className="text-[11px] text-[#A8A296] italic py-2">No uploaded media. Upload in Media Library first.</span>
-                  ) : (
-                    mediaList.map((m) => (
-                      <button
-                        key={m._id}
-                        type="button"
-                        onClick={() => {
-                          setFormState(prev => ({ ...prev, image: m.url }));
-                          setShowMainImagePicker(false);
-                        }}
-                        className="flex items-center gap-3 p-1.5 hover:bg-[#FCFBF8] border border-transparent hover:border-[#E9E3DA] rounded-[8px] text-left text-[12px] font-medium truncate cursor-pointer"
-                      >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={m.url} alt="" className="h-8 w-8 object-cover rounded-[4px] shrink-0" />
-                        <span className="truncate">{m.fileName}</span>
-                      </button>
-                    ))
-                  )}
-                </div>
-              )}
-            </div>
+            <span className="text-[12px] font-semibold text-[#A8A296]">OR</span>
 
-            {/* Gallery input */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Gallery Images (Comma Separated)
-              </label>
-              <input
-                type="text"
-                value={galleryInput}
-                onChange={(e) => setGalleryInput(e.target.value)}
-                placeholder="Paste comma separated image URLs..."
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
+            <input
+              type="text"
+              required
+              value={formState.image}
+              onChange={(e) => setFormState({ ...formState, image: e.target.value })}
+              placeholder="Paste direct image URL..."
+              className="flex-1 h-11 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl text-[13px] font-medium text-[#111111] outline-none focus:border-[#111111] transition-all"
+            />
+          </div>
 
-            {/* Tech stack */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Technologies Used (Comma Separated)
-              </label>
-              <input
-                type="text"
-                value={techInput}
-                onChange={(e) => setTechInput(e.target.value)}
-                placeholder="e.g. Next.js, Framer Motion, Tailwind"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
-
-            {/* Link destinations */}
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                Live Product URL
-              </label>
-              <input
-                type="text"
-                name="liveUrl"
-                value={formState.liveUrl || ""}
-                onChange={handleChange}
-                placeholder="e.g. https://projectpulse.studio"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                GitHub Repository URL
-              </label>
-              <input
-                type="text"
-                name="githubUrl"
-                value={formState.githubUrl || ""}
-                onChange={handleChange}
-                placeholder="e.g. https://github.com/growthbridge/pulse"
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
-
-            {/* Feature toggle check */}
-            <div className="flex items-center justify-between p-4 rounded-[12px] bg-[#FCFBF8] border border-[#E9E3DA]">
-              <div className="flex flex-col">
-                <span className="text-[13px] font-bold text-[#111111]">Featured Project</span>
-                <span className="text-[11px] text-[#6A6A6A]">Feature at homepage layout</span>
-              </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formState.featured}
-                  onChange={(e) => handleToggleChange("featured", e.target.checked)}
-                  className="sr-only peer"
+          {/* Image Live Preview */}
+          {formState.image && (
+            <div className="mt-2">
+              <span className="text-[10px] font-mono uppercase font-bold text-[#6A6A6A] block mb-1">Image Preview:</span>
+              <div className="w-full aspect-[16/9] max-h-[220px] bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl overflow-hidden relative">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={formState.image}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.target as HTMLElement).style.display = "none";
+                  }}
                 />
-                <div className="w-11 h-6 bg-[#E9E3DA] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[#E9E3DA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#111111]"></div>
-              </label>
-            </div>
-
-            {/* Completed toggle check */}
-            <div className="flex items-center justify-between p-4 rounded-[12px] bg-[#FCFBF8] border border-[#E9E3DA]">
-              <div className="flex flex-col">
-                <span className="text-[13px] font-bold text-[#111111]">Completed Project</span>
-                <span className="text-[11px] text-[#6A6A6A]">Mark project as completed (adds tick mark)</span>
               </div>
-              <label className="relative inline-flex items-center cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={formState.completed || false}
-                  onChange={(e) => handleToggleChange("completed", e.target.checked)}
-                  className="sr-only peer"
-                />
-                <div className="w-11 h-6 bg-[#E9E3DA] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-[#E9E3DA] after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#111111]"></div>
-              </label>
             </div>
-          </div>
+          )}
+        </div>
 
-          {/* SEO Block */}
-          <div className="bg-white border border-[#E9E3DA] rounded-[24px] p-8 shadow-[0_4px_20px_rgba(0,0,0,0.02)] flex flex-col gap-6">
-            <div className="flex justify-between items-center pb-2 border-b border-[#E9E3DA]">
-              <h3 className="text-[15px] font-bold tracking-tight">SEO optimization</h3>
-              <button
-                type="button"
-                onClick={handleGenerateSEO}
-                disabled={aiLoading}
-                className="flex items-center gap-1 text-[11px] font-bold text-[#F4C542] hover:text-[#111111] transition-all bg-[#F4C542]/10 hover:bg-[#F4C542]/20 px-2.5 py-1 rounded-[6px] cursor-pointer disabled:opacity-50"
-              >
-                {aiLoading ? <Loader2 size={12} className="animate-spin" /> : <Sparkles size={12} />}
-                Generate with AI
-              </button>
-            </div>
+        {/* 3. Live Link */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">
+            Live Website Link (URL)
+          </label>
+          <input
+            type="text"
+            value={formState.liveUrl || ""}
+            onChange={(e) => setFormState({ ...formState, liveUrl: e.target.value })}
+            placeholder="e.g. https://northstar.growthbridge.live"
+            className="w-full h-11 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl text-[13.5px] font-medium text-[#111111] outline-none focus:border-[#111111] transition-all"
+          />
+        </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                SEO Meta Title
-              </label>
-              <input
-                type="text"
-                name="seoTitle"
-                value={formState.seoTitle || ""}
-                onChange={handleChange}
-                placeholder="Case Study page header title tag..."
-                className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
-              />
-            </div>
+        {/* 4. Status */}
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">
+            Project Status <span className="text-rose-500">*</span>
+          </label>
+          <select
+            value={formState.status}
+            onChange={(e) => setFormState({ ...formState, status: e.target.value as any })}
+            className="w-full h-11 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl text-[13.5px] font-bold text-[#111111] outline-none focus:border-[#111111] cursor-pointer"
+          >
+            <option value="Completed">Completed</option>
+            <option value="Ongoing">Ongoing</option>
+            <option value="Not Started">Not Started</option>
+          </select>
+        </div>
 
-            <div className="flex flex-col gap-2">
-              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
-                SEO Meta Description
-              </label>
-              <textarea
-                name="seoDescription"
-                value={formState.seoDescription || ""}
-                onChange={handleChange}
-                rows={3}
-                placeholder="Brief meta snippet describing key results achieved..."
-                className="w-full p-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Save buttons */}
-          <div className="flex gap-4">
-            <button
-              type="button"
-              onClick={() => setEditingProject(null)}
-              className="flex-1 h-12 border border-[#E9E3DA] hover:border-[#111111] rounded-[12px] text-[#111111] text-[13px] font-bold transition-all cursor-pointer bg-white"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={isPending}
-              className="flex-1 flex items-center justify-center gap-2 h-12 rounded-[12px] bg-[#111111] hover:bg-[#111111]/90 text-white text-[13px] font-bold shadow-sm transition-all cursor-pointer disabled:opacity-60"
-            >
-              {isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : "Save Project"}
-            </button>
-          </div>
+        {/* Submit Actions */}
+        <div className="flex justify-end gap-3 pt-4 border-t border-[#E9E3DA]">
+          <button
+            type="button"
+            onClick={() => setEditingProject(null)}
+            className="px-5 py-2.5 border border-[#E9E3DA] rounded-xl text-[13px] font-bold text-[#6A6A6A] hover:bg-[#F3F4F6] transition-all cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={isPending}
+            className="px-6 py-2.5 bg-[#111111] hover:bg-[#222222] text-white rounded-xl text-[13px] font-bold shadow-sm transition-all cursor-pointer flex items-center gap-2 disabled:opacity-60"
+          >
+            {isPending && <Loader2 size={14} className="animate-spin" />}
+            <span>Save Project</span>
+          </button>
         </div>
       </form>
     </div>

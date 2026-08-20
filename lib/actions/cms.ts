@@ -226,114 +226,24 @@ export async function deleteTeamMember(id: string) {
    ========================================== */
 export async function getProjects() {
   await connectToDatabase();
-  let list = await Project.find().sort({ createdAt: -1 }).lean();
+  const list = await Project.find().sort({ createdAt: -1 }).lean();
 
-  if (list.length === 0) {
-    const defaultProjects = [
-      {
-        title: "Northstar Commerce",
-        client: "Northstar Ltd",
-        category: "Website",
-        description: "A premium storefront rebuild with conversion-first design and lifecycle automation worthy of the product.",
-        resultMetric: "+320% revenue",
-        image: "/project-northstar.png",
-        liveUrl: "https://northstar.growthbridge.studio",
-        featured: true,
-        completed: true,
-        projectType: "pre-built",
-        status: "completed",
-        progress: 100,
-        startDate: new Date(Date.now() - 60 * 86400000), // 60 days ago
-        dueDate: new Date(Date.now() - 30 * 86400000),   // 30 days ago
-        completionDate: new Date(Date.now() - 32 * 86400000),
-        priority: "high",
-        assignedTeam: ["Prajwal Shetty", "Sarah Jenkins"],
-        projectValue: 45000,
-      },
-      {
-        title: "Atlas Clinics",
-        client: "Atlas Healthcare",
-        category: "CRM",
-        description: "Local SEO architecture and booking funnels designed to build trust from the first click.",
-        resultMetric: "5× more leads",
-        image: "/project-atlas.png",
-        liveUrl: "https://atlas.growthbridge.studio",
-        featured: true,
-        completed: true,
-        projectType: "customised",
-        status: "completed",
-        progress: 100,
-        startDate: new Date(Date.now() - 90 * 86400000), // 90 days ago
-        dueDate: new Date(Date.now() - 40 * 86400000),   // 40 days ago
-        completionDate: new Date(Date.now() - 42 * 86400000),
-        priority: "medium",
-        assignedTeam: ["Alex Rivera", "Prajwal Shetty"],
-        projectValue: 60000,
-      },
-      {
-        title: "Pulse SaaS",
-        client: "Pulse Inc",
-        category: "App",
-        description: "Brand positioning, launch site, and onboarding for a product-led growth engine.",
-        resultMetric: "3× faster growth",
-        image: "/project-pulse.png",
-        liveUrl: "https://pulse.growthbridge.studio",
-        featured: true,
-        completed: false,
-        projectType: "pre-built",
-        status: "ongoing",
-        progress: 65,
-        startDate: new Date(Date.now() - 20 * 86400000), // 20 days ago
-        dueDate: new Date(Date.now() + 15 * 86400000),   // 15 days from now
-        priority: "high",
-        assignedTeam: ["Sarah Jenkins", "Alex Rivera"],
-        projectValue: 35000,
-      },
-      {
-        title: "Loam & Co.",
-        client: "Loam Studio",
-        category: "Branding",
-        description: "Visual identity and lookbook site for a slow-fashion studio's debut collection.",
-        resultMetric: "+180% sessions",
-        image: "/why-growthbridge.png",
-        liveUrl: "https://loam.growthbridge.studio",
-        featured: false,
-        completed: true,
-        projectType: "customised",
-        status: "completed",
-        progress: 100,
-        startDate: new Date(Date.now() - 120 * 86400000),
-        dueDate: new Date(Date.now() - 90 * 86400000),
-        completionDate: new Date(Date.now() - 88 * 86400000),
-        priority: "low",
-        assignedTeam: ["Sarah Jenkins"],
-        projectValue: 20000,
-      },
-    ];
-    await Project.insertMany(defaultProjects);
-    list = await Project.find().sort({ createdAt: -1 }).lean();
-  }
-
-  // Ensure all projects have status, client, priority, progress mapped for older database documents
+  // Normalize status, client, and categories for all retrieved documents
   const mappedList = list.map((p: any) => {
     const updated = { ...p };
     if (!updated.status) {
-      updated.status = updated.completed ? "completed" : "ongoing";
-    }
-    if (!updated.priority) {
-      updated.priority = "medium";
-    }
-    if (updated.progress === undefined) {
-      updated.progress = updated.status === "completed" ? 100 : 0;
+      updated.status = updated.completed ? "Completed" : "Ongoing";
+    } else {
+      const lower = updated.status.toLowerCase();
+      if (lower === "completed") updated.status = "Completed";
+      else if (lower === "ongoing") updated.status = "Ongoing";
+      else if (lower === "not-started" || lower === "not started") updated.status = "Not Started";
     }
     if (!updated.client) {
-      updated.client = "Internal";
+      updated.client = "Client Project";
     }
-    if (!updated.assignedTeam) {
-      updated.assignedTeam = [];
-    }
-    if (updated.projectValue === undefined) {
-      updated.projectValue = 0;
+    if (!updated.category) {
+      updated.category = "Website";
     }
     return updated;
   });
@@ -348,20 +258,44 @@ export async function saveProject(data: any) {
   await connectToDatabase();
   let project;
   
-  // Clean dates to ensure they parse correctly or are null
   const cleanedData = { ...data };
+
+  // Normalize status string & sync completed boolean
+  if (cleanedData.status) {
+    const lower = cleanedData.status.toLowerCase();
+    if (lower === "completed") {
+      cleanedData.status = "Completed";
+      cleanedData.completed = true;
+      cleanedData.progress = 100;
+    } else if (lower === "ongoing") {
+      cleanedData.status = "Ongoing";
+      cleanedData.completed = false;
+      if (!cleanedData.progress || cleanedData.progress === 0 || cleanedData.progress === 100) {
+        cleanedData.progress = 50;
+      }
+    } else {
+      cleanedData.status = "Not Started";
+      cleanedData.completed = false;
+      cleanedData.progress = 0;
+    }
+  } else {
+    cleanedData.status = "Ongoing";
+    cleanedData.completed = false;
+  }
+
+  if (!cleanedData.category) cleanedData.category = "Website";
+  if (!cleanedData.description) cleanedData.description = cleanedData.title || "Portfolio Project";
+
+  // Clean dates if provided
   if (cleanedData.startDate) cleanedData.startDate = new Date(cleanedData.startDate);
   if (cleanedData.dueDate) cleanedData.dueDate = new Date(cleanedData.dueDate);
   if (cleanedData.completionDate) {
     cleanedData.completionDate = new Date(cleanedData.completionDate);
-  } else if (cleanedData.status === "completed" && !cleanedData.completionDate) {
+  } else if (cleanedData.status === "Completed" && !cleanedData.completionDate) {
     cleanedData.completionDate = new Date();
   } else {
     cleanedData.completionDate = null;
   }
-
-  // Sync legacy completed field
-  cleanedData.completed = cleanedData.status === "completed";
 
   if (cleanedData._id) {
     project = await Project.findByIdAndUpdate(cleanedData._id, cleanedData, { new: true });
@@ -370,8 +304,10 @@ export async function saveProject(data: any) {
     project = await Project.create(cleanedData);
     await logActivity(`Created new portfolio project: "${cleanedData.title}"`);
   }
+
   revalidatePath("/");
   revalidatePath("/projects");
+  revalidatePath("/admin/portfolio");
   return serialize(project);
 }
 
@@ -382,11 +318,28 @@ export async function deleteProject(id: string) {
   await connectToDatabase();
   const project = await Project.findById(id);
   if (project) {
+    // Storage image cleanup if Cloudinary publicId exists
+    try {
+      if (project.image && project.image.includes("cloudinary")) {
+        const Media = (await import("@/models/Media")).default;
+        const mediaRecord = await Media.findOne({ url: project.image });
+        if (mediaRecord && mediaRecord.publicId) {
+          const cloudinary = (await import("@/lib/cloudinary")).default;
+          await cloudinary.uploader.destroy(mediaRecord.publicId).catch(() => {});
+          await Media.findByIdAndDelete(mediaRecord._id).catch(() => {});
+        }
+      }
+    } catch (e) {
+      console.warn("Storage cleanup warning:", e);
+    }
+
     await Project.findByIdAndDelete(id);
     await logActivity(`Deleted portfolio project: "${project.title}"`);
   }
+
   revalidatePath("/");
   revalidatePath("/projects");
+  revalidatePath("/admin/portfolio");
   return { success: true };
 }
 

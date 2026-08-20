@@ -13,6 +13,7 @@ import { ArrowRight, ArrowUpRight, Mail, Plus, Sparkles, Menu, X, MapPin, Check 
 import SideRays from "@/components/ui/SideRays";
 import { CardContainer, CardBody, CardItem } from "@/components/ui/3d-card";
 import { AnimatedTooltip } from "@/components/ui/animated-tooltip";
+import PortfolioGrid from "@/components/portfolio/PortfolioGrid";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -760,83 +761,14 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
         </Reveal>
 
         <Reveal>
-          <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em] mb-4">
+          <h2 className="text-[clamp(32px,4.5vw,56px)] font-extrabold tracking-[-0.03em] mb-8">
             Projects that speak
             <br />
             for themselves.
           </h2>
         </Reveal>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-0 mt-8">
-          {projects.map((p, i) => (
-            <Reveal key={p.title} delay={i * 0.1}>
-              <CardContainer containerClassName="py-8">
-                <CardBody className="bg-[#FFFFFF]/80 backdrop-blur-md relative group/card hover:shadow-3xl hover:border-[#111111]/30 transition-all duration-500 border border-[#E9E3DA] w-full max-w-full sm:w-[32rem] h-auto rounded-[36px] p-8 lg:p-10 flex flex-col gap-5">
-                  <div className="flex justify-between items-start gap-4">
-                    <div className="flex flex-col">
-                      <CardItem
-                        translateZ="50"
-                        className="text-[11px] font-extrabold uppercase tracking-[0.15em] text-[#F4C542]"
-                      >
-                        {p.category}
-                      </CardItem>
-                      <CardItem
-                        translateZ="60"
-                        className="text-2xl font-black text-[#111111] tracking-tight mt-1 transition-colors flex items-center gap-2"
-                      >
-                        <span>{p.title}</span>
-                        {p.completed && (
-                          <span className="inline-flex items-center justify-center bg-emerald-100 text-emerald-700 rounded-full p-0.5 shadow-sm shrink-0" title="Completed">
-                            <Check size={12} className="stroke-[3]" />
-                          </span>
-                        )}
-                      </CardItem>
-                    </div>
-                    <CardItem
-                      translateZ="70"
-                      className="px-3.5 py-1.5 rounded-full text-[11px] font-extrabold uppercase tracking-[0.06em] text-[#111111] bg-[#F4C542] border border-[#111111]/10 shadow-[0_4px_12px_rgba(244,197,66,0.15)] shrink-0"
-                    >
-                      {p.result}
-                    </CardItem>
-                  </div>
-
-                  <CardItem
-                    translateZ="80"
-                    className="w-full overflow-hidden rounded-[20px] border border-[#E9E3DA] relative mt-2"
-                  >
-                    <img
-                      src={p.image}
-                      className="h-64 w-full object-cover transform group-hover/card:scale-105 transition-transform duration-700 ease-[cubic-bezier(0.22,1,0.36,1)]"
-                      alt={p.title}
-                    />
-                  </CardItem>
-
-                  <CardItem
-                    translateZ="50"
-                    className="text-[#6A6A6A] text-[14px] leading-[1.65] font-medium"
-                  >
-                    {p.description}
-                  </CardItem>
-
-                  <div className="flex justify-end gap-2.5 mt-4 pt-4 border-t border-[#E9E3DA]/60">
-                    {p.liveUrl && (
-                      <CardItem
-                        translateZ="60"
-                        as="a"
-                        href={p.liveUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-5 py-2.5 rounded-full bg-[#111111] hover:bg-[#F4C542] text-white hover:text-[#111111] text-[12px] font-bold border border-[#111111] hover:border-[#F4C542] transition-all duration-300 shadow-sm shrink-0"
-                      >
-                        View Demo ↗
-                      </CardItem>
-                    )}
-                  </div>
-                </CardBody>
-              </CardContainer>
-            </Reveal>
-          ))}
-        </div>
+        <PortfolioGrid projects={projects} showFilters={false} />
 
         <div className="flex justify-center mt-14">
           <Reveal delay={0.1}>
