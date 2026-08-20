@@ -768,7 +768,7 @@ function SelectedWork({ projects, heroBtnUrl }: { projects: any[]; heroBtnUrl: s
           </h2>
         </Reveal>
 
-        <PortfolioGrid projects={projects} showFilters={false} />
+        <PortfolioGrid projects={projects} />
 
         <div className="flex justify-center mt-14">
           <Reveal delay={0.1}>
