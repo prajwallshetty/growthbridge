@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useTransition } from "react";
-import { getProjects, saveProject, deleteProject } from "@/lib/actions/cms";
+import { getProjects, saveProject, deleteProject, getTeamMembers } from "@/lib/actions/cms";
 import { Loader2, Plus, Edit, Trash2, ArrowLeft, Image as ImageIcon, Sparkles } from "lucide-react";
 
 interface ProjectItem {
@@ -20,6 +20,14 @@ interface ProjectItem {
   featured: boolean;
   completed?: boolean;
   projectType?: string;
+  status?: string;
+  progress?: number;
+  startDate?: string;
+  dueDate?: string;
+  completionDate?: string;
+  priority?: string;
+  assignedTeam?: string[];
+  projectValue?: number;
   seoTitle?: string;
   seoDescription?: string;
 }
@@ -27,6 +35,7 @@ interface ProjectItem {
 export default function PortfolioCmsPage() {
   const [projects, setProjects] = useState<ProjectItem[]>([]);
   const [mediaList, setMediaList] = useState<any[]>([]);
+  const [teamMembers, setTeamMembers] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isPending, startTransition] = useTransition();
   const [aiLoading, setAiLoading] = useState(false);
@@ -36,7 +45,7 @@ export default function PortfolioCmsPage() {
   const [formState, setFormState] = useState<ProjectItem>({
     title: "",
     client: "",
-    category: "",
+    category: "Website",
     description: "",
     detailContent: "",
     image: "",
@@ -48,6 +57,14 @@ export default function PortfolioCmsPage() {
     featured: false,
     completed: false,
     projectType: "customised",
+    status: "not-started",
+    progress: 0,
+    startDate: "",
+    dueDate: "",
+    completionDate: "",
+    priority: "medium",
+    assignedTeam: [],
+    projectValue: 0,
     seoTitle: "",
     seoDescription: "",
   });
@@ -59,8 +76,12 @@ export default function PortfolioCmsPage() {
   const fetchProjectsAndMedia = async () => {
     try {
       setIsLoading(true);
-      const data = await getProjects();
+      const [data, teamData] = await Promise.all([
+        getProjects(),
+        getTeamMembers().catch(() => []),
+      ]);
       setProjects(data);
+      setTeamMembers(teamData);
 
       const mediaRes = await fetch("/api/media");
       const mediaData = await mediaRes.json();
@@ -80,10 +101,29 @@ export default function PortfolioCmsPage() {
 
   const handleEditClick = (project: ProjectItem) => {
     setEditingProject(project);
+    
+    // Format dates to YYYY-MM-DD for standard html inputs
+    const formatDate = (dateVal: any) => {
+      if (!dateVal) return "";
+      try {
+        return new Date(dateVal).toISOString().split("T")[0];
+      } catch (e) {
+        return "";
+      }
+    };
+
     setFormState({
       projectType: "customised",
       completed: project.completed ?? false,
+      status: "not-started",
+      progress: 0,
+      priority: "medium",
+      assignedTeam: [],
+      projectValue: 0,
       ...project,
+      startDate: formatDate(project.startDate),
+      dueDate: formatDate(project.dueDate),
+      completionDate: formatDate(project.completionDate),
     });
     setTechInput(project.technologies?.join(", ") || "");
     setGalleryInput(project.gallery?.join(", ") || "");
@@ -93,7 +133,7 @@ export default function PortfolioCmsPage() {
     const defaultProj: ProjectItem = {
       title: "",
       client: "",
-      category: "SaaS",
+      category: "Website",
       description: "",
       detailContent: "",
       image: "",
@@ -105,6 +145,14 @@ export default function PortfolioCmsPage() {
       featured: false,
       completed: false,
       projectType: "customised",
+      status: "not-started",
+      progress: 0,
+      startDate: "",
+      dueDate: "",
+      completionDate: "",
+      priority: "medium",
+      assignedTeam: [],
+      projectValue: 0,
       seoTitle: "",
       seoDescription: "",
     };
@@ -288,11 +336,13 @@ export default function PortfolioCmsPage() {
                       </td>
                       <td className="py-5 px-8">
                         <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-[0.05em] ${
-                          project.completed
+                          project.status === "completed"
                             ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                            : project.status === "ongoing"
+                            ? "bg-blue-50 text-blue-700 border border-blue-200"
                             : "bg-[#FCFBF8] text-[#A8A296] border border-[#E9E3DA]"
                         }`}>
-                          {project.completed ? "Completed" : "In Progress"}
+                          {project.status === "completed" ? "Completed" : project.status === "ongoing" ? "Ongoing" : "Not Started"}
                         </span>
                       </td>
                       <td className="py-5 px-8 text-right">
@@ -389,9 +439,12 @@ export default function PortfolioCmsPage() {
                 onChange={handleChange}
                 className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
               >
+                <option value="Website">Website</option>
+                <option value="CRM">CRM</option>
+                <option value="App">App</option>
+                <option value="Branding">Branding</option>
                 <option value="SaaS">SaaS Platform</option>
                 <option value="Mobile">Mobile Application</option>
-                <option value="Branding">Branding & Strategy</option>
                 <option value="E-commerce">E-commerce Portal</option>
                 <option value="Fintech">Fintech Solution</option>
               </select>
@@ -423,6 +476,164 @@ export default function PortfolioCmsPage() {
                 placeholder="e.g. +320% user signups"
                 className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all font-mono"
               />
+            </div>
+          </div>
+
+          {/* Kanban Board Fields */}
+          <div className="border-t border-[#E9E3DA]/80 pt-6 mt-4 flex flex-col gap-6">
+            <h4 className="text-[14px] font-extrabold text-[#111111] uppercase tracking-[0.08em]">Kanban Board Settings</h4>
+            
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Kanban Status
+                </label>
+                <select
+                  name="status"
+                  value={formState.status || "not-started"}
+                  onChange={(e) => {
+                    const nextVal = e.target.value;
+                    setFormState(prev => ({
+                      ...prev,
+                      status: nextVal,
+                      completed: nextVal === "completed",
+                      progress: nextVal === "completed" ? 100 : nextVal === "not-started" ? 0 : prev.progress
+                    }));
+                  }}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
+                >
+                  <option value="not-started">Not Started</option>
+                  <option value="ongoing">Ongoing</option>
+                  <option value="completed">Completed</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Priority
+                </label>
+                <select
+                  name="priority"
+                  value={formState.priority || "medium"}
+                  onChange={handleChange}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-bold outline-none focus:border-[#111111] transition-all"
+                >
+                  <option value="low">Low Priority</option>
+                  <option value="medium">Medium Priority</option>
+                  <option value="high">High Priority</option>
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Progress (%)
+                </label>
+                <input
+                  type="number"
+                  name="progress"
+                  min={0}
+                  max={100}
+                  value={formState.progress ?? 0}
+                  onChange={(e) => {
+                    const val = Math.min(100, Math.max(0, parseInt(e.target.value) || 0));
+                    setFormState(prev => ({ ...prev, progress: val }));
+                  }}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-semibold outline-none focus:border-[#111111] transition-all font-mono"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Project Value ($)
+                </label>
+                <input
+                  type="number"
+                  name="projectValue"
+                  min={0}
+                  value={formState.projectValue ?? 0}
+                  onChange={(e) => {
+                    const val = Math.max(0, parseFloat(e.target.value) || 0);
+                    setFormState(prev => ({ ...prev, projectValue: val }));
+                  }}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-semibold outline-none focus:border-[#111111] transition-all font-mono"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Start Date / Planned Start
+                </label>
+                <input
+                  type="date"
+                  name="startDate"
+                  value={formState.startDate || ""}
+                  onChange={handleChange}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Due Date / Target End
+                </label>
+                <input
+                  type="date"
+                  name="dueDate"
+                  value={formState.dueDate || ""}
+                  onChange={handleChange}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                  Completion Date
+                </label>
+                <input
+                  type="date"
+                  name="completionDate"
+                  value={formState.completionDate || ""}
+                  onChange={handleChange}
+                  disabled={formState.status !== "completed"}
+                  className="w-full h-12 px-4 bg-[#FCFBF8] border border-[#E9E3DA] rounded-[12px] text-[14px] font-medium outline-none focus:border-[#111111] transition-all disabled:opacity-50"
+                />
+              </div>
+            </div>
+
+            {/* Assigned Team Members multi-select checklist */}
+            <div className="flex flex-col gap-2.5">
+              <label className="text-[13px] font-bold uppercase tracking-[0.08em] text-[#6A6A6A]">
+                Assigned Team Members
+              </label>
+              {teamMembers.length === 0 ? (
+                <div className="text-[12px] text-[#A8A296] italic p-3 border border-[#E9E3DA] rounded-[12px] bg-[#FCFBF8]">
+                  No team members found. Add team members in the Team section first to assign them.
+                </div>
+              ) : (
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 border border-[#E9E3DA] rounded-[12px] bg-[#FCFBF8] max-h-36 overflow-y-auto">
+                  {teamMembers.map((member) => {
+                    const isChecked = (formState.assignedTeam || []).includes(member.name);
+                    return (
+                      <label key={member._id} className="flex items-center gap-2.5 text-[13px] font-medium text-[#111111] cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={(e) => {
+                            const updatedTeam = e.target.checked
+                              ? [...(formState.assignedTeam || []), member.name]
+                              : (formState.assignedTeam || []).filter(name => name !== member.name);
+                            setFormState(prev => ({ ...prev, assignedTeam: updatedTeam }));
+                          }}
+                          className="w-4 h-4 rounded border-[#E9E3DA] text-[#111111] focus:ring-0 accent-[#111111]"
+                        />
+                        <span>{member.name}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
             </div>
           </div>
 

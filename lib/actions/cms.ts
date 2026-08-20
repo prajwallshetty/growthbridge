@@ -232,7 +232,8 @@ export async function getProjects() {
     const defaultProjects = [
       {
         title: "Northstar Commerce",
-        category: "E-commerce redesign",
+        client: "Northstar Ltd",
+        category: "Website",
         description: "A premium storefront rebuild with conversion-first design and lifecycle automation worthy of the product.",
         resultMetric: "+320% revenue",
         image: "/project-northstar.png",
@@ -240,10 +241,19 @@ export async function getProjects() {
         featured: true,
         completed: true,
         projectType: "pre-built",
+        status: "completed",
+        progress: 100,
+        startDate: new Date(Date.now() - 60 * 86400000), // 60 days ago
+        dueDate: new Date(Date.now() - 30 * 86400000),   // 30 days ago
+        completionDate: new Date(Date.now() - 32 * 86400000),
+        priority: "high",
+        assignedTeam: ["Prajwal Shetty", "Sarah Jenkins"],
+        projectValue: 45000,
       },
       {
         title: "Atlas Clinics",
-        category: "Healthcare platform",
+        client: "Atlas Healthcare",
+        category: "CRM",
         description: "Local SEO architecture and booking funnels designed to build trust from the first click.",
         resultMetric: "5× more leads",
         image: "/project-atlas.png",
@@ -251,10 +261,19 @@ export async function getProjects() {
         featured: true,
         completed: true,
         projectType: "customised",
+        status: "completed",
+        progress: 100,
+        startDate: new Date(Date.now() - 90 * 86400000), // 90 days ago
+        dueDate: new Date(Date.now() - 40 * 86400000),   // 40 days ago
+        completionDate: new Date(Date.now() - 42 * 86400000),
+        priority: "medium",
+        assignedTeam: ["Alex Rivera", "Prajwal Shetty"],
+        projectValue: 60000,
       },
       {
         title: "Pulse SaaS",
-        category: "Product launch",
+        client: "Pulse Inc",
+        category: "App",
         description: "Brand positioning, launch site, and onboarding for a product-led growth engine.",
         resultMetric: "3× faster growth",
         image: "/project-pulse.png",
@@ -262,10 +281,18 @@ export async function getProjects() {
         featured: true,
         completed: false,
         projectType: "pre-built",
+        status: "ongoing",
+        progress: 65,
+        startDate: new Date(Date.now() - 20 * 86400000), // 20 days ago
+        dueDate: new Date(Date.now() + 15 * 86400000),   // 15 days from now
+        priority: "high",
+        assignedTeam: ["Sarah Jenkins", "Alex Rivera"],
+        projectValue: 35000,
       },
       {
         title: "Loam & Co.",
-        category: "Brand & web",
+        client: "Loam Studio",
+        category: "Branding",
         description: "Visual identity and lookbook site for a slow-fashion studio's debut collection.",
         resultMetric: "+180% sessions",
         image: "/why-growthbridge.png",
@@ -273,13 +300,45 @@ export async function getProjects() {
         featured: false,
         completed: true,
         projectType: "customised",
+        status: "completed",
+        progress: 100,
+        startDate: new Date(Date.now() - 120 * 86400000),
+        dueDate: new Date(Date.now() - 90 * 86400000),
+        completionDate: new Date(Date.now() - 88 * 86400000),
+        priority: "low",
+        assignedTeam: ["Sarah Jenkins"],
+        projectValue: 20000,
       },
     ];
     await Project.insertMany(defaultProjects);
     list = await Project.find().sort({ createdAt: -1 }).lean();
   }
 
-  return serialize(list);
+  // Ensure all projects have status, client, priority, progress mapped for older database documents
+  const mappedList = list.map((p: any) => {
+    const updated = { ...p };
+    if (!updated.status) {
+      updated.status = updated.completed ? "completed" : "ongoing";
+    }
+    if (!updated.priority) {
+      updated.priority = "medium";
+    }
+    if (updated.progress === undefined) {
+      updated.progress = updated.status === "completed" ? 100 : 0;
+    }
+    if (!updated.client) {
+      updated.client = "Internal";
+    }
+    if (!updated.assignedTeam) {
+      updated.assignedTeam = [];
+    }
+    if (updated.projectValue === undefined) {
+      updated.projectValue = 0;
+    }
+    return updated;
+  });
+
+  return serialize(mappedList);
 }
 
 export async function saveProject(data: any) {
@@ -288,12 +347,28 @@ export async function saveProject(data: any) {
 
   await connectToDatabase();
   let project;
-  if (data._id) {
-    project = await Project.findByIdAndUpdate(data._id, data, { new: true });
-    await logActivity(`Updated portfolio project: "${data.title}"`);
+  
+  // Clean dates to ensure they parse correctly or are null
+  const cleanedData = { ...data };
+  if (cleanedData.startDate) cleanedData.startDate = new Date(cleanedData.startDate);
+  if (cleanedData.dueDate) cleanedData.dueDate = new Date(cleanedData.dueDate);
+  if (cleanedData.completionDate) {
+    cleanedData.completionDate = new Date(cleanedData.completionDate);
+  } else if (cleanedData.status === "completed" && !cleanedData.completionDate) {
+    cleanedData.completionDate = new Date();
   } else {
-    project = await Project.create(data);
-    await logActivity(`Created new portfolio project: "${data.title}"`);
+    cleanedData.completionDate = null;
+  }
+
+  // Sync legacy completed field
+  cleanedData.completed = cleanedData.status === "completed";
+
+  if (cleanedData._id) {
+    project = await Project.findByIdAndUpdate(cleanedData._id, cleanedData, { new: true });
+    await logActivity(`Updated portfolio project: "${cleanedData.title}"`);
+  } else {
+    project = await Project.create(cleanedData);
+    await logActivity(`Created new portfolio project: "${cleanedData.title}"`);
   }
   revalidatePath("/");
   revalidatePath("/projects");
@@ -313,6 +388,41 @@ export async function deleteProject(id: string) {
   revalidatePath("/");
   revalidatePath("/projects");
   return { success: true };
+}
+
+export async function updateProjectStatus(id: string, status: "not-started" | "ongoing" | "completed") {
+  const user = await getSessionUser();
+  if (!user) throw new Error("Unauthorized: Please log in to the admin panel to update project status.");
+
+  await connectToDatabase();
+  const updateData: any = {
+    status,
+    completed: status === "completed",
+  };
+
+  if (status === "completed") {
+    updateData.completionDate = new Date();
+    updateData.progress = 100;
+  } else if (status === "not-started") {
+    updateData.progress = 0;
+    updateData.completionDate = null;
+  } else {
+    // For ongoing, reset progress to a default of 10% if it was 0 or 100, otherwise keep it
+    const existing = await Project.findById(id).lean() as any;
+    if (existing) {
+      if (existing.progress === 0 || existing.progress === 100) {
+        updateData.progress = 10;
+      }
+    }
+    updateData.completionDate = null;
+  }
+
+  const project = await Project.findByIdAndUpdate(id, updateData, { new: true });
+  await logActivity(`Moved project "${project.title}" to status: ${status}`);
+
+  revalidatePath("/");
+  revalidatePath("/projects");
+  return serialize(project);
 }
 
 /* ==========================================
