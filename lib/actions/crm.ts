@@ -809,12 +809,28 @@ export async function generateAIDocument(clientId: string, docType: string, user
   }
 }
 
-// Add Expense to Project
+// Add Expense to Project (or General Overhead)
 export async function addProjectExpense(clientId: string, expenseData: any) {
   await requireAuth();
   await connectToDatabase();
 
-  const client = await CRMClient.findById(clientId);
+  let client;
+  if (clientId === "general") {
+    client = await CRMClient.findOne({ company: "General Company (Non-Website)" });
+    if (!client) {
+      client = await CRMClient.create({
+        name: "Growth Bridge Studio",
+        company: "General Company (Non-Website)",
+        industry: "Internal Operations & Overhead",
+        budget: 0,
+        stage: "Active",
+        status: "Ongoing",
+      });
+    }
+  } else {
+    client = await CRMClient.findById(clientId);
+  }
+
   if (!client) throw new Error("Client project not found");
 
   if (!client.expenses) client.expenses = [];
@@ -830,17 +846,27 @@ export async function addProjectExpense(clientId: string, expenseData: any) {
   return serialize(client);
 }
 
-// Delete Expense from Project
+// Delete Expense from Project (or General Overhead)
 export async function deleteProjectExpense(clientId: string, expenseId: string) {
   await requireAuth();
   await connectToDatabase();
 
-  const client = await CRMClient.findById(clientId);
-  if (!client) throw new Error("Client project not found");
+  let client;
+  if (clientId === "general") {
+    client = await CRMClient.findOne({ company: "General Company (Non-Website)" });
+  } else {
+    client = await CRMClient.findById(clientId);
+  }
+
+  if (!client) {
+    client = await CRMClient.findOne({ "expenses._id": expenseId });
+  }
+
+  if (!client) throw new Error("Expense record not found");
 
   client.expenses = client.expenses.filter((e: any) => e._id.toString() !== expenseId && e.id !== expenseId);
   client.activity.unshift({
-    text: `Expense record removed from project`,
+    text: `Expense record removed`,
     timestamp: new Date().toISOString().split("T")[0],
     type: "expense",
   });

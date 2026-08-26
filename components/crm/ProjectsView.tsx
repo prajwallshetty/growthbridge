@@ -33,6 +33,7 @@ import {
   SlidersHorizontal,
   Sparkles,
   ExternalLink,
+  CreditCard,
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -1412,44 +1413,89 @@ export default function ProjectsView() {
           {/* TAB 2: EXPENSE MANAGER INSIDE PROJECT */}
           {activeTab === "expenses" && (
             <div className="flex flex-col gap-6">
-              <form onSubmit={handleAddExpenseSubmit} className="bg-[#FCFBF8] border border-[#E9E3DA] p-4 rounded-2xl flex flex-col gap-3">
-                <span className="text-[12px] font-mono uppercase font-bold text-red-600">Add Project Expense</span>
+              <form onSubmit={handleAddExpenseSubmit} className="bg-white border border-[#E9E3DA] p-4 rounded-2xl flex flex-col gap-3 shadow-xs">
+                <span className="text-[12px] font-mono uppercase font-bold text-red-600 flex items-center gap-1.5">
+                  <Receipt size={15} />
+                  <span>Record Project Expense Item</span>
+                </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <input
-                    type="text"
-                    placeholder="Expense title (e.g. Domain Purchase)"
-                    value={expName}
-                    onChange={(e) => setExpName(e.target.value)}
-                    className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
-                    required
-                  />
-                  <select
-                    value={expCategory}
-                    onChange={(e) => setExpCategory(e.target.value)}
-                    className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
-                    required
-                  >
-                    <option value="Material Cost">Material Cost</option>
-                    <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
-                    <option value="Software & Infrastructure">Software & Infrastructure</option>
-                    <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
-                    <option value="Other Expenses">Other Expenses</option>
-                  </select>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Expense Title</label>
                     <input
-                      type="number"
-                      placeholder={`Amount (${settings.currency})`}
-                      value={expAmount}
-                      onChange={(e) => setExpAmount(e.target.value)}
-                      className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-mono font-bold text-[#111111] flex-1"
+                      type="text"
+                      placeholder="e.g. Server Hosting / Stock Images"
+                      value={expName}
+                      onChange={(e) => setExpName(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
                       required
                     />
-                    <button
-                      type="submit"
-                      className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-[13px] font-bold transition-all cursor-pointer shadow-xs shrink-0"
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Category</label>
+                    <select
+                      value={expCategory}
+                      onChange={(e) => setExpCategory(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] font-medium"
+                      required
                     >
-                      Save Expense
-                    </button>
+                      <option value="Material Cost">Material Cost</option>
+                      <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
+                      <option value="Software & Infrastructure">Software & Infrastructure</option>
+                      <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
+                      <option value="Other Expenses">Other Expenses</option>
+                    </select>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Amount ({settings.currency})</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 12000"
+                      value={expAmount}
+                      onChange={(e) => setExpAmount(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-mono font-bold text-[#111111]"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Vendor / Payee</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. AWS / Freelancer"
+                      value={expVendor}
+                      onChange={(e) => setExpVendor(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Expense Date</label>
+                    <input
+                      type="date"
+                      value={expDate}
+                      onChange={(e) => setExpDate(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
+                      required
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Notes / Purpose</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="Optional memo..."
+                        value={expNotes}
+                        onChange={(e) => setExpNotes(e.target.value)}
+                        className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] flex-1"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-xl text-[13px] font-bold transition-all cursor-pointer shadow-xs shrink-0"
+                      >
+                        Save Expense
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>
@@ -1504,78 +1550,168 @@ export default function ProjectsView() {
           {/* TAB 3: REVENUE & PAYMENTS INSIDE PROJECT */}
           {activeTab === "payments" && (
             <div className="flex flex-col gap-6">
-              <form onSubmit={handleAddPaymentSubmit} className="bg-[#FCFBF8] border border-[#E9E3DA] p-4 rounded-2xl flex flex-col gap-3">
-                <span className="text-[12px] font-mono uppercase font-bold text-emerald-600">Record Client Payment</span>
+              {/* Financial Quick Stats for Active Project */}
+              {(() => {
+                const fin = getProjectFinancials(activeProject);
+                const pctPaid = fin.cost > 0 ? Math.min(100, Math.round((fin.received / fin.cost) * 100)) : 0;
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-[#FCFBF8] border border-[#E9E3DA] p-4 rounded-2xl">
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10.5px] font-mono uppercase font-bold text-[#6A6A6A]">Contract Value</span>
+                      <span className="text-[18px] font-extrabold text-[#111111]">{formatCurrency(fin.cost)}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10.5px] font-mono uppercase font-bold text-[#6A6A6A]">Amount Cleared ({pctPaid}%)</span>
+                      <span className="text-[18px] font-extrabold text-emerald-600">{formatCurrency(fin.received)}</span>
+                    </div>
+                    <div className="flex flex-col gap-0.5">
+                      <span className="text-[10.5px] font-mono uppercase font-bold text-[#6A6A6A]">Outstanding Due</span>
+                      <span className="text-[18px] font-extrabold text-red-600">{formatCurrency(fin.pendingAmount)}</span>
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Record Client Payment Form */}
+              <form onSubmit={handleAddPaymentSubmit} className="bg-white border border-[#E9E3DA] p-5 rounded-2xl flex flex-col gap-4 shadow-xs">
+                <div className="flex items-center justify-between border-b border-[#E9E3DA]/80 pb-2.5">
+                  <span className="text-[13px] font-mono uppercase font-bold text-emerald-600 flex items-center gap-1.5">
+                    <CreditCard size={15} />
+                    <span>Record Client Payment Transaction</span>
+                  </span>
+                  <span className="text-[11px] text-[#6A6A6A]">Logs transfer into global CRM ledger</span>
+                </div>
+
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <input
-                    type="number"
-                    placeholder={`Amount (${settings.currency})`}
-                    value={payAmount}
-                    onChange={(e) => setPayAmount(e.target.value)}
-                    className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-mono font-bold text-[#111111]"
-                    required
-                  />
-                  <input
-                    type="text"
-                    placeholder="Reference UTR Number"
-                    value={payRef}
-                    onChange={(e) => setPayRef(e.target.value)}
-                    className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
-                  />
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Amount ({settings.currency})</label>
+                    <input
+                      type="number"
+                      placeholder="e.g. 50000"
+                      value={payAmount}
+                      onChange={(e) => setPayAmount(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-mono font-bold text-[#111111]"
+                      required
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Payment Method</label>
+                    <select
+                      value={payMethod}
+                      onChange={(e) => setPayMethod(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-semibold text-[#111111]"
+                    >
+                      <option value="Bank Transfer">Bank Transfer</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Wire Transfer">Wire Transfer</option>
+                      <option value="Credit Card">Credit Card</option>
+                      <option value="Cheque">Cheque</option>
+                      <option value="Cash">Cash</option>
+                    </select>
+                  </div>
+
+                  <div className="flex flex-col gap-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Payment Date</label>
                     <input
                       type="date"
                       value={payDate}
                       onChange={(e) => setPayDate(e.target.value)}
-                      className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] flex-1"
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
+                      required
                     />
-                    <button
-                      type="submit"
-                      className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-[13px] font-bold transition-all cursor-pointer shadow-xs shrink-0"
-                    >
-                      Record Payment
-                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="flex flex-col gap-1 sm:col-span-1">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Reference / UTR Number</label>
+                    <input
+                      type="text"
+                      placeholder="e.g. UTR894210582"
+                      value={payRef}
+                      onChange={(e) => setPayRef(e.target.value)}
+                      className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] font-mono text-[#111111]"
+                    />
+                  </div>
+
+                  <div className="flex flex-col gap-1 sm:col-span-2">
+                    <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Notes / Milestone Memo</label>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        placeholder="e.g. Milestone 1 Advance (40%)"
+                        value={payNotes}
+                        onChange={(e) => setPayNotes(e.target.value)}
+                        className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111] flex-1"
+                      />
+                      <button
+                        type="submit"
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2 rounded-xl text-[13px] font-bold transition-all cursor-pointer shadow-xs shrink-0"
+                      >
+                        Record Payment
+                      </button>
+                    </div>
                   </div>
                 </div>
               </form>
 
+              {/* Payments History Table */}
               <div className="bg-white border border-[#E9E3DA] rounded-2xl overflow-hidden shadow-xs">
-                <table className="w-full text-left text-[13px]">
-                  <thead>
-                    <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-mono uppercase text-[#6A6A6A]">
-                      <th className="py-3 px-4 font-bold">Payment Date</th>
-                      <th className="py-3 px-4 font-bold">Reference UTR</th>
-                      <th className="py-3 px-4 font-bold">Method</th>
-                      <th className="py-3 px-4 font-bold text-right">Amount Received</th>
-                      <th className="py-3 px-4 font-bold text-center">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E9E3DA]/60">
-                    {(activeProject.payments || []).map((pay) => (
-                      <tr key={pay._id} className="hover:bg-[#FCFBF8]">
-                        <td className="py-3 px-4 font-mono text-[12px] text-[#6A6A6A]">{pay.paymentDate}</td>
-                        <td className="py-3 px-4 font-mono font-bold text-[#111111]">{pay.referenceNumber || "N/A"}</td>
-                        <td className="py-3 px-4 text-[#6A6A6A]">{pay.paymentMethod}</td>
-                        <td className="py-3 px-4 text-right font-extrabold text-emerald-600">+{formatCurrency(pay.amount)}</td>
-                        <td className="py-3 px-4 text-center">
-                          <button
-                            onClick={() => deletePayment(activeProject._id, pay._id)}
-                            className="p-1 text-[#9CA3AF] hover:text-red-600 cursor-pointer"
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-[13px]">
+                    <thead>
+                      <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-mono uppercase text-[#6A6A6A]">
+                        <th className="py-3.5 px-4 font-bold">Payment Date</th>
+                        <th className="py-3.5 px-4 font-bold">Reference UTR</th>
+                        <th className="py-3.5 px-4 font-bold">Method</th>
+                        <th className="py-3.5 px-4 font-bold">Notes / Milestone</th>
+                        <th className="py-3.5 px-4 font-bold text-right">Amount Received</th>
+                        <th className="py-3.5 px-4 font-bold text-center">Action</th>
                       </tr>
-                    ))}
-                    {(activeProject.payments || []).length === 0 && (
-                      <tr>
-                        <td colSpan={5} className="py-8 text-center text-[#6A6A6A] italic">
-                          No payments recorded for this project yet.
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className="divide-y divide-[#E9E3DA]/60">
+                      {(activeProject.payments || []).map((pay) => (
+                        <tr key={pay._id} className="hover:bg-[#FCFBF8]">
+                          <td className="py-3.5 px-4 font-mono text-[12px] text-[#6A6A6A]">{pay.paymentDate}</td>
+                          <td className="py-3.5 px-4 font-mono font-bold text-[#111111]">
+                            {pay.referenceNumber ? (
+                              <span className="px-2 py-0.5 rounded bg-slate-100 border border-slate-200 text-[11.5px]">
+                                {pay.referenceNumber}
+                              </span>
+                            ) : (
+                              "N/A"
+                            )}
+                          </td>
+                          <td className="py-3.5 px-4 text-[#6A6A6A]">
+                            <span className="px-2.5 py-0.5 rounded text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-100 font-mono">
+                              {pay.paymentMethod || "Bank Transfer"}
+                            </span>
+                          </td>
+                          <td className="py-3.5 px-4 text-[#6A6A6A]">{pay.notes || "—"}</td>
+                          <td className="py-3.5 px-4 text-right font-extrabold text-emerald-600">+{formatCurrency(pay.amount)}</td>
+                          <td className="py-3.5 px-4 text-center">
+                            <button
+                              onClick={() => deletePayment(activeProject._id, pay._id)}
+                              className="p-1.5 rounded-lg text-[#9CA3AF] hover:text-red-600 hover:bg-red-50 transition-colors cursor-pointer"
+                              title="Delete payment record"
+                            >
+                              <Trash2 size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {(activeProject.payments || []).length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="py-8 text-center text-[#6A6A6A]">
+                            <p className="font-bold">No payments recorded for this project yet.</p>
+                            <p className="text-[11px] mt-0.5">Use the form above to log milestone payments.</p>
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
             </div>
           )}

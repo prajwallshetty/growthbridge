@@ -35,7 +35,7 @@ export async function login(formData: FormData) {
         })
           .setProtectedHeader({ alg: "HS256" })
           .setIssuedAt()
-          .setExpirationTime("2h")
+          .setExpirationTime("30d")
           .sign(secret);
 
         const cookieStore = await cookies();
@@ -43,7 +43,7 @@ export async function login(formData: FormData) {
           httpOnly: true,
           secure: process.env.NODE_ENV === "production",
           path: "/",
-          maxAge: 7200, // 2 hours
+          maxAge: 30 * 24 * 60 * 60, // 30 days
         });
 
         return { success: true };
@@ -102,7 +102,7 @@ export async function login(formData: FormData) {
     })
       .setProtectedHeader({ alg: "HS256" })
       .setIssuedAt()
-      .setExpirationTime("2h")
+      .setExpirationTime("30d")
       .sign(secret);
 
     // Set cookie
@@ -111,7 +111,7 @@ export async function login(formData: FormData) {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       path: "/",
-      maxAge: 7200, // 2 hours
+      maxAge: 30 * 24 * 60 * 60, // 30 days
     });
 
     return { success: true };

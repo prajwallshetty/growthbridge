@@ -200,10 +200,11 @@ export default function ExpensesView() {
           <select
             value={selectedProject}
             onChange={(e) => setSelectedProject(e.target.value)}
-            className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3 py-2 text-[12.5px] font-semibold text-[#111111] focus:outline-none max-w-[200px]"
+            className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl px-3 py-2 text-[12.5px] font-semibold text-[#111111] focus:outline-none max-w-[220px]"
           >
-            <option value="All">All Projects</option>
-            {clients.map((c) => (
+            <option value="All">All Projects & General</option>
+            <option value="general">🏢 General / Non-Website</option>
+            {clients.filter(c => c.company !== "General Company (Non-Website)").map((c) => (
               <option key={c._id} value={c._id}>
                 {c.company}
               </option>
@@ -219,7 +220,7 @@ export default function ExpensesView() {
             <thead>
               <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-mono uppercase text-[#6A6A6A]">
                 <th className="py-3.5 px-5 font-bold">Date</th>
-                <th className="py-3.5 px-5 font-bold">Project</th>
+                <th className="py-3.5 px-5 font-bold">Scope / Project</th>
                 <th className="py-3.5 px-5 font-bold">Expense Title</th>
                 <th className="py-3.5 px-5 font-bold">Category</th>
                 <th className="py-3.5 px-5 font-bold">Vendor / Payee</th>
@@ -235,7 +236,13 @@ export default function ExpensesView() {
                     {expense.date}
                   </td>
                   <td className="py-3.5 px-5 font-bold text-[#111111]">
-                    {expense.company}
+                    {expense.company === "General Company (Non-Website)" || expense.projectId === "general" ? (
+                      <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-800 border border-slate-200 inline-flex items-center gap-1">
+                        🏢 General / Non-Website
+                      </span>
+                    ) : (
+                      expense.company
+                    )}
                   </td>
                   <td className="py-3.5 px-5 font-medium text-[#111111]">
                     {expense.name}
@@ -288,7 +295,7 @@ export default function ExpensesView() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4">
           <div className="bg-white rounded-2xl p-6 max-w-lg w-full shadow-2xl border border-[#E9E3DA] flex flex-col gap-5">
             <div className="flex items-center justify-between border-b border-[#E9E3DA] pb-3">
-              <h3 className="text-[16px] font-extrabold text-[#111111]">Record Project Expense</h3>
+              <h3 className="text-[16px] font-extrabold text-[#111111]">Record Expense</h3>
               <button
                 onClick={() => setIsAddOpen(false)}
                 className="p-1 rounded-lg text-[#6A6A6A] hover:bg-[#F3F4F6]"
@@ -299,16 +306,22 @@ export default function ExpensesView() {
 
             <form onSubmit={handleAddSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Select Project</label>
+                <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Expense Scope / Mapping</label>
                 <select
                   value={targetProjectId}
-                  onChange={(e) => setTargetProjectId(e.target.value)}
+                  onChange={(e) => {
+                    setTargetProjectId(e.target.value);
+                    if (e.target.value === "general") {
+                      setCategory("Other Expenses");
+                    }
+                  }}
                   className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] font-bold text-[#111111]"
                   required
                 >
-                  {clients.map((c) => (
+                  <option value="general">🏢 General / Other Expense (Non-Website / Overhead)</option>
+                  {clients.filter(c => c.company !== "General Company (Non-Website)").map((c) => (
                     <option key={c._id} value={c._id}>
-                      {c.company} ({c.name})
+                      🌐 Client Website: {c.company} ({c.name})
                     </option>
                   ))}
                 </select>
