@@ -27,6 +27,7 @@ export default function ExpensesView() {
   const [targetProjectId, setTargetProjectId] = useState<string>(clients[0]?._id || "");
   const [expenseName, setExpenseName] = useState("");
   const [category, setCategory] = useState("Material Cost");
+  const [otherDetails, setOtherDetails] = useState("");
   const [vendor, setVendor] = useState("");
   const [amount, setAmount] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("Bank Transfer");
@@ -72,6 +73,10 @@ export default function ExpensesView() {
     e.preventDefault();
     if (!targetProjectId || !expenseName || !amount) return;
 
+    const finalNotes = category === "Other Expenses" && otherDetails
+      ? `Purpose: ${otherDetails}${notes ? ` | ${notes}` : ""}`
+      : notes;
+
     await addExpense(targetProjectId, {
       name: expenseName,
       category,
@@ -79,11 +84,12 @@ export default function ExpensesView() {
       amount: parseFloat(amount) || 0,
       paymentMethod,
       date,
-      notes,
+      notes: finalNotes,
     });
 
     // Reset
     setExpenseName("");
+    setOtherDetails("");
     setVendor("");
     setAmount("");
     setNotes("");
@@ -115,7 +121,7 @@ export default function ExpensesView() {
       </div>
 
       {/* Expense Stats Bar */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm">
           <span className="text-[10.5px] font-mono text-[#6A6A6A] uppercase font-bold">Total Project Expenses</span>
           <div className="text-[24px] font-extrabold text-red-600 tracking-tight mt-1">
@@ -146,6 +152,14 @@ export default function ExpensesView() {
             {formatCurrency(financialStats.miscExpenses)}
           </div>
           <span className="text-[11px] text-[#6A6A6A] block mt-1">Software, tools & vendors</span>
+        </div>
+
+        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm">
+          <span className="text-[10.5px] font-mono text-[#6A6A6A] uppercase font-bold">Other Expenses</span>
+          <div className="text-[24px] font-extrabold text-[#111111] tracking-tight mt-1">
+            {formatCurrency(financialStats.otherExpenses || 0)}
+          </div>
+          <span className="text-[11px] text-[#6A6A6A] block mt-1">General & custom costs</span>
         </div>
       </div>
 
@@ -178,6 +192,7 @@ export default function ExpensesView() {
               <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
               <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
               <option value="Software & Infrastructure">Software & Infrastructure</option>
+              <option value="Other Expenses">Other Expenses</option>
             </select>
           </div>
 
@@ -313,16 +328,36 @@ export default function ExpensesView() {
                 </div>
                 <div className="flex flex-col gap-1">
                   <label className="text-[11px] font-mono uppercase font-bold text-[#6A6A6A]">Category</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. Software, Material, Delivery"
+                  <select
                     value={category}
                     onChange={(e) => setCategory(e.target.value)}
-                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111]"
+                    className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-2.5 text-[13px] text-[#111111] font-medium"
+                    required
+                  >
+                    <option value="Material Cost">Material Cost</option>
+                    <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
+                    <option value="Software & Infrastructure">Software & Infrastructure</option>
+                    <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
+                    <option value="Other Expenses">Other Expenses</option>
+                  </select>
+                </div>
+              </div>
+
+              {category === "Other Expenses" && (
+                <div className="flex flex-col gap-1">
+                  <label className="text-[11px] font-mono uppercase font-bold text-red-600">
+                    Other Expense Details / Purpose
+                  </label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Refreshments, Office Supplies, Utility, Legal"
+                    value={otherDetails}
+                    onChange={(e) => setOtherDetails(e.target.value)}
+                    className="bg-[#FCFBF8] border border-red-200 rounded-xl p-2.5 text-[13px] text-[#111111] focus:outline-none focus:border-red-600 font-medium"
                     required
                   />
                 </div>
-              </div>
+              )}
 
               <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">

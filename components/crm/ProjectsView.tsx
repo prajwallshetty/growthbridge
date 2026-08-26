@@ -1423,14 +1423,18 @@ export default function ProjectsView() {
                     className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
                     required
                   />
-                  <input
-                    type="text"
-                    placeholder="Category (e.g. Software, Material)"
+                  <select
                     value={expCategory}
                     onChange={(e) => setExpCategory(e.target.value)}
                     className="bg-white border border-[#E9E3DA] rounded-xl px-3.5 py-2 text-[13px] text-[#111111]"
                     required
-                  />
+                  >
+                    <option value="Material Cost">Material Cost</option>
+                    <option value="Miscellaneous Expenses">Miscellaneous Expenses</option>
+                    <option value="Software & Infrastructure">Software & Infrastructure</option>
+                    <option value="Vendor / Subcontractor">Vendor / Subcontractor</option>
+                    <option value="Other Expenses">Other Expenses</option>
+                  </select>
                   <div className="flex items-center gap-2">
                     <input
                       type="number"

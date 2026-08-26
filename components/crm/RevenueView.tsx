@@ -13,6 +13,7 @@ import {
   Clock,
   X,
   CreditCard,
+  AlertCircle,
 } from "lucide-react";
 
 export default function RevenueView() {
@@ -175,6 +176,64 @@ export default function RevenueView() {
           </div>
         </div>
       </div>
+
+      {/* Outstanding Client Balances Breakdown */}
+      {financialStats.outstandingClients && financialStats.outstandingClients.length > 0 && (
+        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm flex flex-col gap-4">
+          <div className="flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <h3 className="text-[15px] font-extrabold text-[#111111] flex items-center gap-2">
+                <AlertCircle size={16} className="text-red-600" />
+                <span>Outstanding Client Balances ({financialStats.outstandingClients.length})</span>
+              </h3>
+              <p className="text-[12px] text-[#6A6A6A] mt-0.5">
+                Per-client balance breakdown of unreleased revenue for active contracted accounts.
+              </p>
+            </div>
+            <div className="text-[14px] font-extrabold text-red-600 bg-red-50 border border-red-100 px-3 py-1 rounded-xl">
+              Total Pending: {formatCurrency(financialStats.outstandingPayments)}
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-[13px]">
+              <thead>
+                <tr className="bg-[#FCFBF8] border-b border-[#E9E3DA] text-[11px] font-mono uppercase text-[#6A6A6A]">
+                  <th className="py-2.5 px-4 font-bold">Client / Company</th>
+                  <th className="py-2.5 px-4 font-bold">Stage</th>
+                  <th className="py-2.5 px-4 font-bold text-right">Contract Value</th>
+                  <th className="py-2.5 px-4 font-bold text-right">Received</th>
+                  <th className="py-2.5 px-4 font-bold text-right">Outstanding Due</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-[#E9E3DA]/60">
+                {financialStats.outstandingClients.map((item) => (
+                  <tr key={item.id} className="hover:bg-[#FCFBF8]">
+                    <td className="py-3 px-4">
+                      <div className="font-bold text-[#111111]">{item.company}</div>
+                      <span className="text-[11px] text-[#6A6A6A]">{item.name}</span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="px-2.5 py-0.5 rounded text-[10.5px] font-bold bg-amber-50 text-amber-700 border border-amber-200">
+                        {item.stage}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-medium text-[#111111]">
+                      {formatCurrency(item.budget)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-medium text-emerald-600">
+                      {formatCurrency(item.received)}
+                    </td>
+                    <td className="py-3 px-4 text-right font-mono font-extrabold text-red-600">
+                      {formatCurrency(item.pending)}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Search & Filter Toolbar */}
       <div className="bg-white border border-[#E9E3DA] p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 shadow-sm">

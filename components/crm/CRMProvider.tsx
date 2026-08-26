@@ -205,6 +205,16 @@ interface CRMContextType {
     expensesThisMonth: number;
     materialCost: number;
     miscExpenses: number;
+    otherExpenses: number;
+    outstandingClients: Array<{
+      id: string;
+      name: string;
+      company: string;
+      budget: number;
+      received: number;
+      pending: number;
+      stage: string;
+    }>;
     
     totalReferralCommissions: number;
     totalReferredClientsCount: number;
@@ -504,7 +514,38 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const amountReceived = totalRevenue;
-  const revenuePending = Math.max(0, totalBudgetSum - totalRevenue);
+
+  // Calculate per-client outstanding payments accurately
+  let revenuePending = 0;
+  const outstandingClients: Array<{
+    id: string;
+    name: string;
+    company: string;
+    budget: number;
+    received: number;
+    pending: number;
+    stage: string;
+  }> = [];
+
+  clients.forEach((c) => {
+    const cost = c.budget || c.projectCost || 0;
+    const clientReceived = clientRevenueMap[c._id] || clientRevenueMap[c.id || ""] || 0;
+    const pending = Math.max(0, cost - clientReceived);
+
+    if (pending > 0 && cost > 0) {
+      revenuePending += pending;
+      outstandingClients.push({
+        id: c._id || c.id || "",
+        name: c.name,
+        company: c.company,
+        budget: cost,
+        received: clientReceived,
+        pending,
+        stage: c.stage || "Active",
+      });
+    }
+  });
+
   const outstandingPayments = revenuePending;
 
   // 2. Expenses
@@ -512,6 +553,7 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   let expensesThisMonth = 0;
   let materialCost = 0;
   let miscExpenses = 0;
+  let otherExpenses = 0;
 
   clients.forEach((c) => {
     if (c.expenses && c.expenses.length > 0) {
@@ -523,6 +565,8 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         if (e.category === "Material Cost") {
           materialCost += amt;
+        } else if (e.category === "Other Expenses" || e.category === "Other") {
+          otherExpenses += amt;
         } else {
           miscExpenses += amt;
         }
@@ -578,10 +622,12 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     revenuePending,
     amountReceived,
     outstandingPayments,
+    outstandingClients,
     totalExpenses,
     expensesThisMonth,
     materialCost,
     miscExpenses,
+    otherExpenses,
     totalReferralCommissions,
     totalReferredClientsCount,
     grossProfit,
