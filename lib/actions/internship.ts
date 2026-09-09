@@ -152,12 +152,54 @@ export async function getApplicationById(id: string) {
 
 export async function createApplication(data: any) {
   await connectToDatabase();
+
+  const rawPhone = (data.phone || data.whatsappNumber || "").toString().trim();
+  const digitsOnly = rawPhone.replace(/\D/g, "");
+
+  if (!rawPhone || !data.domainId) {
+    return { success: false, error: "Phone number and domain selection are required." };
+  }
+
+  // Find all existing applications for the target domain
+  const existingApps = await InternshipApplication.find({ domainId: data.domainId }).lean();
+  const duplicate = existingApps.find((app: any) => {
+    if (!app.phone) return false;
+    const appDigits = app.phone.replace(/\D/g, "");
+    if (appDigits.length >= 7 && digitsOnly.length >= 7) {
+      return appDigits.slice(-10) === digitsOnly.slice(-10);
+    }
+    return app.phone === rawPhone;
+  });
+
+  if (duplicate) {
+    return {
+      success: false,
+      isDuplicate: true,
+      error: "Application Already Received",
+      message: "You have already applied for this internship.",
+    };
+  }
+
   const nextId = await generateNextApplicationId();
-  
+
   const app = await InternshipApplication.create({
-    ...data,
+    fullName: data.fullName,
+    phone: rawPhone,
+    github: data.github || data.githubUrl || "",
+    linkedin: data.linkedin || data.linkedinUrl || "",
+    domainId: data.domainId,
+    email: data.email || "",
+    college: data.college || "",
+    degree: data.degree || "",
+    branch: data.branch || "",
+    currentYear: data.currentYear || "",
+    graduationYear: data.graduationYear || "",
+    experienceLevel: data.experienceLevel || "",
+    whyJoin: data.whyJoin || "",
+    hasProjects: data.hasProjects || "No",
+    resumeUrl: data.resumeUrl || "",
     applicationId: nextId,
-    status: "Pending",
+    status: data.status || "Applied",
   });
 
   // Create initial notification
@@ -167,7 +209,7 @@ export async function createApplication(data: any) {
     message: `Hello ${app.fullName}, your application for the internship program (ID: ${nextId}) has been successfully received. We will review it shortly.`,
   });
 
-  return serialize(app);
+  return { success: true, data: serialize(app) };
 }
 
 export async function updateApplicationStatus(id: string, status: string, remarks?: string) {

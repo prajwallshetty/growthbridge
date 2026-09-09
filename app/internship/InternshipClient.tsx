@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import SideRays from "@/components/ui/SideRays";
+import ApplicationModal from "@/components/site/internship/ApplicationModal";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
@@ -36,6 +37,13 @@ interface InternshipClientProps {
 
 export default function InternshipClient({ domains }: InternshipClientProps) {
   const [activeFaq, setActiveFaq] = useState<number | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedDomainId, setSelectedDomainId] = useState<string | undefined>(undefined);
+
+  const handleOpenModal = (domainId?: string) => {
+    setSelectedDomainId(domainId);
+    setIsModalOpen(true);
+  };
 
   const getDomainIcon = (name: string) => {
     const lowercaseName = name.toLowerCase();
@@ -125,13 +133,13 @@ export default function InternshipClient({ domains }: InternshipClientProps) {
           transition={{ duration: 0.8, delay: 0.3, ease: EASE }}
           className="mt-10 flex flex-col sm:flex-row items-center gap-4 w-full justify-center"
         >
-          <Link
-            href="/internship/apply"
-            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#111111] hover:bg-[#F4C542] hover:text-[#111111] text-white text-[14px] font-extrabold tracking-tight transition-all duration-350 shadow-md flex items-center justify-center gap-2 group"
+          <button
+            onClick={() => handleOpenModal()}
+            className="w-full sm:w-auto px-8 py-4 rounded-2xl bg-[#111111] hover:bg-[#F4C542] hover:text-[#111111] text-white text-[14px] font-extrabold tracking-tight transition-all duration-350 shadow-md flex items-center justify-center gap-2 group cursor-pointer"
           >
             <span>Apply for Internship</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
           
           <Link
             href="#domains"
@@ -227,13 +235,13 @@ export default function InternshipClient({ domains }: InternshipClientProps) {
                 <span className="text-[11.5px] font-mono uppercase tracking-wider text-[#A8A296] font-bold">
                   Curriculum Approved
                 </span>
-                <Link
-                  href="/internship/apply"
-                  className="flex items-center gap-1.5 text-[13px] font-bold text-[#111111] group-hover:translate-x-1.5 transition-transform"
+                <button
+                  onClick={() => handleOpenModal(domain._id)}
+                  className="flex items-center gap-1.5 text-[13px] font-bold text-[#111111] group-hover:translate-x-1.5 transition-transform cursor-pointer bg-transparent border-0"
                 >
                   <span>Apply Track</span>
                   <ArrowRight size={14} className="text-[#F4C542]" />
-                </Link>
+                </button>
               </div>
             </motion.div>
           ))}
@@ -298,8 +306,6 @@ export default function InternshipClient({ domains }: InternshipClientProps) {
           </div>
         </div>
       </section>
-
-
 
       {/* --- FAQ SECTION --- */}
       <section id="faq" className="relative z-10 max-w-4xl mx-auto px-6 py-24 border-t border-[#E9E3DA]">
@@ -367,15 +373,23 @@ export default function InternshipClient({ domains }: InternshipClientProps) {
             Limited seats are available for each domain. Start your application process now and get onboarded next week.
           </p>
 
-          <Link
-            href="/internship/apply"
-            className="mt-10 px-8 py-4 rounded-2xl bg-[#FCFBF8] hover:bg-[#F4C542] text-[#111111] hover:text-[#111111] text-[14px] font-extrabold tracking-tight transition-all duration-350 shadow-md flex items-center gap-2 group"
+          <button
+            onClick={() => handleOpenModal()}
+            className="mt-10 px-8 py-4 rounded-2xl bg-[#FCFBF8] hover:bg-[#F4C542] text-[#111111] hover:text-[#111111] text-[14px] font-extrabold tracking-tight transition-all duration-350 shadow-md flex items-center gap-2 group cursor-pointer"
           >
             <span>Apply Online</span>
             <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-          </Link>
+          </button>
         </div>
       </section>
+
+      {/* Application Modal Component */}
+      <ApplicationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        domains={domains}
+        defaultDomainId={selectedDomainId}
+      />
     </div>
   );
 }

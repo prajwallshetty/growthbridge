@@ -156,11 +156,22 @@ export default function ApplicantDetailsClient({ applicant }: ApplicantDetailsPr
                   <User size={13} className="text-[#A8A296]" />
                   <span>Personal Info</span>
                 </h3>
-                <div className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-[#6A6A6A]">
-                  <span>Email: <strong className="text-[#111111]">{applicant.email}</strong></span>
-                  <span>Phone: <strong className="text-[#111111]">{applicant.phone}</strong></span>
-                  <span>Gender: <strong className="text-[#111111]">{applicant.gender || "N/A"}</strong></span>
-                  <span>DOB: <strong className="text-[#111111]">{applicant.dob ? new Date(applicant.dob).toLocaleDateString() : "N/A"}</strong></span>
+                <div className="flex flex-col gap-2 text-[12.5px] font-semibold text-[#6A6A6A]">
+                  <span>Full Name: <strong className="text-[#111111]">{applicant.fullName}</strong></span>
+                  {applicant.email && <span>Email: <strong className="text-[#111111]">{applicant.email}</strong></span>}
+                  <div className="flex items-center gap-2">
+                    <span>WhatsApp / Phone: <strong className="text-[#111111]">{applicant.phone}</strong></span>
+                    {applicant.phone && (
+                      <a
+                        href={`https://wa.me/${applicant.phone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="inline-flex items-center gap-1 text-[11px] font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-2 py-0.5 rounded border border-emerald-200 transition-colors"
+                      >
+                        Open WhatsApp
+                      </a>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -168,12 +179,11 @@ export default function ApplicantDetailsClient({ applicant }: ApplicantDetailsPr
               <div className="flex flex-col gap-3">
                 <h3 className="text-[13px] font-bold text-[#111111] flex items-center gap-1.5 border-b border-[#E9E3DA]/50 pb-2">
                   <GraduationCap size={13} className="text-[#A8A296]" />
-                  <span>College & Course</span>
+                  <span>Academic Details</span>
                 </h3>
                 <div className="flex flex-col gap-1.5 text-[12.5px] font-semibold text-[#6A6A6A]">
-                  <span>Institution: <strong className="text-[#111111] truncate block max-w-xs">{applicant.college}</strong></span>
-                  <span>Degree & Branch: <strong className="text-[#111111]">{applicant.degree} in {applicant.branch}</strong></span>
-                  <span>Graduation Year: <strong className="text-[#111111]">{applicant.graduationYear} ({applicant.currentYear})</strong></span>
+                  <span>Institution: <strong className="text-[#111111]">{applicant.college || "N/A"}</strong></span>
+                  <span>Degree & Branch: <strong className="text-[#111111]">{applicant.degree ? `${applicant.degree} ${applicant.branch ? `in ${applicant.branch}` : ""}` : "N/A"}</strong></span>
                 </div>
               </div>
 
@@ -185,7 +195,7 @@ export default function ApplicantDetailsClient({ applicant }: ApplicantDetailsPr
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-[12.5px] font-semibold text-[#6A6A6A]">
                   <span>Applied Track: <strong className="text-[#111111]">{applicant.domainId?.name || "N/A"}</strong></span>
-                  <span>Experience Declared: <strong className="text-[#111111]">{applicant.experienceLevel}</strong></span>
+                  <span>Application Date: <strong className="text-[#111111]">{new Date(applicant.createdAt).toLocaleDateString()}</strong></span>
                 </div>
               </div>
 
@@ -397,11 +407,25 @@ export default function ApplicantDetailsClient({ applicant }: ApplicantDetailsPr
               <span className="text-[11.5px] font-bold text-[#6A6A6A]">Transition Status</span>
               <div className="grid grid-cols-2 gap-2">
                 <button
+                  onClick={() => handleStatusChange("Applied")}
+                  disabled={isSavingStatus}
+                  className="px-3 py-2 rounded-xl border border-amber-200 text-amber-700 hover:bg-amber-50 disabled:opacity-50 text-[11.5px] font-bold transition-all cursor-pointer"
+                >
+                  Mark Applied
+                </button>
+                <button
                   onClick={() => handleStatusChange("Shortlisted")}
                   disabled={isSavingStatus}
                   className="px-3 py-2 rounded-xl border border-blue-200 text-blue-600 hover:bg-blue-50 disabled:opacity-50 text-[11.5px] font-bold transition-all cursor-pointer"
                 >
                   Shortlist
+                </button>
+                <button
+                  onClick={() => handleStatusChange("Interview")}
+                  disabled={isSavingStatus}
+                  className="px-3 py-2 rounded-xl border border-indigo-200 text-indigo-600 hover:bg-indigo-50 disabled:opacity-50 text-[11.5px] font-bold transition-all cursor-pointer"
+                >
+                  Interview
                 </button>
                 <button
                   onClick={() => handleStatusChange("Rejected")}
