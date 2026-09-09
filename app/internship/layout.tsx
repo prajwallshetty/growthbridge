@@ -12,7 +12,7 @@ const inter = Inter({
 
 export const metadata = {
   title: "GrowthBridge Internships — Build, Launch, Scale",
-  description: "Join the GrowthBridge remote internship program. Work on industry capstone projects in Full Stack Development, React Native, Machine Learning, and Data Science.",
+  description: "Join the GrowthBridge remote internship program. Work on industry capstone projects in Full Stack Web Development.",
 };
 
 export default function InternshipLayout({

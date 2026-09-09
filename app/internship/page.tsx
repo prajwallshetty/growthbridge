@@ -17,27 +17,6 @@ export default async function InternshipLandingPage() {
       duration: "3 Weeks",
       isActive: true,
     },
-    {
-      _id: "65f1a3b8c4d2e10a0a000002",
-      name: "React Native Mobile App Development",
-      description: "Design and build cross-platform mobile apps for iOS and Android. Master screen routing, native device sensors integration, state management, and push notifications.",
-      duration: "3 Weeks",
-      isActive: true,
-    },
-    {
-      _id: "65f1a3b8c4d2e10a0a000003",
-      name: "Machine Learning Engineering",
-      description: "Develop, train, and deploy predictive models. Work with TensorFlow, PyTorch, and Scikit-Learn to build NLP engines, recommenders, and automated workflows.",
-      duration: "3 Weeks",
-      isActive: true,
-    },
-    {
-      _id: "65f1a3b8c4d2e10a0a000004",
-      name: "Data Science & Analytics",
-      description: "Uncover insights from complex datasets. Master data cleaning, exploratory data analysis, visual storytelling, and statistical analysis using Python, Pandas, and SQL.",
-      duration: "3 Weeks",
-      isActive: true,
-    },
   ];
 
   // If there are no domains in the database yet, we will display the default ones.

@@ -9,9 +9,6 @@ export default async function InternshipApplyPage() {
 
   const defaultDomains = [
     { _id: "65f1a3b8c4d2e10a0a000001", name: "Full Stack Web Development" },
-    { _id: "65f1a3b8c4d2e10a0a000002", name: "React Native Mobile App Development" },
-    { _id: "65f1a3b8c4d2e10a0a000003", name: "Machine Learning Engineering" },
-    { _id: "65f1a3b8c4d2e10a0a000004", name: "Data Science & Analytics" },
   ];
 
   const domains = dbDomains && dbDomains.length > 0 ? dbDomains : defaultDomains;

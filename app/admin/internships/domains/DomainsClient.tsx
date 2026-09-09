@@ -179,7 +179,7 @@ export default function DomainsClient({ initialDomains }: DomainsClientProps) {
               <input
                 type="text"
                 required
-                placeholder="E.g., React Native Development"
+                placeholder="E.g., Full Stack Web Development"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="px-3.5 py-2.5 rounded-xl border border-[#E9E3DA] bg-[#FCFBF8] text-[12.5px] font-semibold text-[#111111] focus:outline-none focus:border-[#F4C542]"

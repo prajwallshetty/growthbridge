@@ -261,7 +261,7 @@ export default function ApplicationModal({
                     Choose Your Domain *
                   </label>
                   
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className={domains.length > 1 ? "grid grid-cols-1 sm:grid-cols-3 gap-3" : "grid grid-cols-1 gap-3"}>
                     {domains.map((domain) => {
                       const isSelected = selectedDomainId === domain._id;
                       return (

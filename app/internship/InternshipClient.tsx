@@ -190,17 +190,17 @@ export default function InternshipClient({ domains }: InternshipClientProps) {
       <section id="domains" className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-[#E9E3DA]">
         <div className="flex flex-col items-center text-center gap-4 mb-16">
           <span className="font-mono text-[11px] font-bold tracking-[0.2em] text-[#A8A296] uppercase">
-            — Available tracks
+            — Available Track
           </span>
           <h2 className="text-[32px] sm:text-[46px] font-extrabold tracking-tight">
-            Choose your learning domain
+            Full Stack Engineering Domain
           </h2>
           <p className="text-[14px] sm:text-[15px] text-[#6A6A6A] max-w-xl font-medium mt-1">
-            Pick a specialized track to build hands-on applications and earn verified credits.
+            Build hands-on, production-grade applications and earn verified credits.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className={domains.length === 1 ? "max-w-2xl mx-auto" : "grid grid-cols-1 md:grid-cols-2 gap-8"}>
           {domains.map((domain, index) => (
             <motion.div
               key={domain._id}

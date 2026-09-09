@@ -33,12 +33,28 @@ async function generateNextApplicationId(): Promise<string> {
 export async function getDomains() {
   await connectToDatabase();
   let domains = await InternshipDomain.find().sort({ createdAt: -1 }).lean();
+
+  if (domains && domains.length > 0) {
+    const hasNonFullStack = domains.some(
+      (d: any) => !d.name.toLowerCase().includes("full stack")
+    );
+    if (hasNonFullStack) {
+      await InternshipDomain.deleteMany({
+        name: { $not: /full stack/i },
+      });
+      domains = await InternshipDomain.find().sort({ createdAt: -1 }).lean();
+    }
+  }
+
   if (!domains || domains.length === 0) {
     const defaultDomains = [
-      { _id: "65f1a3b8c4d2e10a0a000001", name: "Full Stack Web Development", description: "Learn Next.js, Node.js, and MongoDB", duration: "4 Weeks" },
-      { _id: "65f1a3b8c4d2e10a0a000002", name: "React Native Mobile App Development", description: "Build cross-platform mobile apps", duration: "4 Weeks" },
-      { _id: "65f1a3b8c4d2e10a0a000003", name: "Machine Learning Engineering", description: "Build and deploy machine learning models", duration: "4 Weeks" },
-      { _id: "65f1a3b8c4d2e10a0a000004", name: "Data Science & Analytics", description: "Analyze data and build insights", duration: "4 Weeks" },
+      {
+        _id: "65f1a3b8c4d2e10a0a000001",
+        name: "Full Stack Web Development",
+        description: "Build robust, high-performance web applications using React, Next.js, Node.js, and MongoDB. Learn advanced server action patterns, performance tuning, and database modeling.",
+        duration: "3 Weeks",
+        isActive: true,
+      },
     ];
     await InternshipDomain.create(defaultDomains);
     domains = await InternshipDomain.find().sort({ createdAt: -1 }).lean();
