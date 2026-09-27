@@ -17,7 +17,13 @@ import {
   LogOut,
   ChevronDown,
   AlertTriangle,
-  GitFork,
+  UserPlus,
+  Users,
+  FolderKanban,
+  HardHat,
+  Share2,
+  ListChecks,
+  Wallet,
 } from "lucide-react";
 
 interface SidebarItemProps {
@@ -66,8 +72,13 @@ export default function Sidebar() {
 
   const agencyOSItems: SidebarItemProps[] = [
     { viewId: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={18} strokeWidth={1.8} />, color: "#6366F1" },
-    { viewId: "projects", label: "Projects", icon: <Briefcase size={18} strokeWidth={1.8} />, color: "#EC4899" },
-    { viewId: "client-tree", label: "Client Tree", icon: <GitFork size={18} strokeWidth={1.8} />, color: "#8B5CF6" },
+    { viewId: "leads", label: "Leads", icon: <UserPlus size={18} strokeWidth={1.8} />, color: "#F59E0B" },
+    { viewId: "projects", label: "Customers", icon: <Users size={18} strokeWidth={1.8} />, color: "#0EA5E9" },
+    { viewId: "crm-projects", label: "Projects", icon: <FolderKanban size={18} strokeWidth={1.8} />, color: "#EC4899" },
+    { viewId: "freelancers", label: "Freelancers", icon: <HardHat size={18} strokeWidth={1.8} />, color: "#8B5CF6" },
+    { viewId: "references", label: "Reference Manager", icon: <Share2 size={18} strokeWidth={1.8} />, color: "#14B8A6" },
+    { viewId: "activities", label: "Activities / Follow-ups", icon: <ListChecks size={18} strokeWidth={1.8} />, color: "#F97316" },
+    { viewId: "payments", label: "Payments", icon: <Wallet size={18} strokeWidth={1.8} />, color: "#10B981" },
     { viewId: "expenses", label: "Expenses", icon: <Receipt size={18} strokeWidth={1.8} />, color: "#EF4444" },
     { viewId: "revenue", label: "Revenue", icon: <IndianRupee size={18} strokeWidth={1.8} />, color: "#10B981" },
     { viewId: "settings", label: "Settings", icon: <Settings size={18} strokeWidth={1.8} />, color: "#6B7280" },

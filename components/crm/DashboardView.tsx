@@ -17,13 +17,21 @@ import {
   Layers,
   ArrowDownRight,
   Calendar,
+  UserPlus,
+  HardHat,
+  Share2,
+  FolderKanban,
+  Wallet,
+  AlertCircle,
 } from "lucide-react";
 import { motion } from "framer-motion";
 
 const EASE = [0.22, 1, 0.36, 1] as const;
 
+const LEAD_PIPELINE_ORDER = ["New", "Contacted", "Discussion", "Proposal Sent", "Negotiation", "Converted", "Lost"];
+
 export default function DashboardView() {
-  const { financialStats, clients, setView, setActiveClientId, globalActivities, settings } = useCRM();
+  const { financialStats, clients, setView, setActiveClientId, globalActivities, settings, leads, freelancers, crmProjects, followUpFeed } = useCRM();
 
   // Days countdown from July 9, 2026
   const getCountdown = () => {
@@ -133,6 +141,103 @@ export default function DashboardView() {
           <span className="text-[14px]">🔥</span>
         </div>
       </motion.div>
+
+      {/* Quick Actions */}
+      <div className="flex items-center gap-2.5 flex-wrap">
+        {[
+          { label: "Add Lead", icon: <UserPlus size={13} />, view: "leads" as const },
+          { label: "Add Customer", icon: <Users size={13} />, view: "projects" as const },
+          { label: "New Project", icon: <FolderKanban size={13} />, view: "crm-projects" as const },
+          { label: "Add Freelancer", icon: <HardHat size={13} />, view: "freelancers" as const },
+          { label: "Add Reference", icon: <Share2 size={13} />, view: "references" as const },
+          { label: "Add Follow-up", icon: <Clock size={13} />, view: "activities" as const },
+          { label: "Record Payment", icon: <Wallet size={13} />, view: "payments" as const },
+        ].map((qa) => (
+          <button
+            key={qa.label}
+            onClick={() => setView(qa.view)}
+            className="flex items-center gap-1.5 bg-white border border-[#E9E3DA] hover:border-[#111111] hover:bg-[#111111] hover:text-white text-[#111111] px-3.5 py-2 rounded-xl text-[12px] font-bold transition-all shadow-2xs cursor-pointer"
+          >
+            {qa.icon}
+            <span>{qa.label}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* CRM Overview Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+        <MiniStat label="Total Leads" value={leads.length} />
+        <MiniStat label="New Leads" value={leads.filter((l) => l.status === "New").length} />
+        <MiniStat label="Active Leads" value={leads.filter((l) => !["Converted", "Lost"].includes(l.status)).length} />
+        <MiniStat label="Converted" value={leads.filter((l) => l.status === "Converted").length} />
+        <MiniStat label="Customers" value={clients.length} />
+        <MiniStat label="Active Projects" value={crmProjects.filter((p) => !["Completed", "Cancelled"].includes(p.status)).length} />
+        <MiniStat label="Freelancers" value={freelancers.length} />
+        <MiniStat label="Pending Payments" value={formatCurrency(crmProjects.reduce((s, p) => s + (p.amountPending || 0), 0))} />
+      </div>
+
+      {/* Lead Pipeline */}
+      <div className="bg-white border border-[#E9E3DA] rounded-2xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-5">
+          <h3 className="text-[15px] font-extrabold text-[#111111]">Lead Pipeline</h3>
+          <button onClick={() => setView("leads")} className="text-[11.5px] font-bold text-indigo-600 hover:underline cursor-pointer">
+            View all leads
+          </button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
+          {LEAD_PIPELINE_ORDER.map((stage) => (
+            <div key={stage} className="bg-[#FCFBF8] border border-[#E9E3DA] rounded-xl p-3 text-center">
+              <div className="text-[19px] font-extrabold text-[#111111]">{leads.filter((l) => l.status === stage).length}</div>
+              <div className="text-[10px] font-mono uppercase text-[#6A6A6A] font-bold mt-1">{stage}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Today's Work */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm">
+          <h4 className="text-[13px] font-extrabold text-[#111111] mb-3 flex items-center gap-2">
+            <Clock size={14} className="text-indigo-600" />Today's Follow-ups
+          </h4>
+          <div className="flex flex-col gap-2">
+            {followUpFeed.dueToday.slice(0, 5).map((f, i) => (
+              <button key={i} onClick={() => setView("activities")} className="text-left text-[12px] font-semibold text-[#111111] hover:text-indigo-600 truncate cursor-pointer">
+                {f.name} · {f.type} at {f.time || "—"}
+              </button>
+            ))}
+            {followUpFeed.dueToday.length === 0 && <span className="text-[12px] text-[#6A6A6A] italic">Nothing scheduled today.</span>}
+          </div>
+        </div>
+
+        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm">
+          <h4 className="text-[13px] font-extrabold text-[#111111] mb-3 flex items-center gap-2">
+            <AlertCircle size={14} className="text-rose-600" />Overdue Follow-ups
+          </h4>
+          <div className="flex flex-col gap-2">
+            {followUpFeed.overdue.slice(0, 5).map((f, i) => (
+              <button key={i} onClick={() => setView("activities")} className="text-left text-[12px] font-semibold text-rose-700 hover:underline truncate cursor-pointer">
+                {f.name} · overdue since {f.date}
+              </button>
+            ))}
+            {followUpFeed.overdue.length === 0 && <span className="text-[12px] text-[#6A6A6A] italic">No overdue follow-ups. Great job!</span>}
+          </div>
+        </div>
+
+        <div className="bg-white border border-[#E9E3DA] rounded-2xl p-5 shadow-sm">
+          <h4 className="text-[13px] font-extrabold text-[#111111] mb-3 flex items-center gap-2">
+            <Wallet size={14} className="text-amber-600" />Projects with Pending Payments
+          </h4>
+          <div className="flex flex-col gap-2">
+            {crmProjects.filter((p) => (p.amountPending || 0) > 0).slice(0, 5).map((p) => (
+              <button key={p._id} onClick={() => setView("crm-projects")} className="text-left text-[12px] font-semibold text-[#111111] hover:text-indigo-600 truncate cursor-pointer">
+                {p.name} · {formatCurrency(p.amountPending || 0)} pending
+              </button>
+            ))}
+            {crmProjects.filter((p) => (p.amountPending || 0) > 0).length === 0 && <span className="text-[12px] text-[#6A6A6A] italic">No pending payments.</span>}
+          </div>
+        </div>
+      </div>
 
       {/* Main 4 Metric Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -504,6 +609,15 @@ export default function DashboardView() {
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+function MiniStat({ label, value }: { label: string; value: string | number }) {
+  return (
+    <div className="bg-white border border-[#E9E3DA] rounded-xl p-3 text-center shadow-2xs">
+      <div className="text-[15px] font-extrabold text-[#111111] leading-tight truncate">{value}</div>
+      <div className="text-[9.5px] font-mono uppercase text-[#6A6A6A] font-bold mt-1 truncate">{label}</div>
     </div>
   );
 }

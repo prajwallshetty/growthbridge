@@ -8,6 +8,12 @@ import ExpensesView from "@/components/crm/ExpensesView";
 import RevenueView from "@/components/crm/RevenueView";
 import SettingsView from "@/components/crm/SettingsView";
 import ClientTreeView from "@/components/crm/ClientTreeView";
+import LeadsView from "@/components/crm/LeadsView";
+import FreelancersView from "@/components/crm/FreelancersView";
+import ReferenceManagerView from "@/components/crm/ReferenceManagerView";
+import CRMProjectsView from "@/components/crm/CRMProjectsView";
+import ActivitiesFollowupsView from "@/components/crm/ActivitiesFollowupsView";
+import PaymentsView from "@/components/crm/PaymentsView";
 import { AnimatePresence, motion } from "framer-motion";
 import { RefreshCw } from "lucide-react";
 
@@ -18,8 +24,20 @@ export default function AdminPageDispatcher() {
     switch (view) {
       case "dashboard":
         return <DashboardView />;
+      case "leads":
+        return <LeadsView />;
       case "projects":
         return <ProjectsView />;
+      case "crm-projects":
+        return <CRMProjectsView />;
+      case "freelancers":
+        return <FreelancersView />;
+      case "references":
+        return <ReferenceManagerView />;
+      case "activities":
+        return <ActivitiesFollowupsView />;
+      case "payments":
+        return <PaymentsView />;
       case "client-tree":
         return <ClientTreeView />;
       case "expenses":

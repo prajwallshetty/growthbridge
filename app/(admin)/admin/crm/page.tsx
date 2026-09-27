@@ -9,6 +9,12 @@ import ExpensesView from "@/components/crm/ExpensesView";
 import RevenueView from "@/components/crm/RevenueView";
 import SettingsView from "@/components/crm/SettingsView";
 import ClientTreeView from "@/components/crm/ClientTreeView";
+import LeadsView from "@/components/crm/LeadsView";
+import FreelancersView from "@/components/crm/FreelancersView";
+import ReferenceManagerView from "@/components/crm/ReferenceManagerView";
+import CRMProjectsView from "@/components/crm/CRMProjectsView";
+import ActivitiesFollowupsView from "@/components/crm/ActivitiesFollowupsView";
+import PaymentsView from "@/components/crm/PaymentsView";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
@@ -17,6 +23,13 @@ import {
   Receipt,
   IndianRupee,
   Settings as SettingsIcon,
+  UserPlus,
+  Users,
+  FolderKanban,
+  HardHat,
+  Share2,
+  ListChecks,
+  Wallet,
 } from "lucide-react";
 
 function CRMWorkspaceContent() {
@@ -24,8 +37,13 @@ function CRMWorkspaceContent() {
 
   const subMenuItems = [
     { id: "dashboard", label: "Dashboard", icon: <LayoutDashboard size={14} /> },
-    { id: "projects", label: "Projects", icon: <Briefcase size={14} /> },
-    { id: "client-tree", label: "Client Tree", icon: <GitFork size={14} /> },
+    { id: "leads", label: "Leads", icon: <UserPlus size={14} /> },
+    { id: "projects", label: "Customers", icon: <Users size={14} /> },
+    { id: "crm-projects", label: "Projects", icon: <FolderKanban size={14} /> },
+    { id: "freelancers", label: "Freelancers", icon: <HardHat size={14} /> },
+    { id: "references", label: "Reference Manager", icon: <Share2 size={14} /> },
+    { id: "activities", label: "Activities / Follow-ups", icon: <ListChecks size={14} /> },
+    { id: "payments", label: "Payments", icon: <Wallet size={14} /> },
     { id: "expenses", label: "Expenses", icon: <Receipt size={14} /> },
     { id: "revenue", label: "Revenue", icon: <IndianRupee size={14} /> },
     { id: "settings", label: "Settings", icon: <SettingsIcon size={14} /> },
@@ -40,8 +58,20 @@ function CRMWorkspaceContent() {
     switch (view) {
       case "dashboard":
         return <DashboardView />;
+      case "leads":
+        return <LeadsView />;
       case "projects":
         return <ProjectsView />;
+      case "crm-projects":
+        return <CRMProjectsView />;
+      case "freelancers":
+        return <FreelancersView />;
+      case "references":
+        return <ReferenceManagerView />;
+      case "activities":
+        return <ActivitiesFollowupsView />;
+      case "payments":
+        return <PaymentsView />;
       case "client-tree":
         return <ClientTreeView />;
       case "expenses":
