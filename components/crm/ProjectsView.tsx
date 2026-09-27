@@ -1246,8 +1246,38 @@ export default function ProjectsView() {
                   <TrendingUp size={14} />
                   <span>Financial Breakdown</span>
                 </button>
+                <button
+                  onClick={() => setActiveTab("timeline")}
+                  className={`px-3.5 py-1.5 rounded-lg text-[12.5px] font-bold transition-all cursor-pointer flex items-center gap-1.5 ${
+                    activeTab === "timeline" ? "bg-[#111111] text-white" : "text-[#6A6A6A] hover:text-[#111111]"
+                  }`}
+                >
+                  <CalendarIcon size={14} />
+                  <span>Timeline</span>
+                </button>
               </div>
             </div>
+
+            {/* Reference & Lead Linkage badges */}
+            {(activeProject.referenceId || activeProject.leadId || activeProject.source) && (
+              <div className="w-full flex items-center gap-2 flex-wrap pt-3">
+                {activeProject.source && (
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+                    Source: {activeProject.source}
+                  </span>
+                )}
+                {activeProject.referenceId && (
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-50 text-teal-700 border border-teal-200">
+                    Referred by: {typeof activeProject.referenceId === "object" ? (activeProject.referenceId as any).name : "Reference"}
+                  </span>
+                )}
+                {activeProject.leadId && (
+                  <span className="px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                    Converted from Lead
+                  </span>
+                )}
+              </div>
+            )}
           </div>
 
           {/* TAB 1: TASK CHECKLIST SYSTEM */}
@@ -1742,6 +1772,28 @@ export default function ProjectsView() {
                   </>
                 );
               })()}
+            </div>
+          )}
+
+          {/* TAB: CUSTOMER TIMELINE (Lead -> Contact -> Proposal -> Converted -> Project -> Payment -> Completed) */}
+          {activeTab === "timeline" && (
+            <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4 relative pl-4 border-l-2 border-[#E9E3DA]">
+                {(activeProject.activity || []).length === 0 && (
+                  <div className="text-[#6A6A6A] text-[12.5px] italic py-6">
+                    No timeline activity recorded yet for this customer.
+                  </div>
+                )}
+                {(activeProject.activity || []).map((act, i) => (
+                  <div key={act._id || i} className="relative text-[13px]">
+                    <span className="absolute -left-[22px] top-1 w-2.5 h-2.5 rounded-full bg-[#111111] shadow-[0_0_0_3px_rgba(17,17,17,0.08)]" />
+                    <p className="text-[#111111] leading-snug font-semibold">{act.text}</p>
+                    <span className="text-[10.5px] text-[#6A6A6A] block mt-0.5 font-mono uppercase tracking-wide">
+                      {act.timestamp} · {act.type}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           )}
         </div>

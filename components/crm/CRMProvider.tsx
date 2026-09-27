@@ -18,15 +18,188 @@ import {
   getCRMSettings,
   updateCRMSettings,
 } from "@/lib/actions/crm";
+import {
+  getLeads,
+  saveLead,
+  deleteLead as deleteLeadAction,
+  updateLeadStatus as updateLeadStatusAction,
+  addLeadFollowUp as addLeadFollowUpAction,
+  completeLeadFollowUp as completeLeadFollowUpAction,
+  addLeadActivity as addLeadActivityAction,
+  convertLeadToCustomer as convertLeadToCustomerAction,
+  getFollowUpFeed,
+} from "@/lib/actions/leads";
+import {
+  getReferences,
+  saveReference as saveReferenceAction,
+  deleteReference as deleteReferenceAction,
+  getReferralDetail as getReferralDetailAction,
+} from "@/lib/actions/references";
+import {
+  getFreelancers,
+  saveFreelancer as saveFreelancerAction,
+  deleteFreelancer as deleteFreelancerAction,
+  addFreelancerPayment as addFreelancerPaymentAction,
+  updateFreelancerPaymentStatus as updateFreelancerPaymentStatusAction,
+} from "@/lib/actions/freelancers";
+import {
+  getCRMProjects,
+  saveCRMProject as saveCRMProjectAction,
+  deleteCRMProject as deleteCRMProjectAction,
+  updateCRMProjectStatus as updateCRMProjectStatusAction,
+  assignFreelancersToProject as assignFreelancersToProjectAction,
+  addCRMProjectPayment as addCRMProjectPaymentAction,
+  deleteCRMProjectPayment as deleteCRMProjectPaymentAction,
+  addCRMProjectExpense as addCRMProjectExpenseAction,
+  getAllPayments,
+} from "@/lib/actions/crmProjects";
 
 export type CRMView =
   | "dashboard"
+  | "leads"
   | "projects"
+  | "crm-projects"
+  | "freelancers"
+  | "references"
+  | "activities"
+  | "payments"
   | "expenses"
   | "revenue"
   | "settings"
   | "clients"
   | "client-tree";
+
+export interface LeadFollowUp {
+  _id?: string;
+  type: "Call" | "WhatsApp" | "Meeting" | "Email" | "Other";
+  date: string;
+  time?: string;
+  notes?: string;
+  completed?: boolean;
+  completedAt?: string;
+}
+
+export interface LeadActivity {
+  _id?: string;
+  text: string;
+  timestamp: string;
+  type: string;
+}
+
+export interface Lead {
+  _id: string;
+  name: string;
+  company?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  location?: string;
+  source: "Direct" | "WhatsApp" | "Instagram" | "Website" | "Referral" | "LinkedIn" | "Existing Customer" | "Freelancer" | "Other";
+  referenceId?: string | { _id: string; name: string; type: string } | null;
+  interestedService?: string;
+  estimatedBudget?: number;
+  status: "New" | "Contacted" | "Discussion" | "Proposal Sent" | "Negotiation" | "Converted" | "Lost";
+  priority: "High" | "Medium" | "Low";
+  assignedTo?: string;
+  nextFollowUp?: { date: string; time?: string; type: string };
+  lastContacted?: string;
+  notes?: string;
+  lostReason?: string;
+  followUps?: LeadFollowUp[];
+  activity?: LeadActivity[];
+  convertedCustomerId?: string | null;
+  createdAt?: string;
+}
+
+export interface ReferenceStats {
+  totalLeadsReferred: number;
+  convertedLeads: number;
+  lostLeads: number;
+  activeLeads: number;
+  totalBusinessGenerated: number;
+}
+
+export interface ReferencePerson {
+  _id: string;
+  name: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  type: "Existing Customer" | "Friend" | "Business Contact" | "Freelancer" | "Partner" | "Other";
+  notes?: string;
+  pendingReward?: number;
+  paidReward?: number;
+  stats?: ReferenceStats;
+}
+
+export interface FreelancerPayment {
+  _id?: string;
+  date: string;
+  project?: string;
+  projectId?: string;
+  amount: number;
+  status: "Paid" | "Pending";
+  notes?: string;
+}
+
+export interface FreelancerStats {
+  activeProjectsCount: number;
+  completedProjectsCount: number;
+  totalProjectsCount: number;
+  totalEarnings: number;
+  pendingPayment: number;
+}
+
+export interface Freelancer {
+  _id: string;
+  name: string;
+  photo?: string;
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  location?: string;
+  skills?: string[];
+  specialization?: string;
+  experience?: string;
+  portfolioUrl?: string;
+  availability?: "Available" | "Working" | "Busy" | "Inactive";
+  rateType?: "Hourly" | "Project";
+  rate?: number;
+  paymentDetails?: string;
+  notes?: string;
+  status: "Available" | "Working" | "Busy" | "Inactive";
+  payments?: FreelancerPayment[];
+  activity?: LeadActivity[];
+  stats?: FreelancerStats;
+  assignedProjects?: Array<{ _id: string; name: string; client: string; status: string; projectValue: number; freelancerCost: number }>;
+}
+
+export interface AssignedFreelancerRef {
+  freelancerId: string;
+  name: string;
+  agreedCost: number;
+}
+
+export interface CRMProjectItem {
+  _id: string;
+  name: string;
+  customerId: string | { _id: string; company: string; name?: string };
+  service?: string;
+  assignedFreelancers?: AssignedFreelancerRef[];
+  startDate?: string;
+  deadline?: string;
+  projectValue: number;
+  freelancerCost: number;
+  status: "Not Started" | "In Progress" | "On Hold" | "Completed" | "Cancelled";
+  notes?: string;
+  payments?: any[];
+  expenses?: any[];
+  activity?: LeadActivity[];
+  amountReceived?: number;
+  amountPending?: number;
+  totalExpenses?: number;
+  grossProfit?: number;
+}
 
 export interface CRMSubtask {
   _id?: string;
@@ -138,6 +311,14 @@ export interface CRMClient {
   referrerName?: string;
   referralCommissionPct?: number;
   clientType?: "Direct" | "Referred" | "Partner";
+  phone?: string;
+  whatsapp?: string;
+  email?: string;
+  location?: string;
+  source?: string;
+  leadId?: string | null;
+  referenceId?: string | { _id: string; name: string; type?: string } | null;
+  convertedAt?: string;
   tasks: CRMTask[];
   expenses: CRMExpense[];
   payments: CRMPayment[];
@@ -245,6 +426,52 @@ interface CRMContextType {
     pendingProjectsCount: number;
     onHoldProjectsCount: number;
   };
+
+  // Leads
+  leads: Lead[];
+  refreshLeads: () => Promise<void>;
+  addLead: (lead: Partial<Lead>) => Promise<void>;
+  updateLead: (id: string, updates: Partial<Lead>) => Promise<void>;
+  deleteLead: (id: string) => Promise<void>;
+  updateLeadStatus: (id: string, status: Lead["status"], lostReason?: string) => Promise<void>;
+  addLeadFollowUp: (id: string, followUp: LeadFollowUp) => Promise<void>;
+  completeLeadFollowUp: (id: string, followUpId: string) => Promise<void>;
+  addLeadActivity: (id: string, text: string, type?: string) => Promise<void>;
+  convertLeadToCustomer: (id: string) => Promise<string | null>;
+  followUpFeed: { overdue: any[]; dueToday: any[]; upcoming: any[] };
+
+  // References
+  references: ReferencePerson[];
+  refreshReferences: () => Promise<void>;
+  addReference: (ref: Partial<ReferencePerson>) => Promise<void>;
+  updateReference: (id: string, updates: Partial<ReferencePerson>) => Promise<void>;
+  deleteReference: (id: string) => Promise<void>;
+  getReferralDetail: (id: string) => Promise<{ leads: any[]; customers: any[] }>;
+
+  // Freelancers
+  freelancers: Freelancer[];
+  refreshFreelancers: () => Promise<void>;
+  addFreelancer: (f: Partial<Freelancer>) => Promise<void>;
+  updateFreelancer: (id: string, updates: Partial<Freelancer>) => Promise<void>;
+  deleteFreelancer: (id: string) => Promise<void>;
+  addFreelancerPayment: (freelancerId: string, payment: FreelancerPayment) => Promise<void>;
+  updateFreelancerPaymentStatus: (freelancerId: string, paymentId: string, status: string) => Promise<void>;
+
+  // CRM Projects (Customer -> many Projects)
+  crmProjects: CRMProjectItem[];
+  refreshCRMProjects: () => Promise<void>;
+  addCRMProject: (project: Partial<CRMProjectItem>) => Promise<void>;
+  updateCRMProject: (id: string, updates: Partial<CRMProjectItem>) => Promise<void>;
+  deleteCRMProject: (id: string) => Promise<void>;
+  updateCRMProjectStatus: (id: string, status: CRMProjectItem["status"]) => Promise<void>;
+  assignFreelancersToProject: (projectId: string, assignments: { freelancerId: string; agreedCost: number }[]) => Promise<void>;
+  addCRMProjectPayment: (projectId: string, payment: any) => Promise<void>;
+  deleteCRMProjectPayment: (projectId: string, paymentId: string) => Promise<void>;
+  addCRMProjectExpense: (projectId: string, expense: any) => Promise<void>;
+
+  // Aggregated Payments Ledger
+  allPayments: any[];
+  refreshAllPayments: () => Promise<void>;
 }
 
 const CRMContext = createContext<CRMContextType | undefined>(undefined);
@@ -263,6 +490,17 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [searchQuery, setSearchQuery] = useState("");
   const [globalActivities, setGlobalActivities] = useState<CRMActivity[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const [leads, setLeads] = useState<Lead[]>([]);
+  const [references, setReferences] = useState<ReferencePerson[]>([]);
+  const [freelancers, setFreelancers] = useState<Freelancer[]>([]);
+  const [crmProjects, setCRMProjects] = useState<CRMProjectItem[]>([]);
+  const [followUpFeed, setFollowUpFeed] = useState<{ overdue: any[]; dueToday: any[]; upcoming: any[] }>({
+    overdue: [],
+    dueToday: [],
+    upcoming: [],
+  });
+  const [allPayments, setAllPayments] = useState<any[]>([]);
 
   const [settings, setSettingsState] = useState<CRMSettingsState>({
     businessName: "Growth Bridge",
@@ -312,8 +550,68 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const refreshLeads = async () => {
+    try {
+      const data = await getLeads();
+      setLeads(data as any);
+    } catch (error) {
+      console.error("Failed to load leads:", error);
+    }
+  };
+
+  const refreshReferences = async () => {
+    try {
+      const data = await getReferences();
+      setReferences(data as any);
+    } catch (error) {
+      console.error("Failed to load references:", error);
+    }
+  };
+
+  const refreshFreelancers = async () => {
+    try {
+      const data = await getFreelancers();
+      setFreelancers(data as any);
+    } catch (error) {
+      console.error("Failed to load freelancers:", error);
+    }
+  };
+
+  const refreshCRMProjects = async () => {
+    try {
+      const data = await getCRMProjects();
+      setCRMProjects(data as any);
+    } catch (error) {
+      console.error("Failed to load CRM projects:", error);
+    }
+  };
+
+  const refreshFollowUpFeed = async () => {
+    try {
+      const data = await getFollowUpFeed();
+      setFollowUpFeed(data as any);
+    } catch (error) {
+      console.error("Failed to load follow-up feed:", error);
+    }
+  };
+
+  const refreshAllPayments = async () => {
+    try {
+      const data = await getAllPayments();
+      setAllPayments(data as any);
+    } catch (error) {
+      console.error("Failed to load payments ledger:", error);
+    }
+  };
+
   useEffect(() => {
     refreshClients();
+    refreshLeads();
+    refreshReferences();
+    refreshFreelancers();
+    refreshCRMProjects();
+    refreshFollowUpFeed();
+    refreshAllPayments();
   }, []);
 
   useEffect(() => {
@@ -452,6 +750,244 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const updated = await updateCRMSettings(newSettings);
       setSettingsState((prev) => ({ ...prev, ...updated }));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // ---- Lead Handlers ----
+  const addLead = async (lead: Partial<Lead>) => {
+    try {
+      const saved = await saveLead(lead);
+      setLeads((prev) => [saved as any, ...prev]);
+      refreshFollowUpFeed();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateLead = async (id: string, updates: Partial<Lead>) => {
+    try {
+      const saved = await saveLead({ _id: id, ...updates });
+      setLeads((prev) => prev.map((l) => (l._id === id ? (saved as any) : l)));
+      refreshFollowUpFeed();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteLead = async (id: string) => {
+    try {
+      await deleteLeadAction(id);
+      setLeads((prev) => prev.filter((l) => l._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateLeadStatus = async (id: string, status: Lead["status"], lostReason?: string) => {
+    try {
+      const updated = await updateLeadStatusAction(id, status, lostReason);
+      setLeads((prev) => prev.map((l) => (l._id === id ? (updated as any) : l)));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addLeadFollowUp = async (id: string, followUp: LeadFollowUp) => {
+    try {
+      const updated = await addLeadFollowUpAction(id, followUp);
+      setLeads((prev) => prev.map((l) => (l._id === id ? (updated as any) : l)));
+      refreshFollowUpFeed();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const completeLeadFollowUp = async (id: string, followUpId: string) => {
+    try {
+      const updated = await completeLeadFollowUpAction(id, followUpId);
+      setLeads((prev) => prev.map((l) => (l._id === id ? (updated as any) : l)));
+      refreshFollowUpFeed();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addLeadActivity = async (id: string, text: string, type: string = "note") => {
+    try {
+      const updated = await addLeadActivityAction(id, text, type);
+      setLeads((prev) => prev.map((l) => (l._id === id ? (updated as any) : l)));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const convertLeadToCustomer = async (id: string): Promise<string | null> => {
+    try {
+      const customer = await convertLeadToCustomerAction(id);
+      await Promise.all([refreshClients(), refreshLeads()]);
+      return (customer as any)?._id || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  };
+
+  // ---- Reference Handlers ----
+  const addReference = async (ref: Partial<ReferencePerson>) => {
+    try {
+      await saveReferenceAction(ref);
+      refreshReferences();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateReference = async (id: string, updates: Partial<ReferencePerson>) => {
+    try {
+      await saveReferenceAction({ _id: id, ...updates });
+      refreshReferences();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteReference = async (id: string) => {
+    try {
+      await deleteReferenceAction(id);
+      setReferences((prev) => prev.filter((r) => r._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const getReferralDetail = async (id: string) => {
+    try {
+      return (await getReferralDetailAction(id)) as any;
+    } catch (e) {
+      console.error(e);
+      return { leads: [], customers: [] };
+    }
+  };
+
+  // ---- Freelancer Handlers ----
+  const addFreelancer = async (f: Partial<Freelancer>) => {
+    try {
+      await saveFreelancerAction(f);
+      refreshFreelancers();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateFreelancer = async (id: string, updates: Partial<Freelancer>) => {
+    try {
+      await saveFreelancerAction({ _id: id, ...updates });
+      refreshFreelancers();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteFreelancer = async (id: string) => {
+    try {
+      await deleteFreelancerAction(id);
+      setFreelancers((prev) => prev.filter((f) => f._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addFreelancerPayment = async (freelancerId: string, payment: FreelancerPayment) => {
+    try {
+      await addFreelancerPaymentAction(freelancerId, payment);
+      refreshFreelancers();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateFreelancerPaymentStatus = async (freelancerId: string, paymentId: string, status: string) => {
+    try {
+      await updateFreelancerPaymentStatusAction(freelancerId, paymentId, status);
+      refreshFreelancers();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  // ---- CRM Project Handlers ----
+  const addCRMProject = async (project: Partial<CRMProjectItem>) => {
+    try {
+      await saveCRMProjectAction(project);
+      await Promise.all([refreshCRMProjects(), refreshClients()]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateCRMProject = async (id: string, updates: Partial<CRMProjectItem>) => {
+    try {
+      await saveCRMProjectAction({ _id: id, ...updates });
+      refreshCRMProjects();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteCRMProject = async (id: string) => {
+    try {
+      await deleteCRMProjectAction(id);
+      setCRMProjects((prev) => prev.filter((p) => p._id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const updateCRMProjectStatus = async (id: string, status: CRMProjectItem["status"]) => {
+    try {
+      const updated = await updateCRMProjectStatusAction(id, status);
+      setCRMProjects((prev) => prev.map((p) => (p._id === id ? (updated as any) : p)));
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const assignFreelancersToProject = async (
+    projectId: string,
+    assignments: { freelancerId: string; agreedCost: number }[]
+  ) => {
+    try {
+      await assignFreelancersToProjectAction(projectId, assignments);
+      await Promise.all([refreshCRMProjects(), refreshFreelancers()]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addCRMProjectPayment = async (projectId: string, payment: any) => {
+    try {
+      await addCRMProjectPaymentAction(projectId, payment);
+      await Promise.all([refreshCRMProjects(), refreshAllPayments()]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const deleteCRMProjectPayment = async (projectId: string, paymentId: string) => {
+    try {
+      await deleteCRMProjectPaymentAction(projectId, paymentId);
+      await Promise.all([refreshCRMProjects(), refreshAllPayments()]);
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const addCRMProjectExpense = async (projectId: string, expense: any) => {
+    try {
+      await addCRMProjectExpenseAction(projectId, expense);
+      refreshCRMProjects();
     } catch (e) {
       console.error(e);
     }
@@ -671,6 +1207,47 @@ export const CRMProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         isAddClientOpen,
         setIsAddClientOpen,
         financialStats,
+
+        leads,
+        refreshLeads,
+        addLead,
+        updateLead,
+        deleteLead,
+        updateLeadStatus,
+        addLeadFollowUp,
+        completeLeadFollowUp,
+        addLeadActivity,
+        convertLeadToCustomer,
+        followUpFeed,
+
+        references,
+        refreshReferences,
+        addReference,
+        updateReference,
+        deleteReference,
+        getReferralDetail,
+
+        freelancers,
+        refreshFreelancers,
+        addFreelancer,
+        updateFreelancer,
+        deleteFreelancer,
+        addFreelancerPayment,
+        updateFreelancerPaymentStatus,
+
+        crmProjects,
+        refreshCRMProjects,
+        addCRMProject,
+        updateCRMProject,
+        deleteCRMProject,
+        updateCRMProjectStatus,
+        assignFreelancersToProject,
+        addCRMProjectPayment,
+        deleteCRMProjectPayment,
+        addCRMProjectExpense,
+
+        allPayments,
+        refreshAllPayments,
       }}
     >
       {children}
